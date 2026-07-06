@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { mockService } from '../../services/mockService';
+import { authService } from '../../services/authService';
 import './Register.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -120,7 +120,7 @@ export default function Register() {
     setErrors({});
 
     try {
-      await mockService.register(name, email, password);
+      await authService.register(name, email, password);
       setSuccessMessage('Cadastro realizado com sucesso! Redirecionando...');
       setTimeout(() => {
         navigate('/login');
