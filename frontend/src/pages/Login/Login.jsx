@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { mockService } from '../../services/mockService';
+import { authService } from '../../services/authService';
 import './Login.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -20,7 +20,7 @@ export default function Login() {
 
   // Redireciona se o usuário já estiver logado
   useEffect(() => {
-    if (mockService.isAuthenticated()) {
+    if (authService.isAuthenticated()) {
       navigate('/dashboard');
     }
   }, [navigate]);
@@ -55,7 +55,7 @@ export default function Login() {
     setErrors({});
 
     try {
-      await mockService.login(email, password);
+      await authService.login(email, password);
       navigate('/dashboard');
     } catch (err) {
       setErrors({ apiError: err.message });

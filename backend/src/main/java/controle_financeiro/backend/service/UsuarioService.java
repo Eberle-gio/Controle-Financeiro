@@ -31,4 +31,19 @@ public class UsuarioService {
     public Usuario buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
+
+    public Usuario login(String email, String password) {
+        Usuario usuario = usuarioRepository.findByEmail(email);
+
+        if (usuario == null) {
+            throw new RuntimeException("Credenciais inválidas.");
+        }
+
+        // Compara a senha digitada com o hash BCrypt armazenado no banco
+        if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            throw new RuntimeException("Credenciais inválidas.");
+        }
+
+        return usuario;
+    }
 }
