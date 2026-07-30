@@ -23,7 +23,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/carteiras/**").permitAll() // Temporário: liberado para testes sem JWT
+                .requestMatchers("/api/carteiras/**").permitAll()    // Temporário: liberado para testes sem JWT
+                .requestMatchers("/api/categorias/**").permitAll()   // Temporário: liberado para testes sem JWT
                 .anyRequest().authenticated()
             );
         

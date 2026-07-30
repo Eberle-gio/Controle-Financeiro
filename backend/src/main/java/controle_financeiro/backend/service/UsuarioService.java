@@ -3,6 +3,7 @@ package controle_financeiro.backend.service;
 import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,10 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Lazy
+    @Autowired
+    private CategoriaService categoriaService;
+
     public Usuario cadastrar(Usuario usuario) {
         // Verifica se o e-mail já está em uso
         Usuario usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
@@ -25,7 +30,12 @@ public class UsuarioService {
         // Criptografa a senha antes de salvar no banco
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
-        return usuarioRepository.save(usuario);
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+
+        // Cria as 6 categorias padrão automaticamente para o novo usuário
+        categoriaService.criarCategoriasPadrao(usuarioSalvo);
+
+        return usuarioSalvo;
     }
 
     public Usuario buscarPorEmail(String email) {
