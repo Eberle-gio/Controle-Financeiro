@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
 
 @Service
 public class UsuarioService {
@@ -15,6 +16,9 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EnvioEmailSender emailService;
 
     @Lazy
     @Autowired
@@ -34,6 +38,10 @@ public class UsuarioService {
 
         // Cria as 6 categorias padrão automaticamente para o novo usuário
         categoriaService.criarCategoriasPadrao(usuarioSalvo);
+
+        Context context = new Context();
+        context.setVariable("nome", usuario.getName());
+        emailService.enviarEmailtemplate(usuario.getEmail(),"Sucesso", "novoCadastro", context);
 
         return usuarioSalvo;
     }
