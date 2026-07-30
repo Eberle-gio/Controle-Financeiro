@@ -20,10 +20,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desabilita CSRF, comum em APIs REST stateless
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Permite acesso sem login nas rotas de autenticação
-                .anyRequest().authenticated() // Exige autenticação para qualquer outra rota
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/carteiras/**").permitAll() // Temporário: liberado para testes sem JWT
+                .anyRequest().authenticated()
             );
         
         return http.build();
