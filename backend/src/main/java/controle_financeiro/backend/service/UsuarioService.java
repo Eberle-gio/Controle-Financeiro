@@ -40,7 +40,7 @@ public class UsuarioService {
         categoriaService.criarCategoriasPadrao(usuarioSalvo);
 
         Context context = new Context();
-        context.setVariable("nome", usuario.getName());
+        context.setVariable("name", usuario.getName());
         emailService.enviarEmailtemplate(usuario.getEmail(),"Sucesso", "novoCadastro", context);
 
         return usuarioSalvo;

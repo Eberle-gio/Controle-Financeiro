@@ -1,6 +1,7 @@
 package controle_financeiro.backend.service;
 
 import controle_financeiro.backend.model.Categoria;
+import controle_financeiro.backend.model.TipoMovimentacao;
 import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.repository.CategoriaRepository;
 import controle_financeiro.backend.repository.UsuarioRepository;
@@ -20,12 +21,12 @@ public class CategoriaService {
     // Cria as categorias padrão automaticamente quando um usuário se cadastra
     public void criarCategoriasPadrao(Usuario usuario) {
         List<Categoria> categoriasPadrao = List.of(
-            criarCategoria(usuario, "Salário",       "RECEITA", "#10b981", "💼"),
-            criarCategoria(usuario, "Investimentos", "RECEITA", "#3b82f6", "📈"),
-            criarCategoria(usuario, "Alimentação",   "DESPESA", "#f59e0b", "🍔"),
-            criarCategoria(usuario, "Transporte",    "DESPESA", "#6366f1", "🚗"),
-            criarCategoria(usuario, "Moradia",       "DESPESA", "#ef4444", "🏠"),
-            criarCategoria(usuario, "Lazer",         "DESPESA", "#ec4899", "🎉")
+            criarCategoria(usuario, "Salário",       TipoMovimentacao.RECEITA, "#10b981", "Briefcase"),
+            criarCategoria(usuario, "Investimentos", TipoMovimentacao.RECEITA, "#3b82f6", "TrendingUp"),
+            criarCategoria(usuario, "Alimentação",   TipoMovimentacao.DESPESA, "#f59e0b", "UtensilsCrossed"),
+            criarCategoria(usuario, "Transporte",    TipoMovimentacao.DESPESA, "#6366f1", "Car"),
+            criarCategoria(usuario, "Moradia",       TipoMovimentacao.DESPESA, "#ef4444", "House"),
+            criarCategoria(usuario, "Lazer",         TipoMovimentacao.DESPESA, "#ec4899", "PartyPopper")
         );
         categoriaRepository.saveAll(categoriasPadrao);
     }
@@ -48,13 +49,14 @@ public class CategoriaService {
         }
 
         if (tipo != null && !tipo.isBlank()) {
-            return categoriaRepository.findByUsuarioAndTipo(usuario, tipo.toUpperCase());
+            TipoMovimentacao tipoEnum = TipoMovimentacao.valueOf(tipo.toUpperCase());
+            return categoriaRepository.findByUsuarioAndTipo(usuario, tipoEnum);
         }
         return categoriaRepository.findByUsuario(usuario);
     }
 
     // Auxiliar para montar objeto Categoria
-    private Categoria criarCategoria(Usuario usuario, String name, String tipo, String cor, String icone) {
+    private Categoria criarCategoria(Usuario usuario, String name, TipoMovimentacao tipo, String cor, String icone) {
         Categoria c = new Categoria();
         c.setUsuario(usuario);
         c.setName(name);

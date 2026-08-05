@@ -25,6 +25,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/carteiras/**").permitAll()    // Temporário: liberado para testes sem JWT
                 .requestMatchers("/api/categorias/**").permitAll()   // Temporário: liberado para testes sem JWT
+                .requestMatchers("/api/transacoes/**").permitAll()   // Temporário: liberado para testes sem JWT
                 .anyRequest().authenticated()
             );
         

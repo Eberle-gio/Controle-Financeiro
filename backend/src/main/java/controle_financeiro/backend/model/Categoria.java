@@ -30,14 +30,15 @@ public class Categoria {
 
     // Tipo da categoria: RECEITA ou DESPESA
     @NotNull(message = "O tipo é obrigatório")
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String tipo;
+    private TipoMovimentacao tipo;
 
     // Cor em formato hexadecimal (ex: #10b981)
     @Size(max = 7)
     private String cor;
 
-    // Ícone (emoji ou código) para exibição no frontend
-    @Size(max = 10)
+    // Nome do ícone Lucide React para exibição no frontend (ex: "UtensilsCrossed")
+    @Size(max = 50)
     private String icone;
 }
