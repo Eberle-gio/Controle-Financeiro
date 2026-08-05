@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { mockService } from '../../services/mockService';
+import Sidebar from '../../components/Sidebar';
 import './ChangePassword.css';
 
 export default function ChangePassword() {
@@ -130,30 +131,7 @@ export default function ChangePassword() {
 
   return (
     <div className="change-pass-page">
-      {/* Navegação/Sidebar Simples da Área Autenticada */}
-      <aside className="app-sidebar">
-        <div className="sidebar-brand">
-          <span className="logo-icon">⚡</span>
-          <h2>NodeBank</h2>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/dashboard" className="nav-item">
-            📊 Dashboard
-          </Link>
-          <Link to="/app/perfil/senha" className="nav-item active">
-            🔒 Alterar Senha
-          </Link>
-        </nav>
-        <div className="sidebar-user">
-          <div className="avatar">
-            {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-          </div>
-          <div className="user-info">
-            <span className="user-name">{currentUser?.name}</span>
-            <span className="user-email">{currentUser?.email}</span>
-          </div>
-        </div>
-      </aside>
+      <Sidebar currentUser={currentUser} activeItem="senha" />
 
       {/* Conteúdo Principal */}
       <main className="change-pass-content">

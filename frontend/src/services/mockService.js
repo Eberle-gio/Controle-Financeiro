@@ -3,12 +3,12 @@ const delay = (ms = 800) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Categorias padrão
 const DEFAULT_CATEGORIES = [
-  { id: 1, name: 'Salário', tipo: 'RECEITA', cor: '#10b981', icone: '💼' },
-  { id: 2, name: 'Investimentos', tipo: 'RECEITA', cor: '#3b82f6', icone: '📈' },
-  { id: 3, name: 'Alimentação', tipo: 'DESPESA', cor: '#f59e0b', icone: '🍔' },
-  { id: 4, name: 'Transporte', tipo: 'DESPESA', cor: '#6366f1', icone: '🚗' },
-  { id: 5, name: 'Moradia', tipo: 'DESPESA', cor: '#ef4444', icone: '🏠' },
-  { id: 6, name: 'Lazer', tipo: 'DESPESA', cor: '#ec4899', icone: '🎉' },
+  { id: 1, name: 'Salário',       tipo: 'RECEITA', cor: '#10b981', icone: 'Briefcase'       },
+  { id: 2, name: 'Investimentos', tipo: 'RECEITA', cor: '#3b82f6', icone: 'TrendingUp'       },
+  { id: 3, name: 'Alimentação',   tipo: 'DESPESA', cor: '#f59e0b', icone: 'UtensilsCrossed'  },
+  { id: 4, name: 'Transporte',    tipo: 'DESPESA', cor: '#6366f1', icone: 'Car'              },
+  { id: 5, name: 'Moradia',       tipo: 'DESPESA', cor: '#ef4444', icone: 'House'            },
+  { id: 6, name: 'Lazer',         tipo: 'DESPESA', cor: '#ec4899', icone: 'PartyPopper'      },
 ];
 
 // Transações iniciais mockadas para a carteira padrão
