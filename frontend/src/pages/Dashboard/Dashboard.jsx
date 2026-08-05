@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { mockService } from '../../services/mockService';
+import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut } from 'lucide-react';
+import Sidebar from '../../components/Sidebar';
+import CategoryIcon from '../../components/CategoryIcon';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -130,34 +133,7 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      {/* SIDEBAR */}
-      <aside className="app-sidebar">
-        <div className="sidebar-brand">
-          <span className="logo-icon">⚡</span>
-          <h2>NodeBank</h2>
-        </div>
-        <nav className="sidebar-nav">
-          <Link to="/dashboard" className="nav-item active">
-            📊 Dashboard
-          </Link>
-          <Link to="/app/perfil/senha" className="nav-item">
-            🔒 Alterar Senha
-          </Link>
-          <div className="nav-separator">Configurações (Em Breve)</div>
-          <span className="nav-item disabled">👥 Membros</span>
-          <span className="nav-item disabled">🏷️ Categorias</span>
-          <span className="nav-item disabled">💳 Carteiras</span>
-        </nav>
-        <div className="sidebar-user">
-          <div className="avatar">
-            {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-          </div>
-          <div className="user-info">
-            <span className="user-name">{currentUser?.name}</span>
-            <span className="user-email">{currentUser?.email}</span>
-          </div>
-        </div>
-      </aside>
+      <Sidebar currentUser={currentUser} activeItem="dashboard" />
 
       {/* CONTEÚDO PRINCIPAL */}
       <main className="dashboard-content">
@@ -182,7 +158,7 @@ export default function Dashboard() {
             )}
             
             <button className="logout-btn" onClick={handleLogout}>
-              🚪 Sair
+              <LogOut size={16} /> Sair
             </button>
           </div>
         </header>
@@ -208,7 +184,7 @@ export default function Dashboard() {
             />
           </div>
           <button className="refresh-btn" onClick={fetchSummary} disabled={loading}>
-            🔄 Atualizar
+            <RefreshCw size={15} /> Atualizar
           </button>
         </section>
 
@@ -229,7 +205,7 @@ export default function Dashboard() {
               <div className="metric-card balance-card">
                 <div className="card-header">
                   <span>Saldo Geral</span>
-                  <span className="card-icon">💳</span>
+                  <span className="card-icon"><CreditCard size={22} /></span>
                 </div>
                 <div className="card-value">{formatCurrency(summary.balance)}</div>
                 <p className="card-trend">Diferença de entradas e saídas</p>
@@ -239,7 +215,7 @@ export default function Dashboard() {
               <div className="metric-card income-card">
                 <div className="card-header">
                   <span>Receitas</span>
-                  <span className="card-icon">📈</span>
+                  <span className="card-icon"><TrendingUp size={22} /></span>
                 </div>
                 <div className="card-value">{formatCurrency(summary.totalIncome)}</div>
                 <p className="card-trend text-success">Total acumulado no período</p>
@@ -249,7 +225,7 @@ export default function Dashboard() {
               <div className="metric-card expense-card">
                 <div className="card-header">
                   <span>Despesas</span>
-                  <span className="card-icon">📉</span>
+                  <span className="card-icon"><TrendingDown size={22} /></span>
                 </div>
                 <div className="card-value">{formatCurrency(summary.totalExpense)}</div>
                 <p className="card-trend text-danger">Total gasto no período</p>
@@ -325,7 +301,7 @@ export default function Dashboard() {
                             className="category-icon-badge"
                             style={{ backgroundColor: `${t.categoryColor}20`, color: t.categoryColor }}
                           >
-                            {t.categoryIcon}
+                            <CategoryIcon name={t.categoryIcon} size={16} color={t.categoryColor} />
                           </span>
                           <div className="transaction-desc-wrapper">
                             <span className="transaction-desc">{t.descricao || t.categoryName}</span>
