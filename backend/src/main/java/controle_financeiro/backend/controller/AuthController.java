@@ -11,25 +11,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping({"/auth/register", "/api/auth/register"})
+    @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> registrar(@Valid @RequestBody RegisterRequest request) {
         UserResponseDTO usuarioSalvo = usuarioService.cadastrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioSalvo);
     }
 
-    @PostMapping({"/auth/login", "/api/auth/login"})
+    @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = usuarioService.login(request);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping({"/auth/forgot-password", "/api/auth/forgot-password"})
+    @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         String debugToken = usuarioService.solicitarRecuperacaoSenha(request.getEmail());
         
@@ -40,7 +40,7 @@ public class AuthController {
         return ResponseEntity.ok(resposta);
     }
 
-    @PostMapping({"/auth/reset-password", "/api/auth/reset-password"})
+    @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         usuarioService.redefinirSenha(request);
         return ResponseEntity.ok(Map.of("message", "Senha redefinida com sucesso."));
