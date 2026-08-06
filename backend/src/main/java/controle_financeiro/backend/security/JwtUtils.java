@@ -40,16 +40,8 @@ public class JwtUtils {
                 .compact();
     }
 
-    public Long obterUserIdDoToken(String token) {
-        return Long.parseLong(extrairClaims(token).getSubject());
-    }
-
     public String obterEmailDoToken(String token) {
         return extrairClaims(token).get("email", String.class);
-    }
-
-    public String obterNomeDoToken(String token) {
-        return extrairClaims(token).get("name", String.class);
     }
 
     public boolean validarToken(String token) {
