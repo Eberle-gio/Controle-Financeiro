@@ -26,4 +26,7 @@ public interface TransacaoRepository extends JpaRepository<Transacao, Long> {
                             @Param("tipo") TipoMovimentacao tipo,
                             @Param("inicio") LocalDate inicio,
                             @Param("fim") LocalDate fim);
+
+    // Verifica se existem transações vinculadas a uma categoria
+    boolean existsByCategoriaId(Long categoriaId);
 }
