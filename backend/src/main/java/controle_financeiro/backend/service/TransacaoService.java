@@ -1,14 +1,14 @@
+
 package controle_financeiro.backend.service;
 
-import controle_financeiro.backend.dto.*;
-import controle_financeiro.backend.exception.BusinessException;
-import controle_financeiro.backend.exception.ResourceNotFoundException;
-import controle_financeiro.backend.model.*;
-import controle_financeiro.backend.repository.CarteiraRepository;
-import controle_financeiro.backend.repository.CategoriaRepository;
-import controle_financeiro.backend.repository.MembroCarteiraRepository;
-import controle_financeiro.backend.repository.TransacaoRepository;
-import jakarta.persistence.criteria.Predicate;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,9 +19,24 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.*;
+import controle_financeiro.backend.dto.DashboardSummaryResponse;
+import controle_financeiro.backend.dto.PageResponse;
+import controle_financeiro.backend.dto.TransactionRequest;
+import controle_financeiro.backend.dto.TransactionResponse;
+import controle_financeiro.backend.exception.BusinessException;
+import controle_financeiro.backend.exception.ResourceNotFoundException;
+import controle_financeiro.backend.model.Carteira;
+import controle_financeiro.backend.model.Categoria;
+import controle_financeiro.backend.model.MembroCarteira;
+import controle_financeiro.backend.model.PapelCarteira;
+import controle_financeiro.backend.model.TipoMovimentacao;
+import controle_financeiro.backend.model.Transacao;
+import controle_financeiro.backend.model.Usuario;
+import controle_financeiro.backend.repository.CarteiraRepository;
+import controle_financeiro.backend.repository.CategoriaRepository;
+import controle_financeiro.backend.repository.MembroCarteiraRepository;
+import controle_financeiro.backend.repository.TransacaoRepository;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class TransacaoService {

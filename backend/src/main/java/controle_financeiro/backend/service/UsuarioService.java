@@ -43,13 +43,15 @@ public class UsuarioService {
 
     @Transactional
     public UserResponseDTO cadastrar(RegisterRequest request) {
-        if (usuarioRepository.findByEmail(request.getEmail()) != null) {
+        String emailNormalizado = normalizarEmail(request.getEmail());
+
+        if (usuarioRepository.findByEmail(emailNormalizado) != null) {
             throw new DataIntegrityViolationException("E-mail já cadastrado no sistema.");
         }
 
         Usuario usuario = new Usuario();
         usuario.setName(request.getName());
-        usuario.setEmail(request.getEmail());
+        usuario.setEmail(emailNormalizado);
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
@@ -78,7 +80,8 @@ public class UsuarioService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail());
+        String emailNormalizado = normalizarEmail(request.getEmail());
+        Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
 
         if (usuario == null || !passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
             throw new BusinessException("Credenciais inválidas.");
@@ -95,7 +98,8 @@ public class UsuarioService {
 
     @Transactional
     public String solicitarRecuperacaoSenha(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email);
+        String emailNormalizado = normalizarEmail(email);
+        Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
         
         // Retorna um token simulado sem salvar caso o e-mail não exista para não expor e-mails cadastrados
         if (usuario == null) {
@@ -160,10 +164,15 @@ public class UsuarioService {
     }
 
     public Usuario buscarPorEmail(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email);
+        String emailNormalizado = normalizarEmail(email);
+        Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
         if (usuario == null) {
             throw new ResourceNotFoundException("Usuário não encontrado.");
         }
         return usuario;
+    }
+
+    private String normalizarEmail(String email) {
+        return email != null ? email.trim().toLowerCase() : "";
     }
 }
