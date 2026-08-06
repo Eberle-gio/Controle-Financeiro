@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
-import { mockService } from '../../services/mockService';
+import { walletService } from '../../services/walletService';
 import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CategoryIcon from '../../components/CategoryIcon';
@@ -19,7 +19,9 @@ import './Dashboard.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const currentUser = authService.getCurrentUser();
+
+  // Estado do Usuário Conectado
+  const [currentUser, setCurrentUser] = useState(() => authService.getCurrentUser());
 
   // Estados de Dados
   const [wallets, setWallets] = useState([]);
@@ -39,6 +41,19 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Busca perfil atualizado do usuário logado na API real do backend
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const profile = await authService.getProfile();
+        setCurrentUser(profile);
+      } catch (err) {
+        // Mantém fallback do JWT se falhar
+      }
+    };
+    fetchUserProfile();
+  }, []);
+
   // Define datas do mês atual por padrão
   useEffect(() => {
     const today = new Date();
@@ -53,11 +68,18 @@ export default function Dashboard() {
     setEndDate(`${year}-${month}-${String(lastDay).padStart(2, '0')}`);
   }, []);
 
-  // Busca carteiras do usuário
+  // Busca carteiras reais do usuário na API Spring Boot
   useEffect(() => {
     const fetchWallets = async () => {
       try {
-        const userWallets = await mockService.getWallets();
+        let userWallets = await walletService.getWallets();
+        
+        // Se o usuário ainda não tiver nenhuma carteira cadastrada no banco, cria uma padrão automaticamente
+        if (userWallets.length === 0) {
+          const defaultWallet = await walletService.createWallet('Minha Carteira', 'Carteira Principal');
+          userWallets = [defaultWallet];
+        }
+
         setWallets(userWallets);
         if (userWallets.length > 0) {
           setActiveWallet(userWallets[0]);
@@ -65,21 +87,21 @@ export default function Dashboard() {
           setLoading(false);
         }
       } catch (err) {
-        setError('Falha ao carregar carteiras');
+        setError('Falha ao carregar carteiras da API');
         setLoading(false);
       }
     };
     fetchWallets();
   }, []);
 
-  // Busca dados de resumo da carteira ativa
+  // Busca dados de resumo da carteira ativa na API real
   const fetchSummary = useCallback(async () => {
     if (!activeWallet) return;
     setLoading(true);
     setError('');
 
     try {
-      const data = await mockService.getWalletSummary(activeWallet.id, startDate, endDate);
+      const data = await walletService.getSummary(activeWallet.id, startDate, endDate);
       setSummary(data);
     } catch (err) {
       setError(err.message || 'Falha ao buscar resumo financeiro');
@@ -93,8 +115,8 @@ export default function Dashboard() {
   }, [fetchSummary]);
 
   // Trata logout
-  const handleLogout = async () => {
-    await mockService.logout();
+  const handleLogout = () => {
+    authService.logout();
     navigate('/login');
   };
 
@@ -103,11 +125,12 @@ export default function Dashboard() {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(value);
+    }).format(value || 0);
   };
 
   // Formata datas
   const formatDate = (dateStr) => {
+    if (!dateStr) return '';
     const [year, month, day] = dateStr.split('-');
     return `${day}/${month}/${year}`;
   };
@@ -118,14 +141,8 @@ export default function Dashboard() {
       return (
         <div className="custom-chart-tooltip">
           <p className="tooltip-date">{formatDate(label)}</p>
-          <p className="tooltip-income">
-            Receita: <span>{formatCurrency(payload[0].value)}</span>
-          </p>
-          {payload[1] && (
-            <p className="tooltip-expense">
-              Despesa: <span>{formatCurrency(payload[1].value)}</span>
-            </p>
-          )}
+          <p className="tooltip-income">Receitas: {formatCurrency(payload[0].value)}</p>
+          <p className="tooltip-expense">Despesas: {formatCurrency(payload[1].value)}</p>
         </div>
       );
     }
@@ -136,191 +153,186 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <Sidebar currentUser={currentUser} activeItem="dashboard" />
 
-      {/* CONTEÚDO PRINCIPAL */}
+      {/* Conteúdo Principal */}
       <main className="dashboard-content">
-        {/* TOPBAR */}
-        <header className="dashboard-header">
-          <div className="welcome-section">
-            <h1>Olá, {currentUser?.name ? currentUser.name.split(' ')[0] : 'Usuário'}!</h1>
-            <p>Veja como estão as suas finanças neste período.</p>
+        <header className="content-header">
+          <div className="title-wrapper">
+            <h1>Visão Geral</h1>
+            <p>Acompanhe o desempenho financeiro das suas carteiras em tempo real.</p>
           </div>
+          
           <div className="header-actions">
-            {/* Seletor de Carteira */}
-            {wallets.length > 1 && (
-              <select
-                value={activeWallet?.id || ''}
-                onChange={(e) => setActiveWallet(wallets.find(w => w.id === Number(e.target.value)))}
-                className="wallet-selector"
-              >
-                {wallets.map(w => (
-                  <option key={w.id} value={w.id}>{w.nome}</option>
-                ))}
-              </select>
-            )}
+            <div className="user-welcome">
+              <div className="avatar">
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <span className="user-name-label">{currentUser?.name || 'Usuário'}</span>
+            </div>
             
-            <button className="logout-btn" onClick={handleLogout}>
-              <LogOut size={16} /> Sair
+            <button onClick={handleLogout} className="logout-btn" title="Sair da Conta">
+              <LogOut size={18} /> Sair
             </button>
           </div>
         </header>
 
-        {/* FILTROS DE DATA */}
-        <section className="filters-section">
-          <div className="filter-group">
-            <label htmlFor="startDate">De:</label>
-            <input
-              id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
+        {/* Seletor de Carteira e Filtro de Datas */}
+        <section className="controls-bar">
+          <div className="wallet-selector-wrapper">
+            <label htmlFor="wallet-select">Carteira:</label>
+            <select
+              id="wallet-select"
+              value={activeWallet?.id || ''}
+              onChange={(e) => {
+                const found = wallets.find(w => w.id === Number(e.target.value));
+                setActiveWallet(found);
+              }}
+              disabled={wallets.length === 0}
+            >
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="filter-group">
-            <label htmlFor="endDate">Até:</label>
-            <input
-              id="endDate"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
+
+          <div className="date-filters">
+            <div className="date-input-group">
+              <label htmlFor="start-date">De:</label>
+              <input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+
+            <div className="date-input-group">
+              <label htmlFor="end-date">Até:</label>
+              <input
+                id="end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+
+            <button onClick={fetchSummary} className="filter-btn" title="Atualizar Dados">
+              <RefreshCw size={16} className={loading ? 'spin-icon' : ''} /> Filtrar
+            </button>
           </div>
-          <button className="refresh-btn" onClick={fetchSummary} disabled={loading}>
-            <RefreshCw size={15} /> Atualizar
-          </button>
         </section>
 
-        {/* MENSAGEM DE ERRO */}
-        {error && <div className="alert alert-danger">{error}</div>}
-
-        {/* INDICADOR DE CARREGAMENTO */}
-        {loading ? (
-          <div className="dashboard-loading-overlay">
-            <span className="spinner"></span>
-            <p>Carregando seus dados financeiros...</p>
+        {error && (
+          <div className="alert alert-danger">
+            {error}
           </div>
-        ) : (
-          <>
-            {/* CARDS DE INDICADORES */}
-            <section className="metrics-grid">
-              {/* CARD SALDO */}
-              <div className="metric-card balance-card">
-                <div className="card-header">
-                  <span>Saldo Geral</span>
-                  <span className="card-icon"><CreditCard size={22} /></span>
-                </div>
-                <div className="card-value">{formatCurrency(summary.balance)}</div>
-                <p className="card-trend">Diferença de entradas e saídas</p>
-              </div>
-
-              {/* CARD RECEITAS */}
-              <div className="metric-card income-card">
-                <div className="card-header">
-                  <span>Receitas</span>
-                  <span className="card-icon"><TrendingUp size={22} /></span>
-                </div>
-                <div className="card-value">{formatCurrency(summary.totalIncome)}</div>
-                <p className="card-trend text-success">Total acumulado no período</p>
-              </div>
-
-              {/* CARD DESPESAS */}
-              <div className="metric-card expense-card">
-                <div className="card-header">
-                  <span>Despesas</span>
-                  <span className="card-icon"><TrendingDown size={22} /></span>
-                </div>
-                <div className="card-value">{formatCurrency(summary.totalExpense)}</div>
-                <p className="card-trend text-danger">Total gasto no período</p>
-              </div>
-            </section>
-
-            {/* GRÁFICOS E LANÇAMENTOS */}
-            <section className="details-grid">
-              {/* GRÁFICO */}
-              <div className="details-card chart-card">
-                <h3>Fluxo de Caixa Diário</h3>
-                <div className="chart-container">
-                  {summary.byDate.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <AreaChart data={summary.byDate} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--success)" stopOpacity={0.2} />
-                            <stop offset="95%" stopColor="var(--success)" stopOpacity={0} />
-                          </linearGradient>
-                          <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--danger)" stopOpacity={0.2} />
-                            <stop offset="95%" stopColor="var(--danger)" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                        <XAxis
-                          dataKey="date"
-                          tickFormatter={(tick) => tick.split('-')[2]} // Mostra apenas o dia no eixo X
-                          stroke="var(--text-muted)"
-                          tickLine={false}
-                        />
-                        <YAxis stroke="var(--text-muted)" tickLine={false} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend iconType="circle" />
-                        <Area
-                          type="monotone"
-                          name="Receitas"
-                          dataKey="receitas"
-                          stroke="var(--success)"
-                          fillOpacity={1}
-                          fill="url(#colorReceita)"
-                          strokeWidth={2}
-                        />
-                        <Area
-                          type="monotone"
-                          name="Despesas"
-                          dataKey="despesas"
-                          stroke="var(--danger)"
-                          fillOpacity={1}
-                          fill="url(#colorDespesa)"
-                          strokeWidth={2}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="empty-state">
-                      <p>Nenhuma transação encontrada no período selecionado.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* LISTA DE LANÇAMENTOS RECENTES */}
-              <div className="details-card transactions-card">
-                <h3>Lançamentos Recentes</h3>
-                <div className="transactions-list">
-                  {summary.recentTransactions.length > 0 ? (
-                    summary.recentTransactions.map((t) => (
-                      <div key={t.id} className="transaction-item">
-                        <div className="transaction-info">
-                          <span className="category-icon-badge">
-                            <CategoryIcon name={t.categoryIcon} size={16} color={t.categoryColor || 'var(--primary)'} />
-                          </span>
-                          <div className="transaction-desc-wrapper">
-                            <span className="transaction-desc">{t.descricao || t.categoryName}</span>
-                            <span className="transaction-date">{formatDate(t.date)}</span>
-                          </div>
-                        </div>
-                        <span className={`transaction-value ${t.tipo === 'RECEITA' ? 'income' : 'expense'}`}>
-                          {t.tipo === 'RECEITA' ? '+' : '-'} {formatCurrency(t.valor)}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="empty-state">
-                      <p>Nenhuma transação cadastrada.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-          </>
         )}
+
+        {/* CARDS DE INDICADORES (KPIs) */}
+        <section className="kpi-grid">
+          <div className="kpi-card balance-card">
+            <div className="kpi-header">
+              <span>Saldo Atual</span>
+              <div className="kpi-icon-wrapper balance">
+                <CreditCard size={20} />
+              </div>
+            </div>
+            <div className="kpi-value">{formatCurrency(summary.balance)}</div>
+            <span className="kpi-subtext">Resultado do período</span>
+          </div>
+
+          <div className="kpi-card income-card">
+            <div className="kpi-header">
+              <span>Total de Receitas</span>
+              <div className="kpi-icon-wrapper income">
+                <TrendingUp size={20} />
+              </div>
+            </div>
+            <div className="kpi-value text-success">{formatCurrency(summary.totalIncome)}</div>
+            <span className="kpi-subtext">Entradas no período</span>
+          </div>
+
+          <div className="kpi-card expense-card">
+            <div className="kpi-header">
+              <span>Total de Despesas</span>
+              <div className="kpi-icon-wrapper expense">
+                <TrendingDown size={20} />
+              </div>
+            </div>
+            <div className="kpi-value text-danger">{formatCurrency(summary.totalExpense)}</div>
+            <span className="kpi-subtext">Saídas no período</span>
+          </div>
+        </section>
+
+        {/* SEÇÃO GRÁFICO E LISTAS DE DETALHES */}
+        <section className="dashboard-details-grid">
+          
+          {/* GRÁFICO DE EVOLUÇÃO TEMPORAL */}
+          <div className="details-card chart-card">
+            <h3>Evolução de Receitas x Despesas</h3>
+            <div className="chart-container">
+              {summary.byDate.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={summary.byDate} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="date" tickFormatter={formatDate} stroke="#9ca3af" fontSize={12} />
+                    <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(val) => `R$${val}`} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Area type="monotone" dataKey="receitas" name="Receitas" stroke="#10b981" fillOpacity={1} fill="url(#colorReceitas)" />
+                    <Area type="monotone" dataKey="despesas" name="Despesas" stroke="#ef4444" fillOpacity={1} fill="url(#colorDespesas)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="empty-state">
+                  <p>Nenhuma transação encontrada no período selecionado.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* LISTA DE LANÇAMENTOS RECENTES */}
+          <div className="details-card transactions-card">
+            <h3>Lançamentos Recentes</h3>
+            <div className="transactions-list">
+              {summary.recentTransactions.length > 0 ? (
+                summary.recentTransactions.map((t) => (
+                  <div key={t.id} className="transaction-item">
+                    <div className="transaction-info">
+                      <span className="category-icon-badge">
+                        <CategoryIcon name={t.categoryIcon} size={16} color={t.categoryColor || 'var(--primary)'} />
+                      </span>
+                      <div className="transaction-desc-wrapper">
+                        <span className="transaction-desc">{t.descricao || t.categoryName}</span>
+                        <span className="transaction-date">{formatDate(t.data || t.date)}</span>
+                      </div>
+                    </div>
+                    <span className={`transaction-value ${t.tipo === 'RECEITA' ? 'income' : 'expense'}`}>
+                      {t.tipo === 'RECEITA' ? '+' : '-'} {formatCurrency(t.valor)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <p>Nenhuma transação cadastrada.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+        </section>
+
       </main>
     </div>
   );
