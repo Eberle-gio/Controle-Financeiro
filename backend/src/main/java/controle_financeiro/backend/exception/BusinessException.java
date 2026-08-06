@@ -1,0 +1,7 @@
+package controle_financeiro.backend.exception;
+
+public class BusinessException extends RuntimeException {
+    public BusinessException(String message) {
+        super(message);
+    }
+}
