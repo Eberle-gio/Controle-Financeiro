@@ -45,6 +45,9 @@ public class TransacaoService {
     private TransacaoRepository transacaoRepository;
 
     @Autowired
+    private CarteiraService carteiraService;
+
+    @Autowired
     private CarteiraRepository carteiraRepository;
 
     @Autowired
@@ -261,11 +264,7 @@ public class TransacaoService {
     }
 
     private MembroCarteira buscarVinculoOuFalhar(Long walletId, Usuario usuario) {
-        Carteira carteira = carteiraRepository.findById(walletId)
-                .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
-
-        return membroCarteiraRepository.findByCarteiraAndUsuario(carteira, usuario)
-                .orElseThrow(() -> new AccessDeniedException("Você não tem acesso a esta carteira."));
+        return carteiraService.buscarVinculoOuFalhar(walletId, usuario);
     }
 
     private MembroCarteira buscarVinculoComPermissaoEscrita(Long walletId, Usuario usuario) {

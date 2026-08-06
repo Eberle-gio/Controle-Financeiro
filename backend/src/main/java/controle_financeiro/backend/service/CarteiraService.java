@@ -184,7 +184,7 @@ public class CarteiraService {
     }
 
     // Método utilitário para validar vinculo do usuário com a carteira
-    private MembroCarteira buscarVinculoOuFalhar(Long carteiraId, Usuario usuario) {
+    public MembroCarteira buscarVinculoOuFalhar(Long carteiraId, Usuario usuario) {
         Carteira carteira = carteiraRepository.findById(carteiraId)
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
 
