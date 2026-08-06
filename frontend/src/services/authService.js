@@ -3,7 +3,7 @@ import api from '../config/axiosConfig';
 class AuthService {
   async register(name, email, password) {
     try {
-      const response = await api.post('/auth/register', { name, email, password });
+      const response = await api.post('/api/auth/register', { name, email, password });
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.response?.data || 'Erro ao realizar cadastro';
@@ -13,7 +13,7 @@ class AuthService {
 
   async login(email, password) {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email, password });
       const { accessToken, tokenType, expiresIn } = response.data;
 
       // Salva o token JWT principal no localStorage
@@ -51,7 +51,7 @@ class AuthService {
 
   async forgotPassword(email) {
     try {
-      const response = await api.post('/auth/forgot-password', { email });
+      const response = await api.post('/api/auth/forgot-password', { email });
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Erro ao solicitar recuperação de senha';
@@ -61,7 +61,7 @@ class AuthService {
 
   async resetPassword(token, newPassword) {
     try {
-      const response = await api.post('/auth/reset-password', { token, newPassword });
+      const response = await api.post('/api/auth/reset-password', { token, newPassword });
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Token inválido ou expirado';

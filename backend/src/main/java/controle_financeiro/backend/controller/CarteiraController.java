@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping({"/api/v1/wallets", "/api/carteiras"})
+@RequestMapping("/api/v1/wallets")
 public class CarteiraController {
 
     @Autowired

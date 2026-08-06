@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping({"/api/v1/wallets/{walletId}", "/api/carteiras/{walletId}"})
+@RequestMapping("/api/v1/wallets/{walletId}")
 public class TransacaoController {
 
     @Autowired
