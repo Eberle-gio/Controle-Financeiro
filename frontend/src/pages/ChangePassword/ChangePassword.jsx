@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
-import { mockService } from '../../services/mockService';
+import { ArrowLeft } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import './ChangePassword.css';
 
@@ -134,19 +134,15 @@ export default function ChangePassword() {
     <div className="change-pass-page">
       <Sidebar currentUser={currentUser} activeItem="senha" />
 
-      {/* Conteúdo Principal */}
+      {/* Conteúdo Principal Centralizado */}
       <main className="change-pass-content">
-        <header className="content-header">
-          <div className="title-wrapper">
+
+        <div className="change-pass-card">
+          <div className="card-header-centered">
             <h1>Alterar Senha</h1>
             <p>Mantenha sua conta segura atualizando sua senha periodicamente.</p>
           </div>
-          <Link to="/dashboard" className="back-btn">
-            ← Voltar ao Dashboard
-          </Link>
-        </header>
 
-        <div className="change-pass-form-container">
           {successMessage && (
             <div className="alert alert-success">
               {successMessage}
@@ -301,7 +297,16 @@ export default function ChangePassword() {
             </button>
 
           </form>
+
+          {/* Botão de retorno centralizado com seta */}
+          <div className="back-dashboard-wrapper">
+            <Link to="/dashboard" className="back-dashboard-btn">
+              <ArrowLeft size={18} />
+              <span>Voltar ao Dashboard</span>
+            </Link>
+          </div>
         </div>
+
       </main>
     </div>
   );

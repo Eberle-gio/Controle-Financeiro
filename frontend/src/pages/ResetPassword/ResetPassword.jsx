@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { mockService } from '../../services/mockService';
+import { authService } from '../../services/authService';
+import { ArrowLeft } from 'lucide-react';
 import './ResetPassword.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -109,7 +110,7 @@ export default function ResetPassword() {
     setErrors({});
 
     try {
-      await mockService.resetPassword(token, password);
+      await authService.resetPassword(token, password);
       setSuccessMessage('Senha redefinida com sucesso! Redirecionando para o login...');
       setTimeout(() => {
         navigate('/login');
@@ -251,8 +252,11 @@ export default function ResetPassword() {
           </button>
         </form>
 
-        <div className="back-link">
-          <Link to="/login">Voltar para o Login</Link>
+        <div className="back-link-wrapper">
+          <Link to="/login" className="back-centered-btn">
+            <ArrowLeft size={18} />
+            <span>Voltar para o Login</span>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mockService } from '../../services/mockService';
+import { authService } from '../../services/authService';
+import { ArrowLeft } from 'lucide-react';
 import './ForgotPassword.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -36,8 +37,8 @@ export default function ForgotPassword() {
     setDebugToken('');
 
     try {
-      const response = await mockService.forgotPassword(email);
-      setMessage(response.message);
+      const response = await authService.forgotPassword(email);
+      setMessage(response.message || 'Se o e-mail estiver cadastrado, você receberá instruções de redefinição.');
       if (response.debugToken) {
         setDebugToken(response.debugToken);
       }
@@ -54,7 +55,7 @@ export default function ForgotPassword() {
         <div className="forgot-header">
           <img src={logo} alt="NodeBank Logo" className="brand-logo" />
           <h2>Recuperar Senha</h2>
-          <p>Digite seu e-mail cadastrado e enviaremos um link de recuperação.</p>
+          <p>Digite seu e-mail cadastrado e enviaremos as instruções para você redefinir sua senha.</p>
         </div>
 
         {message && (
@@ -75,7 +76,7 @@ export default function ForgotPassword() {
             <input
               id="email"
               type="email"
-              placeholder="Digite seu e-mail"
+              placeholder="exemplo@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={submitAttempted && errors.email ? 'input-error' : ''}
@@ -97,19 +98,21 @@ export default function ForgotPassword() {
           </button>
         </form>
 
-        {/* ATENÇÃO: Box de Depuração exclusivo para Mock/Ambiente de Testes */}
         {debugToken && (
           <div className="debug-box">
-            <h4>💡 Modo de Teste (Mock Local)</h4>
-            <p>Como não enviamos e-mails reais, clique no link abaixo para ir direto à tela de redefinição com o token gerado:</p>
+            <h4>💡 Modo de Teste (Token Gerado)</h4>
+            <p>Clique no link abaixo para testar a tela de redefinição:</p>
             <Link to={`/redefinir-senha/${debugToken}`} className="debug-link">
               Redefinir Senha (Token: {debugToken})
             </Link>
           </div>
         )}
 
-        <div className="back-link">
-          <Link to="/login">Voltar para o Login</Link>
+        <div className="back-link-wrapper">
+          <Link to="/login" className="back-centered-btn">
+            <ArrowLeft size={18} />
+            <span>Voltar para o Login</span>
+          </Link>
         </div>
       </div>
     </div>

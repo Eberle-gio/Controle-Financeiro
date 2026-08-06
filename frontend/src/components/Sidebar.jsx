@@ -8,6 +8,7 @@ import {
   Wallet
 } from 'lucide-react';
 import logo from '../assets/images/Logo.svg';
+import './Sidebar.css';
 
 /**
  * Sidebar compartilhada por todas as páginas autenticadas.
@@ -48,8 +49,8 @@ export default function Sidebar({ currentUser, activeItem = 'dashboard' }) {
           {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
         </div>
         <div className="user-info">
-          <span className="user-name">{currentUser?.name}</span>
-          <span className="user-email">{currentUser?.email}</span>
+          <span className="user-name">{currentUser?.name || 'Usuário'}</span>
+          <span className="user-email">{currentUser?.email || ''}</span>
         </div>
       </div>
     </aside>
