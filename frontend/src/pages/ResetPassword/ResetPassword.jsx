@@ -187,15 +187,9 @@ export default function ResetPassword() {
             {password && (
               <div className="password-strength-meter">
                 <div className="strength-bar-bg">
-                  <div
-                    className="strength-bar-fill"
-                    style={{
-                      width: strength.percent,
-                      backgroundColor: strength.color
-                    }}
-                  ></div>
+                  <div className={`strength-bar-fill score-${strength.score}`}></div>
                 </div>
-                <span className="strength-label" style={{ color: strength.color }}>
+                <span className={`strength-label score-${strength.score}`}>
                   Força da senha: <strong>{strength.label}</strong>
                 </span>
               </div>

@@ -297,11 +297,8 @@ export default function Dashboard() {
                     summary.recentTransactions.map((t) => (
                       <div key={t.id} className="transaction-item">
                         <div className="transaction-info">
-                          <span
-                            className="category-icon-badge"
-                            style={{ backgroundColor: `${t.categoryColor}20`, color: t.categoryColor }}
-                          >
-                            <CategoryIcon name={t.categoryIcon} size={16} color={t.categoryColor} />
+                          <span className="category-icon-badge">
+                            <CategoryIcon name={t.categoryIcon} size={16} color={t.categoryColor || 'var(--primary)'} />
                           </span>
                           <div className="transaction-desc-wrapper">
                             <span className="transaction-desc">{t.descricao || t.categoryName}</span>

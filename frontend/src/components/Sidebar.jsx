@@ -17,7 +17,7 @@ export default function Sidebar({ currentUser, activeItem = 'dashboard' }) {
   return (
     <aside className="app-sidebar">
       <div className="sidebar-brand">
-        <img src={logo} alt="NodeBank" className="logo-icon" style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+        <img src={logo} alt="NodeBank" className="logo-icon" />
         <h2>NodeBank</h2>
       </div>
 

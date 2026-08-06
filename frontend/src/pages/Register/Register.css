@@ -214,10 +214,20 @@ form {
   transition: width 0.4s ease, background-color 0.4s ease;
 }
 
+.strength-bar-fill.score-0 { width: 20%; background-color: #ef4444; }
+.strength-bar-fill.score-1 { width: 40%; background-color: #f59e0b; }
+.strength-bar-fill.score-2 { width: 70%; background-color: #3b82f6; }
+.strength-bar-fill.score-3 { width: 100%; background-color: #10b981; }
+
 .strength-label {
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
+
+.strength-label.score-0 { color: #ef4444; }
+.strength-label.score-1 { color: #f59e0b; }
+.strength-label.score-2 { color: #3b82f6; }
+.strength-label.score-3 { color: #10b981; }
 
 .strength-label strong {
   font-weight: 600;
