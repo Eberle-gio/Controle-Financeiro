@@ -7,7 +7,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "membros_carteira")
+@Table(
+    name = "membros_carteira",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_carteira_usuario", columnNames = {"carteira_id", "usuario_id"})
+    }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,17 +22,17 @@ public class MembroCarteira {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "carteira_id", nullable = false)
     private Carteira carteira;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    // Papel do membro na carteira: DONO ou MEMBRO
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String papel;
+    private PapelCarteira papel;
 
     @Column(name = "entrado_em", nullable = false, updatable = false)
     private LocalDateTime entradoEm;
