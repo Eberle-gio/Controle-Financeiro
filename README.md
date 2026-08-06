@@ -35,6 +35,73 @@ Controle-Financeiro/
     └── package.json
 ```
 
+### 📊 Diagrama de Entidades (Modelagem de Dados JPA)
+
+```mermaid
+erDiagram
+    USUARIO {
+        Long id PK
+        String name
+        String email UK
+        String password
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+
+    CARTEIRA {
+        Long id PK
+        String nome
+        String descricao
+        LocalDateTime criadoEm
+        Long dono_id FK
+    }
+
+    MEMBRO_CARTEIRA {
+        Long id PK
+        Long carteira_id FK
+        Long usuario_id FK
+        PapelCarteira papel
+        LocalDateTime entradoEm
+    }
+
+    CATEGORIA {
+        Long id PK
+        String name
+        TipoMovimentacao tipo
+        String cor
+        String icone
+        Long usuario_id FK
+    }
+
+    TRANSACAO {
+        Long id PK
+        BigDecimal valor
+        String descricao
+        TipoMovimentacao tipo
+        LocalDate data
+        Long carteira_id FK
+        Long categoria_id FK
+        Long criado_por_id FK
+    }
+
+    TOKEN_REDEFINICAO_SENHA {
+        Long id PK
+        String token UK
+        LocalDateTime expiraEm
+        boolean utilizado
+        Long usuario_id FK
+    }
+
+    USUARIO ||--o{ CARTEIRA : "dono de"
+    USUARIO ||--o{ MEMBRO_CARTEIRA : "participa como membro em"
+    CARTEIRA ||--o{ MEMBRO_CARTEIRA : "possui membros"
+    USUARIO ||--o{ CATEGORIA : "possui categorias"
+    CARTEIRA ||--o{ TRANSACAO : "possui transacoes"
+    CATEGORIA ||--o{ TRANSACAO : "classifica transacoes"
+    USUARIO ||--o{ TRANSACAO : "registra transacoes"
+    USUARIO ||--o{ TOKEN_REDEFINICAO_SENHA : "possui tokens"
+```
+
 ---
 
 ## 🛠️ Pré-requisitos
