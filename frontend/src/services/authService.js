@@ -18,12 +18,27 @@ class AuthService {
 
       // Salva o token JWT principal no localStorage
       localStorage.setItem('accessToken', accessToken);
+
+      let userObj = { email, name: email.split('@')[0] };
+      try {
+        const payloadBase64 = accessToken.split('.')[1];
+        const decodedJson = atob(payloadBase64);
+        const payload = JSON.parse(decodedJson);
+        userObj = {
+          id: payload.sub,
+          email: payload.email || email,
+          name: payload.name || email.split('@')[0]
+        };
+      } catch (e) {
+        // Fallback se não conseguir decodificar
+      }
       
       const session = {
         token: accessToken,
         accessToken,
         tokenType,
-        expiresIn
+        expiresIn,
+        user: userObj
       };
       localStorage.setItem('current_session', JSON.stringify(session));
 
@@ -71,6 +86,17 @@ class AuthService {
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Erro ao carregar perfil do usuário';
       throw new Error(errorMessage);
+    }
+  }
+
+  getCurrentUser() {
+    const session = localStorage.getItem('current_session');
+    if (!session) return null;
+    try {
+      const parsed = JSON.parse(session);
+      return parsed?.user || { name: 'Usuário', email: '' };
+    } catch {
+      return null;
     }
   }
 

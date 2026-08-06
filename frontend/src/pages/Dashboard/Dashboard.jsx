@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../../services/authService';
 import { mockService } from '../../services/mockService';
 import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
@@ -18,7 +19,7 @@ import './Dashboard.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const currentUser = mockService.getCurrentUser();
+  const currentUser = authService.getCurrentUser();
 
   // Estados de Dados
   const [wallets, setWallets] = useState([]);

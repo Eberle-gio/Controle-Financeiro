@@ -196,12 +196,16 @@ export const mockService = {
 
   getCurrentUser: () => {
     const session = getStorageData('current_session', null);
-    return session ? session.user : null;
+    if (!session) return null;
+    if (session.user) return session.user;
+    return { name: 'Usuário', email: '' };
   },
 
   getToken: () => {
+    const token = localStorage.getItem('accessToken');
+    if (token) return token;
     const session = getStorageData('current_session', null);
-    return session ? session.token : null;
+    return session ? (session.accessToken || session.token) : null;
   },
 
   isAuthenticated: () => {

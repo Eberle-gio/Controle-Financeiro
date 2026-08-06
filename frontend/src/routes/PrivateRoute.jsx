@@ -1,9 +1,9 @@
 import { Navigate } from 'react-router-dom';
-import { mockService } from '../services/mockService';
+import { authService } from '../services/authService';
 
 export default function PrivateRoute({ children }) {
   // Se não estiver autenticado, redireciona para a tela de login
-  if (!mockService.isAuthenticated()) {
+  if (!authService.isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
 

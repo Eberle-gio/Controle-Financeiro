@@ -7,7 +7,7 @@ import './ChangePassword.css';
 
 export default function ChangePassword() {
   const navigate = useNavigate();
-  const currentUser = mockService.getCurrentUser();
+  const currentUser = authService.getCurrentUser();
 
   // Estados dos Campos
   const [currentPassword, setCurrentPassword] = useState('');
