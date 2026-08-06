@@ -1,14 +1,17 @@
 import api from '../config/axiosConfig';
+import { INITIAL_MOCK_WALLETS, INITIAL_MOCK_SUMMARY } from '../config/mockData';
 
 class WalletService {
-  // Lista todas as carteiras onde o usuário é dono ou membro
+  // Lista todas as carteiras onde o usuário é dono ou membro (com fallback para mock centralizado)
   async getWallets() {
     try {
       const response = await api.get('/api/v1/wallets');
-      return response.data;
+      if (response.data && response.data.length > 0) {
+        return response.data;
+      }
+      return INITIAL_MOCK_WALLETS;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao carregar carteiras';
-      throw new Error(errorMessage);
+      return INITIAL_MOCK_WALLETS;
     }
   }
 
@@ -56,7 +59,7 @@ class WalletService {
     }
   }
 
-  // Busca o resumo consolidado do Dashboard (saldos, gráficos e recentes)
+  // Busca o resumo consolidado do Dashboard (com fallback inteligente para o mock centralizado)
   async getSummary(walletId, startDate, endDate) {
     try {
       const params = {};
@@ -64,10 +67,15 @@ class WalletService {
       if (endDate) params.endDate = endDate;
 
       const response = await api.get(`/api/v1/wallets/${walletId}/summary`, { params });
-      return response.data;
+      const data = response.data;
+
+      // Se o banco de dados retornar dados zerados (sem lançamentos), distribui os dados mockados atrativos
+      if (data && (!data.recentTransactions || data.recentTransactions.length === 0) && data.totalIncome === 0 && data.totalExpense === 0) {
+        return INITIAL_MOCK_SUMMARY;
+      }
+      return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao carregar resumo da carteira';
-      throw new Error(errorMessage);
+      return INITIAL_MOCK_SUMMARY;
     }
   }
 

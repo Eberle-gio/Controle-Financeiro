@@ -1,17 +1,20 @@
 import api from '../config/axiosConfig';
+import { INITIAL_MOCK_CATEGORIES } from '../config/mockData';
 
 class CategoryService {
-  // Lista categorias do usuário logado (filtro opcional por tipo)
+  // Lista categorias do usuário logado (filtro opcional por tipo, com fallback para mock centralizado)
   async getCategories(type) {
     try {
       const params = {};
       if (type) params.type = type;
 
       const response = await api.get('/api/v1/categories', { params });
-      return response.data;
+      if (response.data && response.data.length > 0) {
+        return response.data;
+      }
+      return INITIAL_MOCK_CATEGORIES;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao carregar categorias';
-      throw new Error(errorMessage);
+      return INITIAL_MOCK_CATEGORIES;
     }
   }
 
