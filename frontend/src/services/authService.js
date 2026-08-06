@@ -1,44 +1,75 @@
-import BaseService from './BaseService';
+import api from '../config/axiosConfig';
 
-class AuthService extends BaseService {
-  constructor() {
-    super('/auth');
-  }
-
+class AuthService {
   async register(name, email, password) {
     try {
-      const resposta = await this.api.post(`${this.endPoint}/register`, { name, email, password });
-      return resposta.data;
+      const response = await api.post('/auth/register', { name, email, password });
+      return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data || 'Erro ao realizar cadastro';
+      const errorMessage = error.response?.data?.message || error.response?.data || 'Erro ao realizar cadastro';
       throw new Error(errorMessage);
     }
   }
 
   async login(email, password) {
     try {
-      const resposta = await this.api.post(`${this.endPoint}/login`, { email, password });
-      const session = resposta.data;
+      const response = await api.post('/auth/login', { email, password });
+      const { accessToken, tokenType, expiresIn } = response.data;
 
-      // Salva a sessão no localStorage no mesmo formato que o mockService usava
-      // para manter compatibilidade com o resto do frontend (Dashboard, PrivateRoute, etc.)
+      // Salva o token JWT principal no localStorage
+      localStorage.setItem('accessToken', accessToken);
+      
+      const session = {
+        token: accessToken,
+        accessToken,
+        tokenType,
+        expiresIn
+      };
       localStorage.setItem('current_session', JSON.stringify(session));
 
       return session;
     } catch (error) {
-      const errorMessage = error.response?.data || 'Credenciais inválidas';
+      const errorMessage = error.response?.data?.message || error.response?.data || 'Credenciais inválidas';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async forgotPassword(email) {
+    try {
+      const response = await api.post('/auth/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Erro ao solicitar recuperação de senha';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async resetPassword(token, newPassword) {
+    try {
+      const response = await api.post('/auth/reset-password', { token, newPassword });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Token inválido ou expirado';
       throw new Error(errorMessage);
     }
   }
 
   isAuthenticated() {
+    const token = localStorage.getItem('accessToken');
+    if (token) return true;
+
     const session = localStorage.getItem('current_session');
     if (!session) return false;
-    const parsed = JSON.parse(session);
-    return !!parsed?.token;
+    try {
+      const parsed = JSON.parse(session);
+      return !!(parsed?.accessToken || parsed?.token);
+    } catch {
+      return false;
+    }
   }
 
   logout() {
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('current_session');
   }
 }
