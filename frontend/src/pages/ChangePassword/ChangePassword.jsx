@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../../services/authService';
 import { mockService } from '../../services/mockService';
 import Sidebar from '../../components/Sidebar';
 import './ChangePassword.css';
@@ -110,7 +111,7 @@ export default function ChangePassword() {
     setErrors({});
 
     try {
-      await mockService.changePassword(currentPassword, newPassword);
+      await authService.changePassword(currentPassword, newPassword);
       setSuccessMessage('Senha alterada com sucesso!');
       
       // Limpa formulário

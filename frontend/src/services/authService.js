@@ -54,6 +54,26 @@ class AuthService {
     }
   }
 
+  async changePassword(currentPassword, newPassword) {
+    try {
+      const response = await api.patch('/api/v1/users/me/password', { currentPassword, newPassword });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Erro ao alterar senha';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async getProfile() {
+    try {
+      const response = await api.get('/api/v1/users/me');
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Erro ao carregar perfil do usuário';
+      throw new Error(errorMessage);
+    }
+  }
+
   isAuthenticated() {
     const token = localStorage.getItem('accessToken');
     if (token) return true;
