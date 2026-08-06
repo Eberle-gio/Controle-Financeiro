@@ -94,7 +94,7 @@ public class TransacaoService {
                 predicates.add(cb.equal(root.get("categoria").get("id"), categoryId));
             }
             if (type != null && !type.isBlank()) {
-                TipoMovimentacao tipoEnum = parseTipo(type);
+                TipoMovimentacao tipoEnum = TipoMovimentacao.fromString(type);
                 predicates.add(cb.equal(root.get("tipo"), tipoEnum));
             }
 
@@ -292,16 +292,5 @@ public class TransacaoService {
                 .data(t.getData())
                 .criadoEm(t.getCriadoEm())
                 .build();
-    }
-
-    private TipoMovimentacao parseTipo(String typeStr) {
-        String norm = typeStr.toUpperCase().trim();
-        if ("INCOME".equals(norm)) return TipoMovimentacao.RECEITA;
-        if ("EXPENSE".equals(norm)) return TipoMovimentacao.DESPESA;
-        try {
-            return TipoMovimentacao.valueOf(norm);
-        } catch (IllegalArgumentException e) {
-            throw new BusinessException("Tipo inválido. Use INCOME, EXPENSE, RECEITA ou DESPESA.");
-        }
     }
 }

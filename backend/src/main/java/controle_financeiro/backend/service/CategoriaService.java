@@ -44,7 +44,7 @@ public class CategoriaService {
         List<Categoria> categorias;
 
         if (tipo != null && !tipo.isBlank()) {
-            TipoMovimentacao tipoEnum = parseTipoMovimentacao(tipo);
+            TipoMovimentacao tipoEnum = TipoMovimentacao.fromString(tipo);
             categorias = categoriaRepository.findByUsuarioAndTipo(usuario, tipoEnum);
         } else {
             categorias = categoriaRepository.findByUsuario(usuario);
@@ -124,16 +124,5 @@ public class CategoriaService {
                 .cor(c.getCor())
                 .icone(c.getIcone())
                 .build();
-    }
-
-    private TipoMovimentacao parseTipoMovimentacao(String tipoStr) {
-        String normalizado = tipoStr.toUpperCase();
-        if ("INCOME".equals(normalizado)) return TipoMovimentacao.RECEITA;
-        if ("EXPENSE".equals(normalizado)) return TipoMovimentacao.DESPESA;
-        try {
-            return TipoMovimentacao.valueOf(normalizado);
-        } catch (IllegalArgumentException e) {
-            throw new BusinessException("Tipo inválido. Use INCOME, EXPENSE, RECEITA ou DESPESA.");
-        }
     }
 }
