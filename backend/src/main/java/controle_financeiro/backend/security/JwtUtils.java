@@ -28,11 +28,12 @@ public class JwtUtils {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String gerarToken(Long userId, String email) {
+    public String gerarToken(Long userId, String email, String name) {
         Date agora = new Date();
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("email", email)
+                .claim("name", name)
                 .issuedAt(agora)
                 .expiration(new Date(agora.getTime() + jwtExpirationMs))
                 .signWith(key)
@@ -45,6 +46,10 @@ public class JwtUtils {
 
     public String obterEmailDoToken(String token) {
         return extrairClaims(token).get("email", String.class);
+    }
+
+    public String obterNomeDoToken(String token) {
+        return extrairClaims(token).get("name", String.class);
     }
 
     public boolean validarToken(String token) {

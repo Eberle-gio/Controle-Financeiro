@@ -84,7 +84,7 @@ public class UsuarioService {
             throw new BusinessException("Credenciais inválidas.");
         }
 
-        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail());
+        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail(), usuario.getName());
 
         return LoginResponse.builder()
                 .accessToken(token)
