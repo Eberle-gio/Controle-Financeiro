@@ -1,6 +1,6 @@
 package controle_financeiro.backend.dto;
 
-import controle_financeiro.backend.model.PapelCarteira;
+import controle_financeiro.backend.model.TipoPermissao;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +17,6 @@ public class WalletResponse {
     private String descricao;
     private Long donoId;
     private String donoNome;
-    private PapelCarteira meuPapel;
+    private TipoPermissao meuPapel;
     private LocalDateTime criadoEm;
 }

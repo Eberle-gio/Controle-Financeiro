@@ -32,7 +32,7 @@ public class MembroCarteira {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PapelCarteira papel;
+    private TipoPermissao papel;
 
     @Column(name = "entrado_em", nullable = false, updatable = false)
     private LocalDateTime entradoEm;

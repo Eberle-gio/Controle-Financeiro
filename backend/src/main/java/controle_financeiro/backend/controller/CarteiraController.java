@@ -1,7 +1,7 @@
 package controle_financeiro.backend.controller;
 
 import controle_financeiro.backend.dto.*;
-import controle_financeiro.backend.model.PapelCarteira;
+import controle_financeiro.backend.model.TipoPermissao;
 import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.service.CarteiraService;
 import jakarta.validation.Valid;
@@ -88,7 +88,7 @@ public class CarteiraController {
                                                                     @PathVariable Long id,
                                                                     @PathVariable Long userId,
                                                                     @Valid @RequestBody UpdateRoleRequest request) {
-        PapelCarteira novoPapel = PapelCarteira.fromString(request.getPapel());
+        TipoPermissao novoPapel = TipoPermissao.fromString(request.getPapel());
         WalletMemberResponse atualizado = carteiraService.alterarPapelMembro(id, userId, novoPapel, usuario);
         return ResponseEntity.ok(atualizado);
     }

@@ -1,6 +1,6 @@
 package controle_financeiro.backend.dto;
 
-import controle_financeiro.backend.model.PapelCarteira;
+import controle_financeiro.backend.model.TipoPermissao;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -16,5 +16,5 @@ public class WalletMemberRequest {
     @Email(message = "E-mail em formato inválido")
     private String email;
 
-    private PapelCarteira papel;
+    private TipoPermissao papel;
 }

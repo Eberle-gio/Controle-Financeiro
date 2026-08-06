@@ -1,11 +1,11 @@
 package controle_financeiro.backend.model;
 
-public enum PapelCarteira {
+public enum TipoPermissao {
     DONO,
     EDITOR,
     VISUALIZADOR;
 
-    public static PapelCarteira fromString(String text) {
+    public static TipoPermissao fromString(String text) {
         if (text == null || text.isBlank()) {
             return VISUALIZADOR;
         }
@@ -13,7 +13,7 @@ public enum PapelCarteira {
         if ("OWNER".equals(normalizado)) return DONO;
         if ("VIEWER".equals(normalizado)) return VISUALIZADOR;
         try {
-            return PapelCarteira.valueOf(normalizado);
+            return TipoPermissao.valueOf(normalizado);
         } catch (IllegalArgumentException e) {
             return VISUALIZADOR;
         }

@@ -54,10 +54,10 @@ public class CarteiraService {
         MembroCarteira membroDono = new MembroCarteira();
         membroDono.setCarteira(salva);
         membroDono.setUsuario(usuario);
-        membroDono.setPapel(PapelCarteira.DONO);
+        membroDono.setPapel(TipoPermissao.DONO);
         membroCarteiraRepository.save(membroDono);
 
-        return paraWalletResponse(salva, PapelCarteira.DONO);
+        return paraWalletResponse(salva, TipoPermissao.DONO);
     }
 
     // Atualiza nome/descrição da carteira (somente DONO ou EDITOR)
@@ -65,7 +65,7 @@ public class CarteiraService {
     public WalletResponse atualizarCarteira(Long id, WalletRequest request, Usuario usuario) {
         MembroCarteira vinculo = buscarVinculoOuFalhar(id, usuario);
 
-        if (vinculo.getPapel() == PapelCarteira.VISUALIZADOR) {
+        if (vinculo.getPapel() == TipoPermissao.VISUALIZADOR) {
             throw new AccessDeniedException("Você não tem permissão de edição nesta carteira.");
         }
 
@@ -82,7 +82,7 @@ public class CarteiraService {
     public void excluirCarteira(Long id, Usuario usuario) {
         MembroCarteira vinculo = buscarVinculoOuFalhar(id, usuario);
 
-        if (vinculo.getPapel() != PapelCarteira.DONO) {
+        if (vinculo.getPapel() != TipoPermissao.DONO) {
             throw new AccessDeniedException("Apenas o dono da carteira pode excluí-la.");
         }
 
@@ -108,7 +108,7 @@ public class CarteiraService {
     public WalletMemberResponse adicionarMembro(Long carteiraId, WalletMemberRequest request, Usuario usuario) {
         MembroCarteira vinculoDono = buscarVinculoOuFalhar(carteiraId, usuario);
 
-        if (vinculoDono.getPapel() != PapelCarteira.DONO) {
+        if (vinculoDono.getPapel() != TipoPermissao.DONO) {
             throw new AccessDeniedException("Apenas o dono da carteira pode adicionar membros.");
         }
 
@@ -123,7 +123,7 @@ public class CarteiraService {
             throw new DataIntegrityViolationException("O usuário já é membro desta carteira.");
         }
 
-        PapelCarteira papel = request.getPapel() != null ? request.getPapel() : PapelCarteira.EDITOR;
+        TipoPermissao papel = request.getPapel() != null ? request.getPapel() : TipoPermissao.EDITOR;
 
         MembroCarteira novoMembro = new MembroCarteira();
         novoMembro.setCarteira(carteira);
@@ -136,10 +136,10 @@ public class CarteiraService {
 
     // Altera o papel de um membro (somente DONO)
     @Transactional
-    public WalletMemberResponse alterarPapelMembro(Long carteiraId, Long membroUsuarioId, PapelCarteira novoPapel, Usuario usuario) {
+    public WalletMemberResponse alterarPapelMembro(Long carteiraId, Long membroUsuarioId, TipoPermissao novoPapel, Usuario usuario) {
         MembroCarteira vinculoDono = buscarVinculoOuFalhar(carteiraId, usuario);
 
-        if (vinculoDono.getPapel() != PapelCarteira.DONO) {
+        if (vinculoDono.getPapel() != TipoPermissao.DONO) {
             throw new AccessDeniedException("Apenas o dono da carteira pode alterar papéis dos membros.");
         }
 
@@ -149,7 +149,7 @@ public class CarteiraService {
         MembroCarteira alvoVinculo = membroCarteiraRepository.findByCarteiraAndUsuario(vinculoDono.getCarteira(), alvoUsuario)
                 .orElseThrow(() -> new ResourceNotFoundException("O usuário não é membro desta carteira."));
 
-        if (alvoVinculo.getPapel() == PapelCarteira.DONO) {
+        if (alvoVinculo.getPapel() == TipoPermissao.DONO) {
             throw new BusinessException("O papel do dono da carteira não pode ser alterado.");
         }
 
@@ -163,7 +163,7 @@ public class CarteiraService {
     public void removerMembro(Long carteiraId, Long membroUsuarioId, Usuario usuario) {
         MembroCarteira vinculoSolicitante = buscarVinculoOuFalhar(carteiraId, usuario);
 
-        boolean ehODono = vinculoSolicitante.getPapel() == PapelCarteira.DONO;
+        boolean ehODono = vinculoSolicitante.getPapel() == TipoPermissao.DONO;
         boolean ehOSroprioMembro = usuario.getId().equals(membroUsuarioId);
 
         if (!ehODono && !ehOSroprioMembro) {
@@ -176,7 +176,7 @@ public class CarteiraService {
         MembroCarteira alvoVinculo = membroCarteiraRepository.findByCarteiraAndUsuario(vinculoSolicitante.getCarteira(), alvoUsuario)
                 .orElseThrow(() -> new ResourceNotFoundException("O usuário não é membro desta carteira."));
 
-        if (alvoVinculo.getPapel() == PapelCarteira.DONO) {
+        if (alvoVinculo.getPapel() == TipoPermissao.DONO) {
             throw new BusinessException("O dono da carteira não pode ser removido.");
         }
 
@@ -192,7 +192,7 @@ public class CarteiraService {
                 .orElseThrow(() -> new AccessDeniedException("Você não tem acesso a esta carteira."));
     }
 
-    private WalletResponse paraWalletResponse(Carteira c, PapelCarteira meuPapel) {
+    private WalletResponse paraWalletResponse(Carteira c, TipoPermissao meuPapel) {
         return WalletResponse.builder()
                 .id(c.getId())
                 .nome(c.getNome())

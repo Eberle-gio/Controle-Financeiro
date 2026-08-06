@@ -28,8 +28,8 @@ import controle_financeiro.backend.exception.ResourceNotFoundException;
 import controle_financeiro.backend.model.Carteira;
 import controle_financeiro.backend.model.Categoria;
 import controle_financeiro.backend.model.MembroCarteira;
-import controle_financeiro.backend.model.PapelCarteira;
 import controle_financeiro.backend.model.TipoMovimentacao;
+import controle_financeiro.backend.model.TipoPermissao;
 import controle_financeiro.backend.model.Transacao;
 import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.repository.CarteiraRepository;
@@ -269,7 +269,7 @@ public class TransacaoService {
 
     private MembroCarteira buscarVinculoComPermissaoEscrita(Long walletId, Usuario usuario) {
         MembroCarteira vinculo = buscarVinculoOuFalhar(walletId, usuario);
-        if (vinculo.getPapel() == PapelCarteira.VISUALIZADOR) {
+        if (vinculo.getPapel() == TipoPermissao.VISUALIZADOR) {
             throw new AccessDeniedException("Você não tem permissão para modificar transações nesta carteira.");
         }
         return vinculo;
