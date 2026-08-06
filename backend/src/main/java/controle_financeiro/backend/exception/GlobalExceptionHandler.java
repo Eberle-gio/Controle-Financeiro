@@ -17,46 +17,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<StandardError> resourceNotFound(ResourceNotFoundException e) {
-        StandardError err = new StandardError(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                e.getMessage()
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+        return buildError(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<StandardError> businessError(BusinessException e) {
-        StandardError err = new StandardError(
-                LocalDateTime.now(),
-                HttpStatus.UNPROCESSABLE_ENTITY.value(),
-                "Unprocessable Entity",
-                e.getMessage()
-        );
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(err);
+        return buildError(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<StandardError> accessDenied(AccessDeniedException e) {
-        StandardError err = new StandardError(
-                LocalDateTime.now(),
-                HttpStatus.FORBIDDEN.value(),
-                "Forbidden",
-                e.getMessage()
-        );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
+        return buildError(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<StandardError> illegalArgument(IllegalArgumentException e) {
-        StandardError err = new StandardError(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                e.getMessage()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+        return buildError(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -64,24 +40,21 @@ public class GlobalExceptionHandler {
         String mensagens = e.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
-
-        StandardError err = new StandardError(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                mensagens
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+        return buildError(HttpStatus.BAD_REQUEST, mensagens);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<StandardError> dataIntegrityViolation(DataIntegrityViolationException e) {
+        return buildError(HttpStatus.CONFLICT, "Conflito de integridade dos dados (ex: e-mail já cadastrado)");
+    }
+
+    private ResponseEntity<StandardError> buildError(HttpStatus status, String message) {
         StandardError err = new StandardError(
                 LocalDateTime.now(),
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                "Conflito de integridade dos dados (ex: e-mail já cadastrado)"
+                status.value(),
+                status.getReasonPhrase(),
+                message
         );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+        return ResponseEntity.status(status).body(err);
     }
 }
