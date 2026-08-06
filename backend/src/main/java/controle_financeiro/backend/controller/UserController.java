@@ -19,13 +19,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getPerfil(@AuthenticationPrincipal Usuario usuario) {
-        UserResponseDTO dto = UserResponseDTO.builder()
-                .id(usuario.getId())
-                .name(usuario.getName())
-                .email(usuario.getEmail())
-                .createdAt(usuario.getCreatedAt())
-                .build();
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(UserResponseDTO.fromEntity(usuario));
     }
 
     @PutMapping("/me")

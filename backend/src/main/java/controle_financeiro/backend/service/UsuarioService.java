@@ -71,12 +71,7 @@ public class UsuarioService {
             }
         }
 
-        return UserResponseDTO.builder()
-                .id(usuarioSalvo.getId())
-                .name(usuarioSalvo.getName())
-                .email(usuarioSalvo.getEmail())
-                .createdAt(usuarioSalvo.getCreatedAt())
-                .build();
+        return UserResponseDTO.fromEntity(usuarioSalvo);
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -155,12 +150,7 @@ public class UsuarioService {
         }
         Usuario salvo = usuarioRepository.save(usuario);
 
-        return UserResponseDTO.builder()
-                .id(salvo.getId())
-                .name(salvo.getName())
-                .email(salvo.getEmail())
-                .createdAt(salvo.getCreatedAt())
-                .build();
+        return UserResponseDTO.fromEntity(salvo);
     }
 
     public Usuario buscarPorEmail(String email) {
