@@ -87,9 +87,8 @@ public class CarteiraController {
     public ResponseEntity<WalletMemberResponse> alterarPapelMembro(@AuthenticationPrincipal Usuario usuario,
                                                                     @PathVariable Long id,
                                                                     @PathVariable Long userId,
-                                                                    @RequestBody Map<String, String> body) {
-        String papelStr = body.get("papel");
-        PapelCarteira novoPapel = PapelCarteira.fromString(papelStr);
+                                                                    @Valid @RequestBody UpdateRoleRequest request) {
+        PapelCarteira novoPapel = PapelCarteira.fromString(request.getPapel());
         WalletMemberResponse atualizado = carteiraService.alterarPapelMembro(id, userId, novoPapel, usuario);
         return ResponseEntity.ok(atualizado);
     }
