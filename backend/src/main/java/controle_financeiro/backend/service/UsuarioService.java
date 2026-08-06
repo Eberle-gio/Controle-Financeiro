@@ -1,12 +1,23 @@
 package controle_financeiro.backend.service;
 
+import controle_financeiro.backend.dto.*;
+import controle_financeiro.backend.exception.*;
+import controle_financeiro.backend.exception.ResourceNotFoundException;
+import controle_financeiro.backend.model.PasswordResetToken;
 import controle_financeiro.backend.model.Usuario;
+import controle_financeiro.backend.repository.PasswordResetTokenRepository;
 import controle_financeiro.backend.repository.UsuarioRepository;
+import controle_financeiro.backend.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class UsuarioService {
@@ -15,53 +26,144 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
+    private PasswordResetTokenRepository resetTokenRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired(required = false)
     private EnvioEmailSender emailService;
 
     @Lazy
     @Autowired
     private CategoriaService categoriaService;
 
-    public Usuario cadastrar(Usuario usuario) {
-        // Verifica se o e-mail já está em uso
-        Usuario usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
-        if (usuarioExistente != null) {
-            throw new RuntimeException("E-mail já cadastrado no sistema.");
+    @Transactional
+    public UserResponseDTO cadastrar(RegisterRequest request) {
+        if (usuarioRepository.findByEmail(request.getEmail()) != null) {
+            throw new DataIntegrityViolationException("E-mail já cadastrado no sistema.");
         }
 
-        // Criptografa a senha antes de salvar no banco
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        Usuario usuario = new Usuario();
+        usuario.setName(request.getName());
+        usuario.setEmail(request.getEmail());
+        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
-        // Cria as 6 categorias padrão automaticamente para o novo usuário
-        categoriaService.criarCategoriasPadrao(usuarioSalvo);
+        // Pré-popula as categorias padrão para o novo usuário dentro da mesma transação
+        if (categoriaService != null) {
+            categoriaService.criarCategoriasPadrao(usuarioSalvo);
+        }
 
-        Context context = new Context();
-        context.setVariable("name", usuario.getName());
-        emailService.enviarEmailtemplate(usuario.getEmail(),"Sucesso", "novoCadastro", context);
+        // Tenta enviar e-mail de boas-vindas assíncrono se o serviço de e-mail estiver configurado
+        if (emailService != null) {
+            try {
+                Context context = new Context();
+                context.setVariable("name", usuarioSalvo.getName());
+                emailService.enviarEmailtemplate(usuarioSalvo.getEmail(), "Sucesso", "novoCadastro", context);
+            } catch (Exception ignored) {
+            }
+        }
 
-        return usuarioSalvo;
+        return UserResponseDTO.builder()
+                .id(usuarioSalvo.getId())
+                .name(usuarioSalvo.getName())
+                .email(usuarioSalvo.getEmail())
+                .createdAt(usuarioSalvo.getCreatedAt())
+                .build();
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail());
+
+        if (usuario == null || !passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+            throw new BusinessException("Credenciais inválidas.");
+        }
+
+        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail());
+
+        return LoginResponse.builder()
+                .accessToken(token)
+                .tokenType("Bearer")
+                .expiresIn(86400)
+                .build();
+    }
+
+    @Transactional
+    public String solicitarRecuperacaoSenha(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email);
+        
+        // Retorna um token simulado sem salvar caso o e-mail não exista para não expor e-mails cadastrados
+        if (usuario == null) {
+            return UUID.randomUUID().toString();
+        }
+
+        String tokenUUID = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setUsuario(usuario);
+        resetToken.setToken(tokenUUID);
+        resetToken.setExpiraEm(LocalDateTime.now().plusHours(1));
+        resetToken.setUtilizado(false);
+
+        resetTokenRepository.save(resetToken);
+        return tokenUUID;
+    }
+
+    @Transactional
+    public void redefinirSenha(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = resetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new IllegalArgumentException("Token de redefinição inválido ou não encontrado."));
+
+        if (resetToken.isUtilizado()) {
+            throw new IllegalArgumentException("Token de redefinição já utilizado.");
+        }
+
+        if (resetToken.estaExpirado()) {
+            throw new IllegalArgumentException("Token de redefinição expirado.");
+        }
+
+        Usuario usuario = resetToken.getUsuario();
+        usuario.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        usuarioRepository.save(usuario);
+
+        resetToken.setUtilizado(true);
+        resetTokenRepository.save(resetToken);
+    }
+
+    @Transactional
+    public void alterarSenha(Usuario usuario, String currentPassword, String newPassword) {
+        if (!passwordEncoder.matches(currentPassword, usuario.getPassword())) {
+            throw new BusinessException("Senha atual incorreta.");
+        }
+
+        usuario.setPassword(passwordEncoder.encode(newPassword));
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public UserResponseDTO atualizarPerfil(Usuario usuario, String novoNome) {
+        if (novoNome != null && !novoNome.isBlank()) {
+            usuario.setName(novoNome);
+        }
+        Usuario salvo = usuarioRepository.save(usuario);
+
+        return UserResponseDTO.builder()
+                .id(salvo.getId())
+                .name(salvo.getName())
+                .email(salvo.getEmail())
+                .createdAt(salvo.getCreatedAt())
+                .build();
     }
 
     public Usuario buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
-    }
-
-    public Usuario login(String email, String password) {
         Usuario usuario = usuarioRepository.findByEmail(email);
-
         if (usuario == null) {
-            throw new RuntimeException("Credenciais inválidas.");
+            throw new ResourceNotFoundException("Usuário não encontrado.");
         }
-
-        // Compara a senha digitada com o hash BCrypt armazenado no banco
-        if (!passwordEncoder.matches(password, usuario.getPassword())) {
-            throw new RuntimeException("Credenciais inválidas.");
-        }
-
         return usuario;
     }
 }

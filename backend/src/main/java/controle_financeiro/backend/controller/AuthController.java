@@ -1,56 +1,48 @@
 package controle_financeiro.backend.controller;
 
-import controle_financeiro.backend.dto.LoginRequest;
-import controle_financeiro.backend.model.Usuario;
+import controle_financeiro.backend.dto.*;
 import controle_financeiro.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@RequestMapping
 public class AuthController {
 
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registrar(@Valid @RequestBody Usuario usuario) {
-        try {
-            Usuario usuarioSalvo = usuarioService.cadastrar(usuario);
-            // Oculta o hash da senha por motivos de segurança antes de retornar os dados
-            usuarioSalvo.setPassword(null);
-            return ResponseEntity.status(HttpStatus.CREATED).body(usuarioSalvo);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    @PostMapping({"/auth/register", "/api/auth/register"})
+    public ResponseEntity<UserResponseDTO> registrar(@Valid @RequestBody RegisterRequest request) {
+        UserResponseDTO usuarioSalvo = usuarioService.cadastrar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioSalvo);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
-            Usuario usuario = usuarioService.login(loginRequest.getEmail(), loginRequest.getPassword());
+    @PostMapping({"/auth/login", "/api/auth/login"})
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = usuarioService.login(request);
+        return ResponseEntity.ok(response);
+    }
 
-            // Retorna os dados do usuário no formato esperado pelo frontend (token + user)
-            // Token temporário (sem JWT) apenas para manter a sessão no localStorage
-            String tokenTemp = "session_" + usuario.getId() + "_" + System.currentTimeMillis();
+    @PostMapping({"/auth/forgot-password", "/api/auth/forgot-password"})
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        String debugToken = usuarioService.solicitarRecuperacaoSenha(request.getEmail());
+        
+        Map<String, String> resposta = Map.of(
+            "message", "Se este e-mail estiver cadastrado, você receberá as instruções em breve.",
+            "debugToken", debugToken
+        );
+        return ResponseEntity.ok(resposta);
+    }
 
-            Map<String, Object> resposta = Map.of(
-                "token", tokenTemp,
-                "user", Map.of(
-                    "id", usuario.getId(),
-                    "name", usuario.getName(),
-                    "email", usuario.getEmail()
-                )
-            );
-
-            return ResponseEntity.ok(resposta);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+    @PostMapping({"/auth/reset-password", "/api/auth/reset-password"})
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        usuarioService.redefinirSenha(request);
+        return ResponseEntity.ok(Map.of("message", "Senha redefinida com sucesso."));
     }
 }
