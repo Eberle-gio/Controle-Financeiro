@@ -11,6 +11,9 @@ import controle_financeiro.backend.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +38,7 @@ public class UsuarioService {
     private JwtUtils jwtUtils;
 
     @Autowired(required = false)
-    private EnvioEmailSender emailService;
+    private EmailService emailService;
 
     @Lazy
     @Autowired
@@ -61,12 +64,12 @@ public class UsuarioService {
             categoriaService.criarCategoriasPadrao(usuarioSalvo);
         }
 
-        // Tenta enviar e-mail de boas-vindas assíncrono se o serviço de e-mail estiver configurado
+        // Envia e-mail de boas-vindas assíncrono
         if (emailService != null) {
             try {
                 Context context = new Context();
                 context.setVariable("name", usuarioSalvo.getName());
-                emailService.enviarEmailtemplate(usuarioSalvo.getEmail(), "Sucesso", "novoCadastro", context);
+                emailService.emailTemplate(usuarioSalvo.getEmail(), "Bem-vindo ao Controle Financeiro", context, "novoCadastro");
             } catch (Exception ignored) {
             }
         }
@@ -109,6 +112,19 @@ public class UsuarioService {
         resetToken.setUtilizado(false);
 
         resetTokenRepository.save(resetToken);
+
+        // Envia o e-mail de recuperação de senha com o link contendo o token
+        if (emailService != null) {
+            try {
+                Context context = new Context();
+                context.setVariable("name", usuario.getName());
+                context.setVariable("token", tokenUUID);
+                context.setVariable("resetUrl", "http://localhost:5173/redefinir-senha/" + tokenUUID);
+                emailService.emailTemplate(usuario.getEmail(), "Recuperação de Senha - Controle Financeiro", context, "recuperacaoSenha");
+            } catch (Exception ignored) {
+            }
+        }
+
         return tokenUUID;
     }
 
@@ -134,7 +150,8 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void alterarSenha(Usuario usuario, String currentPassword, String newPassword) {
+    public void alterarSenha(String currentPassword, String newPassword) {
+        Usuario usuario = getUsuarioAutenticado();
         if (!passwordEncoder.matches(currentPassword, usuario.getPassword())) {
             throw new BusinessException("Senha atual incorreta.");
         }
@@ -144,7 +161,8 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UserResponseDTO atualizarPerfil(Usuario usuario, String novoNome) {
+    public UserResponseDTO atualizarPerfil(String novoNome) {
+        Usuario usuario = getUsuarioAutenticado();
         if (novoNome != null && !novoNome.isBlank()) {
             usuario.setName(novoNome);
         }
@@ -158,6 +176,19 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
         if (usuario == null) {
             throw new ResourceNotFoundException("Usuário não encontrado.");
+        }
+        return usuario;
+    }
+
+    public Usuario getUsuarioAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
+        String email = authentication.getName();
+        Usuario usuario = usuarioRepository.findByEmail(email);
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuário autenticado não encontrado.");
         }
         return usuario;
     }
