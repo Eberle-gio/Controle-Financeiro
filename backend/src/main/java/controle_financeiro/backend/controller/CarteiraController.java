@@ -2,17 +2,14 @@ package controle_financeiro.backend.controller;
 
 import controle_financeiro.backend.dto.*;
 import controle_financeiro.backend.model.TipoPermissao;
-import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.service.CarteiraService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/wallets")
@@ -23,41 +20,37 @@ public class CarteiraController {
 
     // GET /api/v1/wallets
     @GetMapping
-    public ResponseEntity<List<WalletResponse>> listar(@AuthenticationPrincipal Usuario usuario) {
-        List<WalletResponse> carteiras = carteiraService.listarCarteirasDoUsuario(usuario);
+    public ResponseEntity<List<WalletResponse>> listar() {
+        List<WalletResponse> carteiras = carteiraService.listarCarteirasDoUsuario();
         return ResponseEntity.ok(carteiras);
     }
 
     // POST /api/v1/wallets
     @PostMapping
-    public ResponseEntity<WalletResponse> criar(@AuthenticationPrincipal Usuario usuario,
-                                                @Valid @RequestBody WalletRequest request) {
-        WalletResponse salva = carteiraService.criarCarteira(request, usuario);
+    public ResponseEntity<WalletResponse> criar(@Valid @RequestBody WalletRequest request) {
+        WalletResponse salva = carteiraService.criarCarteira(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(salva);
     }
 
     // GET /api/v1/wallets/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<WalletResponse> buscarPorId(@AuthenticationPrincipal Usuario usuario,
-                                                      @PathVariable Long id) {
-        WalletResponse carteira = carteiraService.buscarPorId(id, usuario);
+    public ResponseEntity<WalletResponse> buscarPorId(@PathVariable Long id) {
+        WalletResponse carteira = carteiraService.buscarPorId(id);
         return ResponseEntity.ok(carteira);
     }
 
     // PUT /api/v1/wallets/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<WalletResponse> atualizar(@AuthenticationPrincipal Usuario usuario,
-                                                    @PathVariable Long id,
+    public ResponseEntity<WalletResponse> atualizar(@PathVariable Long id,
                                                     @Valid @RequestBody WalletRequest request) {
-        WalletResponse atualizada = carteiraService.atualizarCarteira(id, request, usuario);
+        WalletResponse atualizada = carteiraService.atualizarCarteira(id, request);
         return ResponseEntity.ok(atualizada);
     }
 
     // DELETE /api/v1/wallets/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@AuthenticationPrincipal Usuario usuario,
-                                         @PathVariable Long id) {
-        carteiraService.excluirCarteira(id, usuario);
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        carteiraService.excluirCarteira(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -67,38 +60,34 @@ public class CarteiraController {
 
     // GET /api/v1/wallets/{id}/members
     @GetMapping("/{id}/members")
-    public ResponseEntity<List<WalletMemberResponse>> listarMembros(@AuthenticationPrincipal Usuario usuario,
-                                                                    @PathVariable Long id) {
-        List<WalletMemberResponse> membros = carteiraService.listarMembros(id, usuario);
+    public ResponseEntity<List<WalletMemberResponse>> listarMembros(@PathVariable Long id) {
+        List<WalletMemberResponse> membros = carteiraService.listarMembros(id);
         return ResponseEntity.ok(membros);
     }
 
     // POST /api/v1/wallets/{id}/members
     @PostMapping("/{id}/members")
-    public ResponseEntity<WalletMemberResponse> adicionarMembro(@AuthenticationPrincipal Usuario usuario,
-                                                                @PathVariable Long id,
+    public ResponseEntity<WalletMemberResponse> adicionarMembro(@PathVariable Long id,
                                                                 @Valid @RequestBody WalletMemberRequest request) {
-        WalletMemberResponse membro = carteiraService.adicionarMembro(id, request, usuario);
+        WalletMemberResponse membro = carteiraService.adicionarMembro(id, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(membro);
     }
 
     // PATCH /api/v1/wallets/{id}/members/{userId}
     @PatchMapping("/{id}/members/{userId}")
-    public ResponseEntity<WalletMemberResponse> alterarPapelMembro(@AuthenticationPrincipal Usuario usuario,
-                                                                    @PathVariable Long id,
+    public ResponseEntity<WalletMemberResponse> alterarPapelMembro(@PathVariable Long id,
                                                                     @PathVariable Long userId,
                                                                     @Valid @RequestBody UpdateRoleRequest request) {
         TipoPermissao novoPapel = TipoPermissao.fromString(request.getPapel());
-        WalletMemberResponse atualizado = carteiraService.alterarPapelMembro(id, userId, novoPapel, usuario);
+        WalletMemberResponse atualizado = carteiraService.alterarPapelMembro(id, userId, novoPapel);
         return ResponseEntity.ok(atualizado);
     }
 
     // DELETE /api/v1/wallets/{id}/members/{userId}
     @DeleteMapping("/{id}/members/{userId}")
-    public ResponseEntity<Void> removerMembro(@AuthenticationPrincipal Usuario usuario,
-                                               @PathVariable Long id,
+    public ResponseEntity<Void> removerMembro(@PathVariable Long id,
                                                @PathVariable Long userId) {
-        carteiraService.removerMembro(id, userId, usuario);
+        carteiraService.removerMembro(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

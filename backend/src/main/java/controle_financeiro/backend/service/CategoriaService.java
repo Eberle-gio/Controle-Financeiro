@@ -10,6 +10,7 @@ import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.repository.CategoriaRepository;
 import controle_financeiro.backend.repository.TransacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,10 @@ public class CategoriaService {
 
     @Autowired
     private TransacaoRepository transacaoRepository;
+
+    @Lazy
+    @Autowired
+    private UsuarioService usuarioService;
 
     // Cria as categorias padrão automaticamente quando um novo usuário se cadastra
     @Transactional
@@ -40,7 +45,8 @@ public class CategoriaService {
     }
 
     // Lista todas as categorias do usuário autenticado (com filtro opcional de tipo)
-    public List<CategoryResponse> listarPorUsuario(Usuario usuario, String tipo) {
+    public List<CategoryResponse> listarPorUsuario(String tipo) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         List<Categoria> categorias;
 
         if (tipo != null && !tipo.isBlank()) {
@@ -57,7 +63,8 @@ public class CategoriaService {
 
     // Cria uma nova categoria personalizada para o usuário autenticado
     @Transactional
-    public CategoryResponse criar(CategoryRequest request, Usuario usuario) {
+    public CategoryResponse criar(CategoryRequest request) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         Categoria categoria = new Categoria();
         categoria.setUsuario(usuario);
         categoria.setName(request.getName());
@@ -71,7 +78,8 @@ public class CategoriaService {
 
     // Atualiza dados de uma categoria do usuário autenticado
     @Transactional
-    public CategoryResponse atualizar(Long id, CategoryRequest request, Usuario usuario) {
+    public CategoryResponse atualizar(Long id, CategoryRequest request) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         Categoria categoria = buscarEntityPorIdEUsuario(id, usuario);
 
         categoria.setName(request.getName());
@@ -85,7 +93,8 @@ public class CategoriaService {
 
     // Remove uma categoria (lança HTTP 422 se houver transações vinculadas)
     @Transactional
-    public void excluir(Long id, Usuario usuario) {
+    public void excluir(Long id) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         Categoria categoria = buscarEntityPorIdEUsuario(id, usuario);
 
         if (transacaoRepository.existsByCategoriaId(id)) {

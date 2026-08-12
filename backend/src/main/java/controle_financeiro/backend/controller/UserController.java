@@ -8,7 +8,6 @@ import controle_financeiro.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -21,21 +20,20 @@ public class UserController {
     private UsuarioService usuarioService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getPerfil(@AuthenticationPrincipal Usuario usuario) {
+    public ResponseEntity<UserResponseDTO> getPerfil() {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         return ResponseEntity.ok(UserResponseDTO.fromEntity(usuario));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UserResponseDTO> atualizarPerfil(@AuthenticationPrincipal Usuario usuario,
-                                                           @Valid @RequestBody UpdateProfileRequest request) {
-        UserResponseDTO dto = usuarioService.atualizarPerfil(usuario, request.getName());
+    public ResponseEntity<UserResponseDTO> atualizarPerfil(@Valid @RequestBody UpdateProfileRequest request) {
+        UserResponseDTO dto = usuarioService.atualizarPerfil(request.getName());
         return ResponseEntity.ok(dto);
     }
 
     @PatchMapping("/me/password")
-    public ResponseEntity<Map<String, String>> alterarSenha(@AuthenticationPrincipal Usuario usuario,
-                                                           @Valid @RequestBody ChangePasswordRequest request) {
-        usuarioService.alterarSenha(usuario, request.getCurrentPassword(), request.getNewPassword());
+    public ResponseEntity<Map<String, String>> alterarSenha(@Valid @RequestBody ChangePasswordRequest request) {
+        usuarioService.alterarSenha(request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "Senha alterada com sucesso."));
     }
 }

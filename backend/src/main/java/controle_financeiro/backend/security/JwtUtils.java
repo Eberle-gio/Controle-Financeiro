@@ -41,7 +41,12 @@ public class JwtUtils {
     }
 
     public String obterEmailDoToken(String token) {
-        return extrairClaims(token).get("email", String.class);
+        Claims claims = extrairClaims(token);
+        String email = claims.get("email", String.class);
+        if (email == null || email.isBlank()) {
+            email = claims.getSubject();
+        }
+        return email;
     }
 
     public boolean validarToken(String token) {

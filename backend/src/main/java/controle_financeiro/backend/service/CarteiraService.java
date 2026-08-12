@@ -8,6 +8,7 @@ import controle_financeiro.backend.repository.CarteiraRepository;
 import controle_financeiro.backend.repository.MembroCarteiraRepository;
 import controle_financeiro.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -27,8 +28,13 @@ public class CarteiraService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Lazy
+    @Autowired
+    private UsuarioService usuarioService;
+
     // Lista todas as carteiras onde o usuário logado é membro ou dono
-    public List<WalletResponse> listarCarteirasDoUsuario(Usuario usuario) {
+    public List<WalletResponse> listarCarteirasDoUsuario() {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         List<MembroCarteira> vinculos = membroCarteiraRepository.findByUsuario(usuario);
         return vinculos.stream()
                 .map(vinculo -> paraWalletResponse(vinculo.getCarteira(), vinculo.getPapel()))
@@ -36,14 +42,16 @@ public class CarteiraService {
     }
 
     // Busca detalhes de uma carteira específica
-    public WalletResponse buscarPorId(Long id, Usuario usuario) {
+    public WalletResponse buscarPorId(Long id) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(id, usuario);
         return paraWalletResponse(vinculo.getCarteira(), vinculo.getPapel());
     }
 
     // Cria nova carteira e define o usuário como DONO
     @Transactional
-    public WalletResponse criarCarteira(WalletRequest request, Usuario usuario) {
+    public WalletResponse criarCarteira(WalletRequest request) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         Carteira carteira = new Carteira();
         carteira.setDono(usuario);
         carteira.setNome(request.getNome());
@@ -62,7 +70,8 @@ public class CarteiraService {
 
     // Atualiza nome/descrição da carteira (somente DONO ou EDITOR)
     @Transactional
-    public WalletResponse atualizarCarteira(Long id, WalletRequest request, Usuario usuario) {
+    public WalletResponse atualizarCarteira(Long id, WalletRequest request) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(id, usuario);
 
         if (vinculo.getPapel() == TipoPermissao.VISUALIZADOR) {
@@ -79,7 +88,8 @@ public class CarteiraService {
 
     // Exclui carteira e seus membros (somente DONO)
     @Transactional
-    public void excluirCarteira(Long id, Usuario usuario) {
+    public void excluirCarteira(Long id) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(id, usuario);
 
         if (vinculo.getPapel() != TipoPermissao.DONO) {
@@ -95,7 +105,8 @@ public class CarteiraService {
     // ==========================================
 
     // Lista membros da carteira
-    public List<WalletMemberResponse> listarMembros(Long carteiraId, Usuario usuario) {
+    public List<WalletMemberResponse> listarMembros(Long carteiraId) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(carteiraId, usuario);
         List<MembroCarteira> membros = membroCarteiraRepository.findByCarteira(vinculo.getCarteira());
         return membros.stream()
@@ -105,7 +116,8 @@ public class CarteiraService {
 
     // Adiciona novo membro por e-mail (somente DONO)
     @Transactional
-    public WalletMemberResponse adicionarMembro(Long carteiraId, WalletMemberRequest request, Usuario usuario) {
+    public WalletMemberResponse adicionarMembro(Long carteiraId, WalletMemberRequest request) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculoDono = buscarVinculoOuFalhar(carteiraId, usuario);
 
         if (vinculoDono.getPapel() != TipoPermissao.DONO) {
@@ -136,7 +148,8 @@ public class CarteiraService {
 
     // Altera o papel de um membro (somente DONO)
     @Transactional
-    public WalletMemberResponse alterarPapelMembro(Long carteiraId, Long membroUsuarioId, TipoPermissao novoPapel, Usuario usuario) {
+    public WalletMemberResponse alterarPapelMembro(Long carteiraId, Long membroUsuarioId, TipoPermissao novoPapel) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculoDono = buscarVinculoOuFalhar(carteiraId, usuario);
 
         if (vinculoDono.getPapel() != TipoPermissao.DONO) {
@@ -160,7 +173,8 @@ public class CarteiraService {
 
     // Remove um membro da carteira (somente DONO ou o próprio membro saindo)
     @Transactional
-    public void removerMembro(Long carteiraId, Long membroUsuarioId, Usuario usuario) {
+    public void removerMembro(Long carteiraId, Long membroUsuarioId) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculoSolicitante = buscarVinculoOuFalhar(carteiraId, usuario);
 
         boolean ehODono = vinculoSolicitante.getPapel() == TipoPermissao.DONO;

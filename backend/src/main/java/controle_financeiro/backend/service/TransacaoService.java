@@ -1,4 +1,3 @@
-
 package controle_financeiro.backend.service;
 
 import java.math.BigDecimal;
@@ -10,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +23,6 @@ import controle_financeiro.backend.dto.DashboardSummaryResponse;
 import controle_financeiro.backend.dto.PageResponse;
 import controle_financeiro.backend.dto.TransactionRequest;
 import controle_financeiro.backend.dto.TransactionResponse;
-import controle_financeiro.backend.exception.BusinessException;
 import controle_financeiro.backend.exception.ResourceNotFoundException;
 import controle_financeiro.backend.model.Carteira;
 import controle_financeiro.backend.model.Categoria;
@@ -32,9 +31,7 @@ import controle_financeiro.backend.model.TipoMovimentacao;
 import controle_financeiro.backend.model.TipoPermissao;
 import controle_financeiro.backend.model.Transacao;
 import controle_financeiro.backend.model.Usuario;
-import controle_financeiro.backend.repository.CarteiraRepository;
 import controle_financeiro.backend.repository.CategoriaRepository;
-import controle_financeiro.backend.repository.MembroCarteiraRepository;
 import controle_financeiro.backend.repository.TransacaoRepository;
 import jakarta.persistence.criteria.Predicate;
 
@@ -48,13 +45,11 @@ public class TransacaoService {
     private CarteiraService carteiraService;
 
     @Autowired
-    private CarteiraRepository carteiraRepository;
-
-    @Autowired
     private CategoriaRepository categoriaRepository;
 
+    @Lazy
     @Autowired
-    private MembroCarteiraRepository membroCarteiraRepository;
+    private UsuarioService usuarioService;
 
     // Lista paginada de transações com filtros dinâmicos
     public PageResponse<TransactionResponse> listarPaginado(
@@ -65,9 +60,9 @@ public class TransacaoService {
             LocalDate startDate,
             LocalDate endDate,
             Long categoryId,
-            String type,
-            Usuario usuario
+            String type
     ) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(walletId, usuario);
 
         Sort.Direction direction = Sort.Direction.DESC;
@@ -121,7 +116,8 @@ public class TransacaoService {
     }
 
     // Busca detalhes de uma transação específica
-    public TransactionResponse buscarPorId(Long walletId, Long id, Usuario usuario) {
+    public TransactionResponse buscarPorId(Long walletId, Long id) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         buscarVinculoOuFalhar(walletId, usuario);
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada."));
@@ -135,7 +131,8 @@ public class TransacaoService {
 
     // Cria nova transação
     @Transactional
-    public TransactionResponse criar(Long walletId, TransactionRequest request, Usuario usuario) {
+    public TransactionResponse criar(Long walletId, TransactionRequest request) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoComPermissaoEscrita(walletId, usuario);
 
         Categoria categoria = null;
@@ -159,7 +156,8 @@ public class TransacaoService {
 
     // Atualiza transação
     @Transactional
-    public TransactionResponse atualizar(Long walletId, Long id, TransactionRequest request, Usuario usuario) {
+    public TransactionResponse atualizar(Long walletId, Long id, TransactionRequest request) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         buscarVinculoComPermissaoEscrita(walletId, usuario);
 
         Transacao transacao = transacaoRepository.findById(id)
@@ -187,7 +185,8 @@ public class TransacaoService {
 
     // Exclui transação
     @Transactional
-    public void excluir(Long walletId, Long id, Usuario usuario) {
+    public void excluir(Long walletId, Long id) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         buscarVinculoComPermissaoEscrita(walletId, usuario);
 
         Transacao transacao = transacaoRepository.findById(id)
@@ -201,7 +200,8 @@ public class TransacaoService {
     }
 
     // Obter Resumo Consolidado do Dashboard
-    public DashboardSummaryResponse obterResumoDashboard(Long walletId, LocalDate inicio, LocalDate fim, Usuario usuario) {
+    public DashboardSummaryResponse obterResumoDashboard(Long walletId, LocalDate inicio, LocalDate fim) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(walletId, usuario);
         Carteira carteira = vinculo.getCarteira();
 
