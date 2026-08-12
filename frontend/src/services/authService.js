@@ -30,7 +30,7 @@ class AuthService {
           name: payload.name || email.split('@')[0]
         };
       } catch (e) {
-        // Fallback se não conseguir decodificar
+        
       }
       
       const session = {

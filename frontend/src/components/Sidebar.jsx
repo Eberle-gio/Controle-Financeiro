@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import {
-  Zap,
   LayoutDashboard,
   Lock,
   Users,
@@ -10,11 +9,7 @@ import {
 import logo from '../assets/images/Logo.svg';
 import './Sidebar.css';
 
-/**
- * Sidebar compartilhada por todas as páginas autenticadas.
- * Recebe activeItem para marcar o item ativo: 'dashboard' | 'senha'
- */
-export default function Sidebar({ currentUser, activeItem = 'dashboard' }) {
+const Sidebar = ({ currentUser, activeItem = 'dashboard' }) => {
   return (
     <aside className="app-sidebar">
       <div className="sidebar-brand">
@@ -55,4 +50,6 @@ export default function Sidebar({ currentUser, activeItem = 'dashboard' }) {
       </div>
     </aside>
   );
-}
+};
+
+export default Sidebar;

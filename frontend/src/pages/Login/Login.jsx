@@ -5,7 +5,7 @@ import './Login.css';
 
 import logo from '../../assets/images/Logo.svg';
 
-export default function Login() {
+const Login = () => {
   const navigate = useNavigate();
 
   // Estados dos Campos
@@ -25,7 +25,7 @@ export default function Login() {
     }
   }, [navigate]);
 
-  // Validação em Tempo Real e ao Submeter
+
   const validateForm = () => {
     const tempErrors = {};
     if (!email) {
@@ -44,7 +44,6 @@ export default function Login() {
     return Object.keys(tempErrors).length === 0;
   };
 
-  // Trata submissão do formulário
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitAttempted(true);
@@ -68,7 +67,6 @@ export default function Login() {
     <div className="login-page">
       <div className="login-wrapper">
         
-        {/* LADO ESQUERDO - MARCA */}
         <div className="login-brand">
           <div className="brand-center-wrapper">
             <img src={logo} alt="NodeBank" className="brand-logo" />
@@ -79,7 +77,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* LADO DIREITO - FORMULÁRIO */}
         <div className="login-form-side">
           <div className="form-container">
             <h2>Bem-vindo de volta</h2>
@@ -93,7 +90,6 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} noValidate>
               
-              {/* CAMPO E-MAIL */}
               <div className="input-group">
                 <label htmlFor="email">E-mail</label>
                 <input
@@ -109,7 +105,6 @@ export default function Login() {
                 )}
               </div>
 
-              {/* CAMPO SENHA */}
               <div className="input-group">
                 <label htmlFor="password">Senha</label>
                 <div className="password-container">
@@ -151,7 +146,6 @@ export default function Login() {
                 Esqueceu sua senha?
               </Link>
 
-              {/* BOTÃO ENTRAR */}
               <button
                 className="login-button"
                 type="submit"
@@ -178,4 +172,6 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;

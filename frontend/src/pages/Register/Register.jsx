@@ -5,7 +5,7 @@ import './Register.css';
 
 import logo from '../../assets/images/Logo.svg';
 
-export default function Register() {
+const Register = () => {
   const navigate = useNavigate();
 
   // Estados dos Campos
@@ -66,11 +66,10 @@ export default function Register() {
     } else if (score === 2) {
       setStrength({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
     } else {
-      setStrength({ score: 3, label: 'Forte 💪', color: '#10b981', percent: '100%' });
+      setStrength({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
     }
   }, [password]);
 
-  // Validação Cross-field em Tempo Real para Confirmação de Senha
   useEffect(() => {
     if (confirmPassword && password !== confirmPassword) {
       setErrors(prev => ({ ...prev, confirmPassword: 'As senhas não coincidem' }));
@@ -135,8 +134,7 @@ export default function Register() {
   return (
     <div className="register-page">
       <div className="register-wrapper">
-        
-        {/* LADO DA MARCA */}
+      
         <div className="register-brand">
           <div className="brand-center-wrapper">
             <img src={logo} alt="NodeBank Logo" className="brand-logo" />
@@ -145,7 +143,7 @@ export default function Register() {
           </div>
         </div>
 
-        {/* LADO DO FORMULÁRIO */}
+
         <div className="register-form-side">
           <div className="form-container">
             <h2>Criar Conta</h2>
@@ -165,7 +163,7 @@ export default function Register() {
 
             <form onSubmit={handleSubmit} noValidate>
               
-              {/* CAMPO NOME */}
+
               <div className="input-group">
                 <label htmlFor="name">Nome Completo</label>
                 <input
@@ -179,7 +177,6 @@ export default function Register() {
                 {submitAttempted && errors.name && <span className="error-message">{errors.name}</span>}
               </div>
 
-              {/* CAMPO E-MAIL */}
               <div className="input-group">
                 <label htmlFor="email">E-mail</label>
                 <input
@@ -193,7 +190,6 @@ export default function Register() {
                 {submitAttempted && errors.email && <span className="error-message">{errors.email}</span>}
               </div>
 
-              {/* CAMPO SENHA */}
               <div className="input-group">
                 <label htmlFor="password">Senha</label>
                 <div className="password-container">
@@ -228,7 +224,6 @@ export default function Register() {
                 </div>
                 {submitAttempted && errors.password && <span className="error-message">{errors.password}</span>}
 
-                {/* INDICADOR DE FORÇA DE SENHA */}
                 {password && (
                   <div className="password-strength-meter">
                     <div className="strength-bar-bg">
@@ -240,8 +235,7 @@ export default function Register() {
                   </div>
                 )}
               </div>
-
-              {/* CAMPO CONFIRMAÇÃO DE SENHA */}
+              
               <div className="input-group">
                 <label htmlFor="confirmPassword">Confirmar Senha</label>
                 <div className="password-container">
@@ -305,4 +299,6 @@ export default function Register() {
       </div>
     </div>
   );
-}
+};
+
+export default Register;

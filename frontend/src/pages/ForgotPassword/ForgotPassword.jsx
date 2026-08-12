@@ -6,7 +6,7 @@ import './ForgotPassword.css';
 
 import logo from '../../assets/images/Logo.svg';
 
-export default function ForgotPassword() {
+const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -100,7 +100,7 @@ export default function ForgotPassword() {
 
         {debugToken && (
           <div className="debug-box">
-            <h4>💡 Modo de Teste (Token Gerado)</h4>
+            <h4>Modo de Teste (Token Gerado)</h4>
             <p>Clique no link abaixo para testar a tela de redefinição:</p>
             <Link to={`/redefinir-senha/${debugToken}`} className="debug-link">
               Redefinir Senha (Token: {debugToken})
@@ -117,4 +117,6 @@ export default function ForgotPassword() {
       </div>
     </div>
   );
-}
+};
+
+export default ForgotPassword;

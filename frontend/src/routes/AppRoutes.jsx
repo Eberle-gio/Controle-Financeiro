@@ -1,14 +1,14 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom';
 
-import Login from '../pages/Login/Login'
-import Register from '../pages/Register/Register'
-import ForgotPassword from '../pages/ForgotPassword/ForgotPassword'
-import ResetPassword from '../pages/ResetPassword/ResetPassword'
-import Dashboard from '../pages/Dashboard/Dashboard'
-import ChangePassword from '../pages/ChangePassword/ChangePassword'
-import PrivateRoute from './PrivateRoute'
+import Login from '../pages/Login/Login';
+import Register from '../pages/Register/Register';
+import ForgotPassword from '../pages/ForgotPassword/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword/ResetPassword';
+import Dashboard from '../pages/Dashboard/Dashboard';
+import ChangePassword from '../pages/ChangePassword/ChangePassword';
+import PrivateRoute from './PrivateRoute';
 
-function AppRoutes() {
+const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
@@ -19,7 +19,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/app/perfil/senha" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
     </Routes>
-  )
-}
+  );
+};
 
-export default AppRoutes
+export default AppRoutes;

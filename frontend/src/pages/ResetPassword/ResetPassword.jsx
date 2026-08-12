@@ -6,7 +6,7 @@ import './ResetPassword.css';
 
 import logo from '../../assets/images/Logo.svg';
 
-export default function ResetPassword() {
+const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
 
@@ -61,11 +61,10 @@ export default function ResetPassword() {
     } else if (score === 2) {
       setStrength({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
     } else {
-      setStrength({ score: 3, label: 'Forte 💪', color: '#10b981', percent: '100%' });
+      setStrength({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
     }
   }, [password]);
 
-  // Validação Cross-field em tempo real
   useEffect(() => {
     if (confirmPassword && password !== confirmPassword) {
       setErrors(prev => ({ ...prev, confirmPassword: 'As senhas não coincidem' }));
@@ -184,7 +183,6 @@ export default function ResetPassword() {
               <span className="error-message">{errors.password}</span>
             )}
 
-            {/* MEDIDOR DE FORÇA DE SENHA */}
             {password && (
               <div className="password-strength-meter">
                 <div className="strength-bar-bg">
@@ -197,7 +195,6 @@ export default function ResetPassword() {
             )}
           </div>
 
-          {/* CONFIRMAR SENHA */}
           <div className="input-group">
             <label htmlFor="confirmPassword">Confirmar Nova Senha</label>
             <div className="password-container">
@@ -261,4 +258,6 @@ export default function ResetPassword() {
       </div>
     </div>
   );
-}
+};
+
+export default ResetPassword;

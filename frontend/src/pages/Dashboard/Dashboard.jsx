@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import './Dashboard.css';
 
-export default function Dashboard() {
+const Dashboard = () => {
   const navigate = useNavigate();
 
   // Estado do Usuário Conectado
@@ -35,26 +35,24 @@ export default function Dashboard() {
     recentTransactions: []
   });
 
-  // Estados de Filtros e UI
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Busca perfil atualizado do usuário logado na API real do backend
+  // Busca perfil atualizado do usuário logado na API do backend
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const profile = await authService.getProfile();
         setCurrentUser(profile);
       } catch (err) {
-        // Mantém fallback do JWT se falhar
       }
     };
     fetchUserProfile();
   }, []);
 
-  // Define datas do mês atual por padrão
+  // Define datas do mês atual 
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
@@ -68,7 +66,7 @@ export default function Dashboard() {
     setEndDate(`${year}-${month}-${String(lastDay).padStart(2, '0')}`);
   }, []);
 
-  // Busca carteiras reais do usuário na API Spring Boot
+  // Busca carteiras do usuário na API 
   useEffect(() => {
     const fetchWallets = async () => {
       try {
@@ -94,7 +92,7 @@ export default function Dashboard() {
     fetchWallets();
   }, []);
 
-  // Busca dados de resumo da carteira ativa na API real
+  // Busca dados de resumo da carteira ativa na API 
   const fetchSummary = useCallback(async () => {
     if (!activeWallet) return;
     setLoading(true);
@@ -114,13 +112,11 @@ export default function Dashboard() {
     fetchSummary();
   }, [fetchSummary]);
 
-  // Trata logout
   const handleLogout = () => {
     authService.logout();
     navigate('/login');
   };
 
-  // Formata valores monetários em BRL
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -135,7 +131,6 @@ export default function Dashboard() {
     return `${day}/${month}/${year}`;
   };
 
-  // Customização do Tooltip do Gráfico
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -153,7 +148,6 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <Sidebar currentUser={currentUser} activeItem="dashboard" />
 
-      {/* Conteúdo Principal */}
       <main className="dashboard-content">
         <header className="content-header">
           <div className="title-wrapper">
@@ -175,7 +169,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* Seletor de Carteira e Filtro de Datas */}
+
         <section className="controls-bar">
           <div className="wallet-selector-wrapper">
             <label htmlFor="wallet-select">Carteira:</label>
@@ -229,7 +223,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* CARDS DE INDICADORES (KPIs) */}
+
         <section className="kpi-grid">
           <div className="kpi-card balance-card">
             <div className="kpi-header">
@@ -265,10 +259,8 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* SEÇÃO GRÁFICO E LISTAS DE DETALHES */}
+
         <section className="dashboard-details-grid">
-          
-          {/* GRÁFICO DE EVOLUÇÃO TEMPORAL */}
           <div className="details-card chart-card">
             <h3>Evolução de Receitas x Despesas</h3>
             <div className="chart-container">
@@ -302,7 +294,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* LISTA DE LANÇAMENTOS RECENTES */}
           <div className="details-card transactions-card">
             <h3>Lançamentos Recentes</h3>
             <div className="transactions-list">
@@ -336,4 +327,6 @@ export default function Dashboard() {
       </main>
     </div>
   );
-}
+};
+
+export default Dashboard;

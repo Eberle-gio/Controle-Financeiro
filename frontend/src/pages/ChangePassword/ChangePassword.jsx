@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import './ChangePassword.css';
 
-export default function ChangePassword() {
+const ChangePassword = () => {
   const navigate = useNavigate();
   const currentUser = authService.getCurrentUser();
 
@@ -28,7 +28,6 @@ export default function ChangePassword() {
   // Estado de Força de Nova Senha
   const [strength, setStrength] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
 
-  // Monitora a força da nova senha
   useEffect(() => {
     if (!newPassword) {
       setStrength({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
@@ -62,11 +61,11 @@ export default function ChangePassword() {
     } else if (score === 2) {
       setStrength({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
     } else {
-      setStrength({ score: 3, label: 'Forte 💪', color: '#10b981', percent: '100%' });
+      setStrength({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
     }
   }, [newPassword]);
 
-  // Validação Cross-field
+
   useEffect(() => {
     if (confirmPassword && newPassword !== confirmPassword) {
       setErrors(prev => ({ ...prev, confirmPassword: 'As senhas não coincidem' }));
@@ -134,7 +133,6 @@ export default function ChangePassword() {
     <div className="change-pass-page">
       <Sidebar currentUser={currentUser} activeItem="senha" />
 
-      {/* Conteúdo Principal Centralizado */}
       <main className="change-pass-content">
 
         <div className="change-pass-card">
@@ -157,7 +155,6 @@ export default function ChangePassword() {
 
           <form onSubmit={handleSubmit} noValidate>
             
-            {/* SENHA ATUAL */}
             <div className="input-group">
               <label htmlFor="currentPassword">Senha Atual</label>
               <div className="password-container">
@@ -196,7 +193,6 @@ export default function ChangePassword() {
               )}
             </div>
 
-            {/* NOVA SENHA */}
             <div className="input-group">
               <label htmlFor="newPassword">Nova Senha</label>
               <div className="password-container">
@@ -234,7 +230,6 @@ export default function ChangePassword() {
                 <span className="error-message">{errors.newPassword}</span>
               )}
 
-              {/* MEDIDOR DE FORÇA DA NOVA SENHA */}
               {newPassword && (
                 <div className="password-strength-meter">
                   <div className="strength-bar-bg">
@@ -247,7 +242,7 @@ export default function ChangePassword() {
               )}
             </div>
 
-            {/* CONFIRMAÇÃO DE SENHA */}
+
             <div className="input-group">
               <label htmlFor="confirmPassword">Confirmar Nova Senha</label>
               <div className="password-container">
@@ -298,7 +293,6 @@ export default function ChangePassword() {
 
           </form>
 
-          {/* Botão de retorno centralizado com seta */}
           <div className="back-dashboard-wrapper">
             <Link to="/dashboard" className="back-dashboard-btn">
               <ArrowLeft size={18} />
@@ -310,4 +304,6 @@ export default function ChangePassword() {
       </main>
     </div>
   );
-}
+};
+
+export default ChangePassword;
