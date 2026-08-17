@@ -10,7 +10,6 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [debugToken, setDebugToken] = useState('');
   const [errors, setErrors] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -34,14 +33,10 @@ const ForgotPassword = () => {
     setLoading(true);
     setErrors({});
     setMessage('');
-    setDebugToken('');
 
     try {
       const response = await authService.forgotPassword(email);
       setMessage(response.message || 'Se o e-mail estiver cadastrado, você receberá instruções de redefinição.');
-      if (response.debugToken) {
-        setDebugToken(response.debugToken);
-      }
     } catch (err) {
       setErrors({ apiError: err.message });
     } finally {
@@ -98,15 +93,6 @@ const ForgotPassword = () => {
           </button>
         </form>
 
-        {debugToken && (
-          <div className="debug-box">
-            <h4>Modo de Teste (Token Gerado)</h4>
-            <p>Clique no link abaixo para testar a tela de redefinição:</p>
-            <Link to={`/redefinir-senha/${debugToken}`} className="debug-link">
-              Redefinir Senha (Token: {debugToken})
-            </Link>
-          </div>
-        )}
 
         <div className="back-link-wrapper">
           <Link to="/login" className="back-centered-btn">
