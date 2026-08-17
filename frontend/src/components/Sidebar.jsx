@@ -9,7 +9,10 @@ import {
 import logo from '../assets/images/Logo.svg';
 import './Sidebar.css';
 
-const Sidebar = ({ currentUser, activeItem = 'dashboard' }) => {
+const Sidebar = ({ usuarioAtual, currentUser, activeItem = 'dashboard', itemAtivo }) => {
+  const usuario = usuarioAtual || currentUser;
+  const item = itemAtivo || activeItem;
+
   return (
     <aside className="app-sidebar">
       <div className="sidebar-brand">
@@ -20,14 +23,14 @@ const Sidebar = ({ currentUser, activeItem = 'dashboard' }) => {
       <nav className="sidebar-nav">
         <Link
           to="/dashboard"
-          className={`nav-item ${activeItem === 'dashboard' ? 'active' : ''}`}
+          className={`nav-item ${item === 'dashboard' ? 'active' : ''}`}
         >
           <LayoutDashboard size={18} />
           Dashboard
         </Link>
         <Link
           to="/app/perfil/senha"
-          className={`nav-item ${activeItem === 'senha' ? 'active' : ''}`}
+          className={`nav-item ${item === 'senha' ? 'active' : ''}`}
         >
           <Lock size={18} />
           Alterar Senha
@@ -41,11 +44,11 @@ const Sidebar = ({ currentUser, activeItem = 'dashboard' }) => {
 
       <div className="sidebar-user">
         <div className="avatar">
-          {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+          {usuario?.name ? usuario.name.charAt(0).toUpperCase() : 'U'}
         </div>
         <div className="user-info">
-          <span className="user-name">{currentUser?.name || 'Usuário'}</span>
-          <span className="user-email">{currentUser?.email || ''}</span>
+          <span className="user-name">{usuario?.name || 'Usuário'}</span>
+          <span className="user-email">{usuario?.email || ''}</span>
         </div>
       </div>
     </aside>

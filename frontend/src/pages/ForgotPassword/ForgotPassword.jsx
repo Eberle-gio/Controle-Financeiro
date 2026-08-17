@@ -8,39 +8,39 @@ import logo from '../../assets/images/Logo.svg';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [errors, setErrors] = useState({});
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [carregando, setCarregando] = useState(false);
+  const [mensagem, setMensagem] = useState('');
+  const [erros, setErros] = useState({});
+  const [tentativaEnvio, setTentativaEnvio] = useState(false);
 
-  const validateForm = () => {
-    const tempErrors = {};
+  const validarFormulario = () => {
+    const errosTemporarios = {};
     if (!email) {
-      tempErrors.email = 'E-mail é obrigatório';
+      errosTemporarios.email = 'E-mail é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      tempErrors.email = 'E-mail inválido';
+      errosTemporarios.email = 'E-mail inválido';
     }
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
+    setErros(errosTemporarios);
+    return Object.keys(errosTemporarios).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const lidarEnvio = async (e) => {
     e.preventDefault();
-    setSubmitAttempted(true);
+    setTentativaEnvio(true);
 
-    if (!validateForm()) return;
+    if (!validarFormulario()) return;
 
-    setLoading(true);
-    setErrors({});
-    setMessage('');
+    setCarregando(true);
+    setErros({});
+    setMensagem('');
 
     try {
-      const response = await authService.forgotPassword(email);
-      setMessage(response.message || 'Se o e-mail estiver cadastrado, você receberá instruções de redefinição.');
+      const resposta = await authService.solicitarRecuperacaoSenha(email);
+      setMensagem(resposta.message || 'Se o e-mail estiver cadastrado, você receberá instruções de redefinição.');
     } catch (err) {
-      setErrors({ apiError: err.message });
+      setErros({ apiError: err.message });
     } finally {
-      setLoading(false);
+      setCarregando(false);
     }
   };
 
@@ -53,19 +53,19 @@ const ForgotPassword = () => {
           <p>Digite seu e-mail cadastrado e enviaremos as instruções para você redefinir sua senha.</p>
         </div>
 
-        {message && (
+        {mensagem && (
           <div className="alert alert-success">
-            {message}
+            {mensagem}
           </div>
         )}
 
-        {errors.apiError && (
+        {erros.apiError && (
           <div className="alert alert-danger">
-            {errors.apiError}
+            {erros.apiError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={lidarEnvio} noValidate>
           <div className="input-group">
             <label htmlFor="email">E-mail</label>
             <input
@@ -74,16 +74,16 @@ const ForgotPassword = () => {
               placeholder="exemplo@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={submitAttempted && errors.email ? 'input-error' : ''}
-              disabled={loading}
+              className={tentativaEnvio && erros.email ? 'input-error' : ''}
+              disabled={carregando}
             />
-            {submitAttempted && errors.email && (
-              <span className="error-message">{errors.email}</span>
+            {tentativaEnvio && erros.email && (
+              <span className="error-message">{erros.email}</span>
             )}
           </div>
 
-          <button type="submit" className="forgot-button" disabled={loading}>
-            {loading ? (
+          <button type="submit" className="forgot-button" disabled={carregando}>
+            {carregando ? (
               <span className="spinner-container">
                 <span className="spinner"></span> Enviando...
               </span>

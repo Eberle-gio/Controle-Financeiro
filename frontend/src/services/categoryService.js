@@ -1,53 +1,50 @@
 import api from '../config/axiosConfig';
-import { INITIAL_MOCK_CATEGORIES } from '../config/mockData';
 
 class CategoryService {
-  // Lista categorias do usuário logado (filtro opcional por tipo, com fallback para mock centralizado)
-  async getCategories(type) {
+  // Lista categorias do usuário logado (filtro opcional por tipo)
+  async listarCategorias(tipo) {
     try {
       const params = {};
-      if (type) params.type = type;
+      if (tipo) params.type = tipo;
 
       const response = await api.get('/api/v1/categories', { params });
-      if (response.data && response.data.length > 0) {
-        return response.data;
-      }
-      return INITIAL_MOCK_CATEGORIES;
+      return response.data || [];
     } catch (error) {
-      return INITIAL_MOCK_CATEGORIES;
+      const mensagemErro = error.response?.data?.message || 'Erro ao carregar categorias';
+      throw new Error(mensagemErro);
     }
   }
 
   // Cria uma nova categoria
-  async createCategory(categoryData) {
+  async criarCategoria(dadosCategoria) {
     try {
-      const response = await api.post('/api/v1/categories', categoryData);
+      const response = await api.post('/api/v1/categories', dadosCategoria);
       return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao criar categoria';
-      throw new Error(errorMessage);
+      const mensagemErro = error.response?.data?.message || 'Erro ao criar categoria';
+      throw new Error(mensagemErro);
     }
   }
 
   // Atualiza uma categoria existente
-  async updateCategory(id, categoryData) {
+  async atualizarCategoria(id, dadosCategoria) {
     try {
-      const response = await api.put(`/api/v1/categories/${id}`, categoryData);
+      const response = await api.put(`/api/v1/categories/${id}`, dadosCategoria);
       return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao atualizar categoria';
-      throw new Error(errorMessage);
+      const mensagemErro = error.response?.data?.message || 'Erro ao atualizar categoria';
+      throw new Error(mensagemErro);
     }
   }
 
   // Exclui uma categoria (lança erro 422 se tiver transações vinculadas)
-  async deleteCategory(id) {
+  async excluirCategoria(id) {
     try {
       await api.delete(`/api/v1/categories/${id}`);
       return true;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao excluir categoria';
-      throw new Error(errorMessage);
+      const mensagemErro = error.response?.data?.message || 'Erro ao excluir categoria';
+      throw new Error(mensagemErro);
     }
   }
 }

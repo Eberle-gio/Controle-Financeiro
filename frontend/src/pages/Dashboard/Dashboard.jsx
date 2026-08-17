@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { walletService } from '../../services/walletService';
 import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut } from 'lucide-react';
@@ -21,12 +21,12 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   // Estado do Usuário Conectado
-  const [currentUser, setCurrentUser] = useState(() => authService.getCurrentUser());
+  const [usuarioAtual, setUsuarioAtual] = useState(() => authService.obterUsuarioAtual());
 
   // Estados de Dados
-  const [wallets, setWallets] = useState([]);
-  const [activeWallet, setActiveWallet] = useState(null);
-  const [summary, setSummary] = useState({
+  const [carteiras, setCarteiras] = useState([]);
+  const [carteiraAtiva, setCarteiraAtiva] = useState(null);
+  const [resumo, setResumo] = useState({
     totalIncome: 0,
     totalExpense: 0,
     balance: 0,
@@ -35,109 +35,109 @@ const Dashboard = () => {
     recentTransactions: []
   });
 
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
 
   // Busca perfil atualizado do usuário logado na API do backend
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const buscarPerfilUsuario = async () => {
       try {
-        const profile = await authService.getProfile();
-        setCurrentUser(profile);
+        const perfil = await authService.obterPerfil();
+        setUsuarioAtual(perfil);
       } catch (err) {
       }
     };
-    fetchUserProfile();
+    buscarPerfilUsuario();
   }, []);
 
   // Define datas do mês atual 
   useEffect(() => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     
     // Início do mês atual
-    setStartDate(`${year}-${month}-01`);
+    setDataInicio(`${ano}-${mes}-01`);
     
     // Fim do mês atual
-    const lastDay = new Date(year, today.getMonth() + 1, 0).getDate();
-    setEndDate(`${year}-${month}-${String(lastDay).padStart(2, '0')}`);
+    const ultimoDia = new Date(ano, hoje.getMonth() + 1, 0).getDate();
+    setDataFim(`${ano}-${mes}-${String(ultimoDia).padStart(2, '0')}`);
   }, []);
 
   // Busca carteiras do usuário na API 
   useEffect(() => {
-    const fetchWallets = async () => {
+    const buscarCarteiras = async () => {
       try {
-        let userWallets = await walletService.getWallets();
+        let carteirasUsuario = await walletService.listarCarteiras();
         
         // Se o usuário ainda não tiver nenhuma carteira cadastrada no banco, cria uma padrão automaticamente
-        if (userWallets.length === 0) {
-          const defaultWallet = await walletService.createWallet('Minha Carteira', 'Carteira Principal');
-          userWallets = [defaultWallet];
+        if (carteirasUsuario.length === 0) {
+          const carteiraPadrao = await walletService.criarCarteira('Minha Carteira', 'Carteira Principal');
+          carteirasUsuario = [carteiraPadrao];
         }
 
-        setWallets(userWallets);
-        if (userWallets.length > 0) {
-          setActiveWallet(userWallets[0]);
+        setCarteiras(carteirasUsuario);
+        if (carteirasUsuario.length > 0) {
+          setCarteiraAtiva(carteirasUsuario[0]);
         } else {
-          setLoading(false);
+          setCarregando(false);
         }
       } catch (err) {
-        setError('Falha ao carregar carteiras da API');
-        setLoading(false);
+        setErro('Falha ao carregar carteiras da API');
+        setCarregando(false);
       }
     };
-    fetchWallets();
+    buscarCarteiras();
   }, []);
 
   // Busca dados de resumo da carteira ativa na API 
-  const fetchSummary = useCallback(async () => {
-    if (!activeWallet) return;
-    setLoading(true);
-    setError('');
+  const buscarResumo = useCallback(async () => {
+    if (!carteiraAtiva) return;
+    setCarregando(true);
+    setErro('');
 
     try {
-      const data = await walletService.getSummary(activeWallet.id, startDate, endDate);
-      setSummary(data);
+      const dados = await walletService.obterResumo(carteiraAtiva.id, dataInicio, dataFim);
+      setResumo(dados);
     } catch (err) {
-      setError(err.message || 'Falha ao buscar resumo financeiro');
+      setErro(err.message || 'Falha ao buscar resumo financeiro');
     } finally {
-      setLoading(false);
+      setCarregando(false);
     }
-  }, [activeWallet, startDate, endDate]);
+  }, [carteiraAtiva, dataInicio, dataFim]);
 
   useEffect(() => {
-    fetchSummary();
-  }, [fetchSummary]);
+    buscarResumo();
+  }, [buscarResumo]);
 
-  const handleLogout = () => {
+  const lidarLogout = () => {
     authService.logout();
     navigate('/login');
   };
 
-  const formatCurrency = (value) => {
+  const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(value || 0);
+    }).format(valor || 0);
   };
 
   // Formata datas
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
+  const formatarData = (dataStr) => {
+    if (!dataStr) return '';
+    const [ano, mes, dia] = dataStr.split('-');
+    return `${dia}/${mes}/${ano}`;
   };
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="custom-chart-tooltip">
-          <p className="tooltip-date">{formatDate(label)}</p>
-          <p className="tooltip-income">Receitas: {formatCurrency(payload[0].value)}</p>
-          <p className="tooltip-expense">Despesas: {formatCurrency(payload[1].value)}</p>
+          <p className="tooltip-date">{formatarData(label)}</p>
+          <p className="tooltip-income">Receitas: {formatarMoeda(payload[0].value)}</p>
+          <p className="tooltip-expense">Despesas: {formatarMoeda(payload[1].value)}</p>
         </div>
       );
     }
@@ -146,7 +146,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      <Sidebar currentUser={currentUser} activeItem="dashboard" />
+      <Sidebar usuarioAtual={usuarioAtual} activeItem="dashboard" />
 
       <main className="dashboard-content">
         <header className="content-header">
@@ -158,12 +158,12 @@ const Dashboard = () => {
           <div className="header-actions">
             <div className="user-welcome">
               <div className="avatar">
-                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                {usuarioAtual?.name ? usuarioAtual.name.charAt(0).toUpperCase() : 'U'}
               </div>
-              <span className="user-name-label">{currentUser?.name || 'Usuário'}</span>
+              <span className="user-name-label">{usuarioAtual?.name || 'Usuário'}</span>
             </div>
             
-            <button onClick={handleLogout} className="logout-btn" title="Sair da Conta">
+            <button onClick={lidarLogout} className="logout-btn" title="Sair da Conta">
               <LogOut size={18} /> Sair
             </button>
           </div>
@@ -175,14 +175,14 @@ const Dashboard = () => {
             <label htmlFor="wallet-select">Carteira:</label>
             <select
               id="wallet-select"
-              value={activeWallet?.id || ''}
+              value={carteiraAtiva?.id || ''}
               onChange={(e) => {
-                const found = wallets.find(w => w.id === Number(e.target.value));
-                setActiveWallet(found);
+                const encontrada = carteiras.find(w => w.id === Number(e.target.value));
+                setCarteiraAtiva(encontrada);
               }}
-              disabled={wallets.length === 0}
+              disabled={carteiras.length === 0}
             >
-              {wallets.map((w) => (
+              {carteiras.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''}
                 </option>
@@ -196,8 +196,8 @@ const Dashboard = () => {
               <input
                 id="start-date"
                 type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
               />
             </div>
 
@@ -206,20 +206,20 @@ const Dashboard = () => {
               <input
                 id="end-date"
                 type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
               />
             </div>
 
-            <button onClick={fetchSummary} className="filter-btn" title="Atualizar Dados">
-              <RefreshCw size={16} className={loading ? 'spin-icon' : ''} /> Filtrar
+            <button onClick={buscarResumo} className="filter-btn" title="Atualizar Dados">
+              <RefreshCw size={16} className={carregando ? 'spin-icon' : ''} /> Filtrar
             </button>
           </div>
         </section>
 
-        {error && (
+        {erro && (
           <div className="alert alert-danger">
-            {error}
+            {erro}
           </div>
         )}
 
@@ -232,7 +232,7 @@ const Dashboard = () => {
                 <CreditCard size={20} />
               </div>
             </div>
-            <div className="kpi-value">{formatCurrency(summary.balance)}</div>
+            <div className="kpi-value">{formatarMoeda(resumo.balance)}</div>
             <span className="kpi-subtext">Resultado do período</span>
           </div>
 
@@ -243,7 +243,7 @@ const Dashboard = () => {
                 <TrendingUp size={20} />
               </div>
             </div>
-            <div className="kpi-value text-success">{formatCurrency(summary.totalIncome)}</div>
+            <div className="kpi-value text-success">{formatarMoeda(resumo.totalIncome)}</div>
             <span className="kpi-subtext">Entradas no período</span>
           </div>
 
@@ -254,7 +254,7 @@ const Dashboard = () => {
                 <TrendingDown size={20} />
               </div>
             </div>
-            <div className="kpi-value text-danger">{formatCurrency(summary.totalExpense)}</div>
+            <div className="kpi-value text-danger">{formatarMoeda(resumo.totalExpense)}</div>
             <span className="kpi-subtext">Saídas no período</span>
           </div>
         </section>
@@ -264,9 +264,9 @@ const Dashboard = () => {
           <div className="details-card chart-card">
             <h3>Evolução de Receitas x Despesas</h3>
             <div className="chart-container">
-              {summary.byDate.length > 0 ? (
+              {resumo.byDate.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={summary.byDate} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <AreaChart data={resumo.byDate} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
@@ -278,7 +278,7 @@ const Dashboard = () => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="date" tickFormatter={formatDate} stroke="#9ca3af" fontSize={12} />
+                    <XAxis dataKey="date" tickFormatter={formatarData} stroke="#9ca3af" fontSize={12} />
                     <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(val) => `R$${val}`} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
@@ -297,8 +297,8 @@ const Dashboard = () => {
           <div className="details-card transactions-card">
             <h3>Lançamentos Recentes</h3>
             <div className="transactions-list">
-              {summary.recentTransactions.length > 0 ? (
-                summary.recentTransactions.map((t) => (
+              {resumo.recentTransactions.length > 0 ? (
+                resumo.recentTransactions.map((t) => (
                   <div key={t.id} className="transaction-item">
                     <div className="transaction-info">
                       <span className="category-icon-badge">
@@ -306,11 +306,11 @@ const Dashboard = () => {
                       </span>
                       <div className="transaction-desc-wrapper">
                         <span className="transaction-desc">{t.descricao || t.categoryName}</span>
-                        <span className="transaction-date">{formatDate(t.data || t.date)}</span>
+                        <span className="transaction-date">{formatarData(t.data || t.date)}</span>
                       </div>
                     </div>
                     <span className={`transaction-value ${t.tipo === 'RECEITA' ? 'income' : 'expense'}`}>
-                      {t.tipo === 'RECEITA' ? '+' : '-'} {formatCurrency(t.valor)}
+                      {t.tipo === 'RECEITA' ? '+' : '-'} {formatarMoeda(t.valor)}
                     </span>
                   </div>
                 ))

@@ -11,113 +11,113 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   // Estados dos Campos
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
 
   // Estados de Exibição de Senha
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [exibirSenha, setExibirSenha] = useState(false);
+  const [exibirConfirmarSenha, setExibirConfirmarSenha] = useState(false);
 
   // Estados de Validação e Envio
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [erros, setErros] = useState({});
+  const [carregando, setCarregando] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState('');
+  const [tentativaEnvio, setTentativaEnvio] = useState(false);
 
   // Estado de Força da Senha
-  const [strength, setStrength] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
+  const [forcaSenha, setForcaSenha] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
 
-  // Monitora a força da senha em tempo real (mesmos critérios do cadastro)
+  // Monitora a força da senha em tempo real
   useEffect(() => {
-    if (!password) {
-      setStrength({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
+    if (!senha) {
+      setForcaSenha({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
       return;
     }
 
-    let score = 0;
-    if (password.length >= 6) {
-      score = 1;
+    let pontuacao = 0;
+    if (senha.length >= 6) {
+      pontuacao = 1;
     }
     
-    const hasLetters = /[a-zA-Z]/.test(password);
-    const hasNumbers = /[0-9]/.test(password);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(password);
+    const temLetras = /[a-zA-Z]/.test(senha);
+    const temNumeros = /[0-9]/.test(senha);
+    const temEspeciais = /[^a-zA-Z0-9]/.test(senha);
     
-    if (password.length >= 6 && hasLetters && hasNumbers) {
-      score = 2;
-    }
-
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    
-    if (password.length >= 8 && hasUpper && hasLower && hasNumbers && hasSpecial) {
-      score = 3;
+    if (senha.length >= 6 && temLetras && temNumeros) {
+      pontuacao = 2;
     }
 
-    if (password.length < 6) {
-      setStrength({ score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' });
-    } else if (score === 1) {
-      setStrength({ score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' });
-    } else if (score === 2) {
-      setStrength({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
+    const temMaiuscula = /[A-Z]/.test(senha);
+    const temMinuscula = /[a-z]/.test(senha);
+    
+    if (senha.length >= 8 && temMaiuscula && temMinuscula && temNumeros && temEspeciais) {
+      pontuacao = 3;
+    }
+
+    if (senha.length < 6) {
+      setForcaSenha({ score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' });
+    } else if (pontuacao === 1) {
+      setForcaSenha({ score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' });
+    } else if (pontuacao === 2) {
+      setForcaSenha({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
     } else {
-      setStrength({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
+      setForcaSenha({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
     }
-  }, [password]);
+  }, [senha]);
 
   useEffect(() => {
-    if (confirmPassword && password !== confirmPassword) {
-      setErrors(prev => ({ ...prev, confirmPassword: 'As senhas não coincidem' }));
+    if (confirmarSenha && senha !== confirmarSenha) {
+      setErros(prev => ({ ...prev, confirmPassword: 'As senhas não coincidem' }));
     } else {
-      setErrors(prev => {
+      setErros(prev => {
         const next = { ...prev };
         delete next.confirmPassword;
         return next;
       });
     }
-  }, [confirmPassword, password]);
+  }, [confirmarSenha, senha]);
 
-  const validateForm = () => {
-    const tempErrors = {};
-    if (!password) {
-      tempErrors.password = 'A nova senha é obrigatória';
-    } else if (password.length < 6) {
-      tempErrors.password = 'A senha deve ter no mínimo 6 caracteres';
+  const validarFormulario = () => {
+    const errosTemporarios = {};
+    if (!senha) {
+      errosTemporarios.password = 'A nova senha é obrigatória';
+    } else if (senha.length < 6) {
+      errosTemporarios.password = 'A senha deve ter no mínimo 6 caracteres';
     }
 
-    if (!confirmPassword) {
-      tempErrors.confirmPassword = 'A confirmação é obrigatória';
-    } else if (password !== confirmPassword) {
-      tempErrors.confirmPassword = 'As senhas não coincidem';
+    if (!confirmarSenha) {
+      errosTemporarios.confirmPassword = 'A confirmação é obrigatória';
+    } else if (senha !== confirmarSenha) {
+      errosTemporarios.confirmPassword = 'As senhas não coincidem';
     }
 
     if (!token) {
-      tempErrors.apiError = 'Token de redefinição ausente na URL.';
+      errosTemporarios.apiError = 'Token de redefinição ausente na URL.';
     }
 
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
+    setErros(errosTemporarios);
+    return Object.keys(errosTemporarios).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const lidarEnvio = async (e) => {
     e.preventDefault();
-    setSubmitAttempted(true);
+    setTentativaEnvio(true);
 
-    if (!validateForm()) return;
+    if (!validarFormulario()) return;
 
-    setLoading(true);
-    setErrors({});
+    setCarregando(true);
+    setErros({});
 
     try {
-      await authService.resetPassword(token, password);
-      setSuccessMessage('Senha redefinida com sucesso! Redirecionando para o login...');
+      await authService.redefinirSenha(token, senha);
+      setMensagemSucesso('Senha redefinida com sucesso! Redirecionando para o login...');
       setTimeout(() => {
         navigate('/login');
       }, 2500);
     } catch (err) {
-      setErrors({ apiError: err.message });
+      setErros({ apiError: err.message });
     } finally {
-      setLoading(false);
+      setCarregando(false);
     }
   };
 
@@ -130,19 +130,19 @@ const ResetPassword = () => {
           <p>Escolha uma nova senha forte para proteger sua conta.</p>
         </div>
 
-        {successMessage && (
+        {mensagemSucesso && (
           <div className="alert alert-success">
-            {successMessage}
+            {mensagemSucesso}
           </div>
         )}
 
-        {errors.apiError && (
+        {erros.apiError && (
           <div className="alert alert-danger">
-            {errors.apiError}
+            {erros.apiError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={lidarEnvio} noValidate>
           
           {/* NOVA SENHA */}
           <div className="input-group">
@@ -150,21 +150,21 @@ const ResetPassword = () => {
             <div className="password-container">
               <input
                 id="password"
-                type={showPassword ? 'text' : 'password'}
+                type={exibirSenha ? 'text' : 'password'}
                 placeholder="No mínimo 6 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={submitAttempted && errors.password ? 'input-error' : ''}
-                disabled={loading || !!successMessage}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className={tentativaEnvio && erros.password ? 'input-error' : ''}
+                disabled={carregando || !!mensagemSucesso}
               />
               <button
                 type="button"
                 className="eye-button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setExibirSenha(!exibirSenha)}
                 tabIndex="-1"
-                disabled={!!successMessage}
+                disabled={!!mensagemSucesso}
               >
-                {showPassword ? (
+                {exibirSenha ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="eye-icon">
                     <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                     <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
@@ -179,17 +179,17 @@ const ResetPassword = () => {
                 )}
               </button>
             </div>
-            {submitAttempted && errors.password && (
-              <span className="error-message">{errors.password}</span>
+            {tentativaEnvio && erros.password && (
+              <span className="error-message">{erros.password}</span>
             )}
 
-            {password && (
+            {senha && (
               <div className="password-strength-meter">
                 <div className="strength-bar-bg">
-                  <div className={`strength-bar-fill score-${strength.score}`}></div>
+                  <div className={`strength-bar-fill score-${forcaSenha.score}`}></div>
                 </div>
-                <span className={`strength-label score-${strength.score}`}>
-                  Força da senha: <strong>{strength.label}</strong>
+                <span className={`strength-label score-${forcaSenha.score}`}>
+                  Força da senha: <strong>{forcaSenha.label}</strong>
                 </span>
               </div>
             )}
@@ -200,21 +200,21 @@ const ResetPassword = () => {
             <div className="password-container">
               <input
                 id="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={exibirConfirmarSenha ? 'text' : 'password'}
                 placeholder="Repita a nova senha"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className={(submitAttempted || confirmPassword) && errors.confirmPassword ? 'input-error' : ''}
-                disabled={loading || !!successMessage}
+                value={confirmarSenha}
+                onChange={(e) => setConfirmarSenha(e.target.value)}
+                className={(tentativaEnvio || confirmarSenha) && erros.confirmPassword ? 'input-error' : ''}
+                disabled={carregando || !!mensagemSucesso}
               />
               <button
                 type="button"
                 className="eye-button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                onClick={() => setExibirConfirmarSenha(!exibirConfirmarSenha)}
                 tabIndex="-1"
-                disabled={!!successMessage}
+                disabled={!!mensagemSucesso}
               >
-                {showConfirmPassword ? (
+                {exibirConfirmarSenha ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="eye-icon">
                     <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                     <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
@@ -229,17 +229,17 @@ const ResetPassword = () => {
                 )}
               </button>
             </div>
-            {(submitAttempted || confirmPassword) && errors.confirmPassword && (
-              <span className="error-message">{errors.confirmPassword}</span>
+            {(tentativaEnvio || confirmarSenha) && erros.confirmPassword && (
+              <span className="error-message">{erros.confirmPassword}</span>
             )}
           </div>
 
           <button
             type="submit"
             className="reset-button"
-            disabled={loading || !!successMessage}
+            disabled={carregando || !!mensagemSucesso}
           >
-            {loading ? (
+            {carregando ? (
               <span className="spinner-container">
                 <span className="spinner"></span> Atualizando...
               </span>

@@ -2,52 +2,52 @@ import api from '../config/axiosConfig';
 
 class TransactionService {
   // Lista transações paginadas de uma carteira
-  async getTransactions(walletId, { page = 0, size = 20, sort = 'date,desc', startDate, endDate, categoryId, type } = {}) {
+  async listarTransacoes(carteiraId, { pagina = 0, tamanho = 20, ordenacao = 'date,desc', dataInicio, dataFim, categoriaId, tipo } = {}) {
     try {
-      const params = { page, size, sort };
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-      if (categoryId) params.categoryId = categoryId;
-      if (type) params.type = type;
+      const params = { page: pagina, size: tamanho, sort: ordenacao };
+      if (dataInicio) params.startDate = dataInicio;
+      if (dataFim) params.endDate = dataFim;
+      if (categoriaId) params.categoryId = categoriaId;
+      if (tipo) params.type = tipo;
 
-      const response = await api.get(`/api/v1/wallets/${walletId}/transactions`, { params });
+      const response = await api.get(`/api/v1/wallets/${carteiraId}/transactions`, { params });
       return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao carregar transações';
-      throw new Error(errorMessage);
+      const mensagemErro = error.response?.data?.message || 'Erro ao carregar transações';
+      throw new Error(mensagemErro);
     }
   }
 
   // Cria uma nova transação
-  async createTransaction(walletId, transactionData) {
+  async criarTransacao(carteiraId, dadosTransacao) {
     try {
-      const response = await api.post(`/api/v1/wallets/${walletId}/transactions`, transactionData);
+      const response = await api.post(`/api/v1/wallets/${carteiraId}/transactions`, dadosTransacao);
       return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao criar transação';
-      throw new Error(errorMessage);
+      const mensagemErro = error.response?.data?.message || 'Erro ao criar transação';
+      throw new Error(mensagemErro);
     }
   }
 
   // Atualiza uma transação existente
-  async updateTransaction(walletId, id, transactionData) {
+  async atualizarTransacao(carteiraId, id, dadosTransacao) {
     try {
-      const response = await api.put(`/api/v1/wallets/${walletId}/transactions/${id}`, transactionData);
+      const response = await api.put(`/api/v1/wallets/${carteiraId}/transactions/${id}`, dadosTransacao);
       return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao atualizar transação';
-      throw new Error(errorMessage);
+      const mensagemErro = error.response?.data?.message || 'Erro ao atualizar transação';
+      throw new Error(mensagemErro);
     }
   }
 
   // Exclui uma transação
-  async deleteTransaction(walletId, id) {
+  async excluirTransacao(carteiraId, id) {
     try {
-      await api.delete(`/api/v1/wallets/${walletId}/transactions/${id}`);
+      await api.delete(`/api/v1/wallets/${carteiraId}/transactions/${id}`);
       return true;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erro ao excluir transação';
-      throw new Error(errorMessage);
+      const mensagemErro = error.response?.data?.message || 'Erro ao excluir transação';
+      throw new Error(mensagemErro);
     }
   }
 }

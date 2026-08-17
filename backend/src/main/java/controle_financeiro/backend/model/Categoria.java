@@ -26,7 +26,7 @@ public class Categoria {
     @NotBlank(message = "O nome da categoria é obrigatório")
     @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres")
     @Column(nullable = false)
-    private String name;
+    private String nome;
 
     // Tipo da categoria: RECEITA ou DESPESA
     @NotNull(message = "O tipo é obrigatório")
@@ -41,4 +41,8 @@ public class Categoria {
     // Nome do ícone Lucide React para exibição no frontend (ex: "UtensilsCrossed")
     @Size(max = 50)
     private String icone;
+
+    // Método de compatibilidade
+    public String getName() { return nome; }
+    public void setName(String name) { this.nome = name; }
 }

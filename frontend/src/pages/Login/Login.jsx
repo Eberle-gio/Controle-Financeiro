@@ -10,13 +10,13 @@ const Login = () => {
 
   // Estados dos Campos
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [senha, setSenha] = useState('');
+  const [exibirSenha, setExibirSenha] = useState(false);
 
   // Estados de Validação e Envio
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [erros, setErros] = useState({});
+  const [carregando, setCarregando] = useState(false);
+  const [tentativaEnvio, setTentativaEnvio] = useState(false);
 
   // Redireciona se o usuário já estiver logado
   useEffect(() => {
@@ -25,41 +25,40 @@ const Login = () => {
     }
   }, [navigate]);
 
-
-  const validateForm = () => {
-    const tempErrors = {};
+  const validarFormulario = () => {
+    const errosTemporarios = {};
     if (!email) {
-      tempErrors.email = 'Campo obrigatório';
+      errosTemporarios.email = 'Campo obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      tempErrors.email = 'E-mail inválido';
+      errosTemporarios.email = 'E-mail inválido';
     }
 
-    if (!password) {
-      tempErrors.password = 'Campo obrigatório';
-    } else if (password.length < 6) {
-      tempErrors.password = 'Mínimo 6 caracteres';
+    if (!senha) {
+      errosTemporarios.senha = 'Campo obrigatório';
+    } else if (senha.length < 6) {
+      errosTemporarios.senha = 'Mínimo 6 caracteres';
     }
 
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
+    setErros(errosTemporarios);
+    return Object.keys(errosTemporarios).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const lidarEnvio = async (e) => {
     e.preventDefault();
-    setSubmitAttempted(true);
+    setTentativaEnvio(true);
 
-    if (!validateForm()) return;
+    if (!validarFormulario()) return;
 
-    setLoading(true);
-    setErrors({});
+    setCarregando(true);
+    setErros({});
 
     try {
-      await authService.login(email, password);
+      await authService.login(email, senha);
       navigate('/dashboard');
     } catch (err) {
-      setErrors({ apiError: err.message });
+      setErros({ apiError: err.message });
     } finally {
-      setLoading(false);
+      setCarregando(false);
     }
   };
 
@@ -82,13 +81,13 @@ const Login = () => {
             <h2>Bem-vindo de volta</h2>
             <p className="form-subtitle">Faça login para acessar sua conta.</p>
 
-            {errors.apiError && (
+            {erros.apiError && (
               <div className="alert alert-danger">
-                {errors.apiError}
+                {erros.apiError}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} noValidate>
+            <form onSubmit={lidarEnvio} noValidate>
               
               <div className="input-group">
                 <label htmlFor="email">E-mail</label>
@@ -98,10 +97,10 @@ const Login = () => {
                   placeholder="Digite seu e-mail"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={submitAttempted && errors.email ? 'input-error' : ''}
+                  className={tentativaEnvio && erros.email ? 'input-error' : ''}
                 />
-                {submitAttempted && errors.email && (
-                  <span className="error-message">{errors.email}</span>
+                {tentativaEnvio && erros.email && (
+                  <span className="error-message">{erros.email}</span>
                 )}
               </div>
 
@@ -110,19 +109,19 @@ const Login = () => {
                 <div className="password-container">
                   <input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={exibirSenha ? 'text' : 'password'}
                     placeholder="Digite sua senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={submitAttempted && errors.password ? 'input-error' : ''}
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                    className={tentativaEnvio && erros.senha ? 'input-error' : ''}
                   />
                   <button
                     type="button"
                     className="eye-button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setExibirSenha(!exibirSenha)}
                     tabIndex="-1"
                   >
-                    {showPassword ? (
+                    {exibirSenha ? (
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="eye-icon">
                         <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                         <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
@@ -137,8 +136,8 @@ const Login = () => {
                     )}
                   </button>
                 </div>
-                {submitAttempted && errors.password && (
-                  <span className="error-message">{errors.password}</span>
+                {tentativaEnvio && erros.senha && (
+                  <span className="error-message">{erros.senha}</span>
                 )}
               </div>
 
@@ -149,9 +148,9 @@ const Login = () => {
               <button
                 className="login-button"
                 type="submit"
-                disabled={loading}
+                disabled={carregando}
               >
-                {loading ? (
+                {carregando ? (
                   <span className="spinner-container">
                     <span className="spinner"></span> Carregando...
                   </span>

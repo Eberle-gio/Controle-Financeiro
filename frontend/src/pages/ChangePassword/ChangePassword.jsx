@@ -7,131 +7,130 @@ import './ChangePassword.css';
 
 const ChangePassword = () => {
   const navigate = useNavigate();
-  const currentUser = authService.getCurrentUser();
+  const usuarioAtual = authService.obterUsuarioAtual();
 
   // Estados dos Campos
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [senhaAtual, setSenhaAtual] = useState('');
+  const [novaSenha, setNovaSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
 
   // Estados de Exibição
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [exibirSenhaAtual, setExibirSenhaAtual] = useState(false);
+  const [exibirNovaSenha, setExibirNovaSenha] = useState(false);
+  const [exibirConfirmarSenha, setExibirConfirmarSenha] = useState(false);
 
   // Estados de Feedback e Erros
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [erros, setErros] = useState({});
+  const [carregando, setCarregando] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState('');
+  const [tentativaEnvio, setTentativaEnvio] = useState(false);
 
   // Estado de Força de Nova Senha
-  const [strength, setStrength] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
+  const [forcaSenha, setForcaSenha] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
 
   useEffect(() => {
-    if (!newPassword) {
-      setStrength({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
+    if (!novaSenha) {
+      setForcaSenha({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
       return;
     }
 
-    let score = 0;
-    if (newPassword.length >= 6) {
-      score = 1;
+    let pontuacao = 0;
+    if (novaSenha.length >= 6) {
+      pontuacao = 1;
     }
     
-    const hasLetters = /[a-zA-Z]/.test(newPassword);
-    const hasNumbers = /[0-9]/.test(newPassword);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(newPassword);
+    const temLetras = /[a-zA-Z]/.test(novaSenha);
+    const temNumeros = /[0-9]/.test(novaSenha);
+    const temEspeciais = /[^a-zA-Z0-9]/.test(novaSenha);
     
-    if (newPassword.length >= 6 && hasLetters && hasNumbers) {
-      score = 2;
-    }
-
-    const hasUpper = /[A-Z]/.test(newPassword);
-    const hasLower = /[a-z]/.test(newPassword);
-    
-    if (newPassword.length >= 8 && hasUpper && hasLower && hasNumbers && hasSpecial) {
-      score = 3;
+    if (novaSenha.length >= 6 && temLetras && temNumeros) {
+      pontuacao = 2;
     }
 
-    if (newPassword.length < 6) {
-      setStrength({ score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' });
-    } else if (score === 1) {
-      setStrength({ score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' });
-    } else if (score === 2) {
-      setStrength({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
+    const temMaiuscula = /[A-Z]/.test(novaSenha);
+    const temMinuscula = /[a-z]/.test(novaSenha);
+    
+    if (novaSenha.length >= 8 && temMaiuscula && temMinuscula && temNumeros && temEspeciais) {
+      pontuacao = 3;
+    }
+
+    if (novaSenha.length < 6) {
+      setForcaSenha({ score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' });
+    } else if (pontuacao === 1) {
+      setForcaSenha({ score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' });
+    } else if (pontuacao === 2) {
+      setForcaSenha({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
     } else {
-      setStrength({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
+      setForcaSenha({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
     }
-  }, [newPassword]);
-
+  }, [novaSenha]);
 
   useEffect(() => {
-    if (confirmPassword && newPassword !== confirmPassword) {
-      setErrors(prev => ({ ...prev, confirmPassword: 'As senhas não coincidem' }));
+    if (confirmarSenha && novaSenha !== confirmarSenha) {
+      setErros(prev => ({ ...prev, confirmPassword: 'As senhas não coincidem' }));
     } else {
-      setErrors(prev => {
+      setErros(prev => {
         const next = { ...prev };
         delete next.confirmPassword;
         return next;
       });
     }
-  }, [confirmPassword, newPassword]);
+  }, [confirmarSenha, novaSenha]);
 
-  const validateForm = () => {
-    const tempErrors = {};
-    if (!currentPassword) {
-      tempErrors.currentPassword = 'A senha atual é obrigatória';
+  const validarFormulario = () => {
+    const errosTemporarios = {};
+    if (!senhaAtual) {
+      errosTemporarios.currentPassword = 'A senha atual é obrigatória';
     }
     
-    if (!newPassword) {
-      tempErrors.newPassword = 'A nova senha é obrigatória';
-    } else if (newPassword.length < 6) {
-      tempErrors.newPassword = 'A senha deve ter no mínimo 6 caracteres';
+    if (!novaSenha) {
+      errosTemporarios.newPassword = 'A nova senha é obrigatória';
+    } else if (novaSenha.length < 6) {
+      errosTemporarios.newPassword = 'A senha deve ter no mínimo 6 caracteres';
     }
 
-    if (!confirmPassword) {
-      tempErrors.confirmPassword = 'A confirmação da nova senha é obrigatória';
-    } else if (newPassword !== confirmPassword) {
-      tempErrors.confirmPassword = 'As senhas não coincidem';
+    if (!confirmarSenha) {
+      errosTemporarios.confirmPassword = 'A confirmação da nova senha é obrigatória';
+    } else if (novaSenha !== confirmarSenha) {
+      errosTemporarios.confirmPassword = 'As senhas não coincidem';
     }
 
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
+    setErros(errosTemporarios);
+    return Object.keys(errosTemporarios).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const lidarEnvio = async (e) => {
     e.preventDefault();
-    setSubmitAttempted(true);
+    setTentativaEnvio(true);
 
-    if (!validateForm()) return;
+    if (!validarFormulario()) return;
 
-    setLoading(true);
-    setErrors({});
+    setCarregando(true);
+    setErros({});
 
     try {
-      await authService.changePassword(currentPassword, newPassword);
-      setSuccessMessage('Senha alterada com sucesso!');
+      await authService.alterarSenha(senhaAtual, novaSenha);
+      setMensagemSucesso('Senha alterada com sucesso!');
       
       // Limpa formulário
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setSubmitAttempted(false);
+      setSenhaAtual('');
+      setNovaSenha('');
+      setConfirmarSenha('');
+      setTentativaEnvio(false);
       
       setTimeout(() => {
-        setSuccessMessage('');
+        setMensagemSucesso('');
       }, 3000);
     } catch (err) {
-      setErrors({ apiError: err.message });
+      setErros({ apiError: err.message });
     } finally {
-      setLoading(false);
+      setCarregando(false);
     }
   };
 
   return (
     <div className="change-pass-page">
-      <Sidebar currentUser={currentUser} activeItem="senha" />
+      <Sidebar usuarioAtual={usuarioAtual} activeItem="senha" />
 
       <main className="change-pass-content">
 
@@ -141,39 +140,39 @@ const ChangePassword = () => {
             <p>Mantenha sua conta segura atualizando sua senha periodicamente.</p>
           </div>
 
-          {successMessage && (
+          {mensagemSucesso && (
             <div className="alert alert-success">
-              {successMessage}
+              {mensagemSucesso}
             </div>
           )}
 
-          {errors.apiError && (
+          {erros.apiError && (
             <div className="alert alert-danger">
-              {errors.apiError}
+              {erros.apiError}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={lidarEnvio} noValidate>
             
             <div className="input-group">
               <label htmlFor="currentPassword">Senha Atual</label>
               <div className="password-container">
                 <input
                   id="currentPassword"
-                  type={showCurrentPassword ? 'text' : 'password'}
+                  type={exibirSenhaAtual ? 'text' : 'password'}
                   placeholder="Digite sua senha atual"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className={submitAttempted && errors.currentPassword ? 'input-error' : ''}
-                  disabled={loading}
+                  value={senhaAtual}
+                  onChange={(e) => setSenhaAtual(e.target.value)}
+                  className={tentativaEnvio && erros.currentPassword ? 'input-error' : ''}
+                  disabled={carregando}
                 />
                 <button
                   type="button"
                   className="eye-button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  onClick={() => setExibirSenhaAtual(!exibirSenhaAtual)}
                   tabIndex="-1"
                 >
-                  {showCurrentPassword ? (
+                  {exibirSenhaAtual ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="eye-icon">
                       <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                       <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
@@ -188,8 +187,8 @@ const ChangePassword = () => {
                   )}
                 </button>
               </div>
-              {submitAttempted && errors.currentPassword && (
-                <span className="error-message">{errors.currentPassword}</span>
+              {tentativaEnvio && erros.currentPassword && (
+                <span className="error-message">{erros.currentPassword}</span>
               )}
             </div>
 
@@ -198,20 +197,20 @@ const ChangePassword = () => {
               <div className="password-container">
                 <input
                   id="newPassword"
-                  type={showNewPassword ? 'text' : 'password'}
+                  type={exibirNovaSenha ? 'text' : 'password'}
                   placeholder="Mínimo 6 caracteres"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className={submitAttempted && errors.newPassword ? 'input-error' : ''}
-                  disabled={loading}
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  className={tentativaEnvio && erros.newPassword ? 'input-error' : ''}
+                  disabled={carregando}
                 />
                 <button
                   type="button"
                   className="eye-button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  onClick={() => setExibirNovaSenha(!exibirNovaSenha)}
                   tabIndex="-1"
                 >
-                  {showNewPassword ? (
+                  {exibirNovaSenha ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="eye-icon">
                       <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                       <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
@@ -226,17 +225,17 @@ const ChangePassword = () => {
                   )}
                 </button>
               </div>
-              {submitAttempted && errors.newPassword && (
-                <span className="error-message">{errors.newPassword}</span>
+              {tentativaEnvio && erros.newPassword && (
+                <span className="error-message">{erros.newPassword}</span>
               )}
 
-              {newPassword && (
+              {novaSenha && (
                 <div className="password-strength-meter">
                   <div className="strength-bar-bg">
-                    <div className={`strength-bar-fill score-${strength.score}`}></div>
+                    <div className={`strength-bar-fill score-${forcaSenha.score}`}></div>
                   </div>
-                  <span className={`strength-label score-${strength.score}`}>
-                    Força da senha: <strong>{strength.label}</strong>
+                  <span className={`strength-label score-${forcaSenha.score}`}>
+                    Força da senha: <strong>{forcaSenha.label}</strong>
                   </span>
                 </div>
               )}
@@ -248,20 +247,20 @@ const ChangePassword = () => {
               <div className="password-container">
                 <input
                   id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={exibirConfirmarSenha ? 'text' : 'password'}
                   placeholder="Repita a nova senha"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={(submitAttempted || confirmPassword) && errors.confirmPassword ? 'input-error' : ''}
-                  disabled={loading}
+                  value={confirmarSenha}
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                  className={(tentativaEnvio || confirmarSenha) && erros.confirmPassword ? 'input-error' : ''}
+                  disabled={carregando}
                 />
                 <button
                   type="button"
                   className="eye-button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() => setExibirConfirmarSenha(!exibirConfirmarSenha)}
                   tabIndex="-1"
                 >
-                  {showConfirmPassword ? (
+                  {exibirConfirmarSenha ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="eye-icon">
                       <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                       <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
@@ -276,13 +275,13 @@ const ChangePassword = () => {
                   )}
                 </button>
               </div>
-              {(submitAttempted || confirmPassword) && errors.confirmPassword && (
-                <span className="error-message">{errors.confirmPassword}</span>
+              {(tentativaEnvio || confirmarSenha) && erros.confirmPassword && (
+                <span className="error-message">{erros.confirmPassword}</span>
               )}
             </div>
 
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? (
+            <button type="submit" className="submit-button" disabled={carregando}>
+              {carregando ? (
                 <span className="spinner-container">
                   <span className="spinner"></span> Atualizando...
                 </span>

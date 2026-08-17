@@ -287,7 +287,7 @@ public class TransacaoService {
                 .categoryColor(t.getCategoria() != null ? t.getCategoria().getCor() : "#6b7280")
                 .categoryIcon(t.getCategoria() != null ? t.getCategoria().getIcone() : "Tag")
                 .criadoPorId(t.getCriadoPor().getId())
-                .criadoPorNome(t.getCriadoPor().getName())
+                .criadoPorNome(t.getCriadoPor().getNome())
                 .data(t.getData())
                 .criadoEm(t.getCriadoEm())
                 .build();

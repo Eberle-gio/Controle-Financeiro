@@ -53,9 +53,9 @@ public class UsuarioService {
         }
 
         Usuario usuario = new Usuario();
-        usuario.setName(request.getName());
+        usuario.setNome(request.getName());
         usuario.setEmail(emailNormalizado);
-        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setSenha(passwordEncoder.encode(request.getPassword()));
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
@@ -68,7 +68,7 @@ public class UsuarioService {
         if (emailService != null) {
             try {
                 Context context = new Context();
-                context.setVariable("name", usuarioSalvo.getName());
+                context.setVariable("name", usuarioSalvo.getNome());
                 emailService.emailTemplate(usuarioSalvo.getEmail(), "Bem-vindo ao Controle Financeiro", context, "novoCadastro");
             } catch (Exception ignored) {
             }
@@ -81,11 +81,11 @@ public class UsuarioService {
         String emailNormalizado = normalizarEmail(request.getEmail());
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
 
-        if (usuario == null || !passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+        if (usuario == null || !passwordEncoder.matches(request.getPassword(), usuario.getSenha())) {
             throw new BusinessException("Credenciais inválidas.");
         }
 
-        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail(), usuario.getName());
+        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail(), usuario.getNome());
 
         return LoginResponse.builder()
                 .accessToken(token)
@@ -117,7 +117,7 @@ public class UsuarioService {
         if (emailService != null) {
             try {
                 Context context = new Context();
-                context.setVariable("name", usuario.getName());
+                context.setVariable("name", usuario.getNome());
                 context.setVariable("token", tokenUUID);
                 context.setVariable("resetUrl", "http://localhost:5173/redefinir-senha/" + tokenUUID);
                 emailService.emailTemplate(usuario.getEmail(), "Recuperação de Senha - Controle Financeiro", context, "recuperacaoSenha");
@@ -142,7 +142,7 @@ public class UsuarioService {
         }
 
         Usuario usuario = resetToken.getUsuario();
-        usuario.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        usuario.setSenha(passwordEncoder.encode(request.getNewPassword()));
         usuarioRepository.save(usuario);
 
         resetToken.setUtilizado(true);
@@ -150,13 +150,13 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void alterarSenha(String currentPassword, String newPassword) {
+    public void alterarSenha(String senhaAtual, String novaSenha) {
         Usuario usuario = getUsuarioAutenticado();
-        if (!passwordEncoder.matches(currentPassword, usuario.getPassword())) {
+        if (!passwordEncoder.matches(senhaAtual, usuario.getSenha())) {
             throw new BusinessException("Senha atual incorreta.");
         }
 
-        usuario.setPassword(passwordEncoder.encode(newPassword));
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
         usuarioRepository.save(usuario);
     }
 
@@ -164,7 +164,7 @@ public class UsuarioService {
     public UserResponseDTO atualizarPerfil(String novoNome) {
         Usuario usuario = getUsuarioAutenticado();
         if (novoNome != null && !novoNome.isBlank()) {
-            usuario.setName(novoNome);
+            usuario.setNome(novoNome);
         }
         Usuario salvo = usuarioRepository.save(usuario);
 
@@ -181,11 +181,11 @@ public class UsuarioService {
     }
 
     public Usuario getUsuarioAutenticado() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+        Authentication autenticacao = SecurityContextHolder.getContext().getAuthentication();
+        if (autenticacao == null || !autenticacao.isAuthenticated() || "anonymousUser".equals(autenticacao.getPrincipal())) {
             throw new AccessDeniedException("Usuário não autenticado.");
         }
-        String email = authentication.getName();
+        String email = autenticacao.getName();
         Usuario usuario = usuarioRepository.findByEmail(email);
         if (usuario == null) {
             throw new ResourceNotFoundException("Usuário autenticado não encontrado.");

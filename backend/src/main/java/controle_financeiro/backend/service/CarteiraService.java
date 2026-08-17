@@ -1,12 +1,7 @@
 package controle_financeiro.backend.service;
 
-import controle_financeiro.backend.dto.*;
-import controle_financeiro.backend.exception.BusinessException;
-import controle_financeiro.backend.exception.ResourceNotFoundException;
-import controle_financeiro.backend.model.*;
-import controle_financeiro.backend.repository.CarteiraRepository;
-import controle_financeiro.backend.repository.MembroCarteiraRepository;
-import controle_financeiro.backend.repository.UsuarioRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,7 +9,19 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import controle_financeiro.backend.dto.WalletMemberRequest;
+import controle_financeiro.backend.dto.WalletMemberResponse;
+import controle_financeiro.backend.dto.WalletRequest;
+import controle_financeiro.backend.dto.WalletResponse;
+import controle_financeiro.backend.exception.BusinessException;
+import controle_financeiro.backend.exception.ResourceNotFoundException;
+import controle_financeiro.backend.model.Carteira;
+import controle_financeiro.backend.model.MembroCarteira;
+import controle_financeiro.backend.model.TipoPermissao;
+import controle_financeiro.backend.model.Usuario;
+import controle_financeiro.backend.repository.CarteiraRepository;
+import controle_financeiro.backend.repository.MembroCarteiraRepository;
+import controle_financeiro.backend.repository.UsuarioRepository;
 
 @Service
 public class CarteiraService {
@@ -212,7 +219,7 @@ public class CarteiraService {
                 .nome(c.getNome())
                 .descricao(c.getDescricao())
                 .donoId(c.getDono().getId())
-                .donoNome(c.getDono().getName())
+                .donoNome(c.getDono().getNome())
                 .meuPapel(meuPapel)
                 .criadoEm(c.getCriadoEm())
                 .build();
@@ -222,7 +229,7 @@ public class CarteiraService {
         return WalletMemberResponse.builder()
                 .id(m.getId())
                 .usuarioId(m.getUsuario().getId())
-                .usuarioNome(m.getUsuario().getName())
+                .usuarioNome(m.getUsuario().getNome())
                 .usuarioEmail(m.getUsuario().getEmail())
                 .papel(m.getPapel())
                 .entradoEm(m.getEntradoEm())
