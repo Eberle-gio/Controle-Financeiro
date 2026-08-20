@@ -8,6 +8,7 @@ import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.repository.PasswordResetTokenRepository;
 import controle_financeiro.backend.repository.UsuarioRepository;
 import controle_financeiro.backend.security.JwtUtils;
+import controle_financeiro.backend.util.EmailUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -46,7 +47,7 @@ public class UsuarioService {
 
     @Transactional
     public UserResponseDTO cadastrar(RegisterRequest request) {
-        String emailNormalizado = normalizarEmail(request.getEmail());
+        String emailNormalizado = EmailUtils.normalizar(request.getEmail());
 
         if (usuarioRepository.findByEmail(emailNormalizado) != null) {
             throw new DataIntegrityViolationException("E-mail já cadastrado no sistema.");
@@ -78,7 +79,7 @@ public class UsuarioService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        String emailNormalizado = normalizarEmail(request.getEmail());
+        String emailNormalizado = EmailUtils.normalizar(request.getEmail());
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
 
         if (usuario == null || !passwordEncoder.matches(request.getPassword(), usuario.getSenha())) {
@@ -96,7 +97,7 @@ public class UsuarioService {
 
     @Transactional
     public String solicitarRecuperacaoSenha(String email) {
-        String emailNormalizado = normalizarEmail(email);
+        String emailNormalizado = EmailUtils.normalizar(email);
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
         
         // Retorna um token simulado sem salvar caso o e-mail não exista para não expor e-mails cadastrados
@@ -172,7 +173,7 @@ public class UsuarioService {
     }
 
     public Usuario buscarPorEmail(String email) {
-        String emailNormalizado = normalizarEmail(email);
+        String emailNormalizado = EmailUtils.normalizar(email);
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
         if (usuario == null) {
             throw new ResourceNotFoundException("Usuário não encontrado.");
@@ -191,9 +192,5 @@ public class UsuarioService {
             throw new ResourceNotFoundException("Usuário autenticado não encontrado.");
         }
         return usuario;
-    }
-
-    private String normalizarEmail(String email) {
-        return email != null ? email.trim().toLowerCase() : "";
     }
 }

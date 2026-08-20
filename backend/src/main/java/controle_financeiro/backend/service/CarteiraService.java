@@ -131,7 +131,8 @@ public class CarteiraService {
             throw new AccessDeniedException("Apenas o dono da carteira pode adicionar membros.");
         }
 
-        Usuario novoMembroUsuario = usuarioRepository.findByEmail(request.getEmail());
+        String emailNormalizado = controle_financeiro.backend.util.EmailUtils.normalizar(request.getEmail());
+        Usuario novoMembroUsuario = usuarioRepository.findByEmail(emailNormalizado);
         if (novoMembroUsuario == null) {
             throw new ResourceNotFoundException("Usuário com o e-mail informado não foi encontrado.");
         }
