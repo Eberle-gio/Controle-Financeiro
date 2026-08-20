@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { ArrowLeft } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
+import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import './ChangePassword.css';
 
 const ChangePassword = () => {
@@ -25,45 +26,7 @@ const ChangePassword = () => {
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [tentativaEnvio, setTentativaEnvio] = useState(false);
 
-  // Estado de Força de Nova Senha
-  const [forcaSenha, setForcaSenha] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
 
-  useEffect(() => {
-    if (!novaSenha) {
-      setForcaSenha({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
-      return;
-    }
-
-    let pontuacao = 0;
-    if (novaSenha.length >= 6) {
-      pontuacao = 1;
-    }
-    
-    const temLetras = /[a-zA-Z]/.test(novaSenha);
-    const temNumeros = /[0-9]/.test(novaSenha);
-    const temEspeciais = /[^a-zA-Z0-9]/.test(novaSenha);
-    
-    if (novaSenha.length >= 6 && temLetras && temNumeros) {
-      pontuacao = 2;
-    }
-
-    const temMaiuscula = /[A-Z]/.test(novaSenha);
-    const temMinuscula = /[a-z]/.test(novaSenha);
-    
-    if (novaSenha.length >= 8 && temMaiuscula && temMinuscula && temNumeros && temEspeciais) {
-      pontuacao = 3;
-    }
-
-    if (novaSenha.length < 6) {
-      setForcaSenha({ score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' });
-    } else if (pontuacao === 1) {
-      setForcaSenha({ score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' });
-    } else if (pontuacao === 2) {
-      setForcaSenha({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
-    } else {
-      setForcaSenha({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
-    }
-  }, [novaSenha]);
 
   useEffect(() => {
     if (confirmarSenha && novaSenha !== confirmarSenha) {
@@ -229,16 +192,7 @@ const ChangePassword = () => {
                 <span className="error-message">{erros.newPassword}</span>
               )}
 
-              {novaSenha && (
-                <div className="password-strength-meter">
-                  <div className="strength-bar-bg">
-                    <div className={`strength-bar-fill score-${forcaSenha.score}`}></div>
-                  </div>
-                  <span className={`strength-label score-${forcaSenha.score}`}>
-                    Força da senha: <strong>{forcaSenha.label}</strong>
-                  </span>
-                </div>
-              )}
+              <PasswordStrengthMeter password={novaSenha} />
             </div>
 
 

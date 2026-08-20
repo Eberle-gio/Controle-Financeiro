@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
+import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import './Register.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -24,51 +25,7 @@ const Register = () => {
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [tentativaEnvio, setTentativaEnvio] = useState(false);
 
-  // Estado de Força da Senha
-  const [forcaSenha, setForcaSenha] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
 
-  // Monitora a força da senha em tempo real
-  useEffect(() => {
-    if (!senha) {
-      setForcaSenha({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
-      return;
-    }
-
-    let pontuacao = 0;
-    
-    // Critério 1: Comprimento mínimo
-    if (senha.length >= 6) {
-      pontuacao = 1;
-    }
-    
-    // Critério 2: Mistura de letras e números
-    const temLetras = /[a-zA-Z]/.test(senha);
-    const temNumeros = /[0-9]/.test(senha);
-    const temEspeciais = /[^a-zA-Z0-9]/.test(senha);
-    
-    if (senha.length >= 6 && temLetras && temNumeros) {
-      pontuacao = 2; // Média
-    }
-
-    // Critério 3: Muito forte
-    const temMaiuscula = /[A-Z]/.test(senha);
-    const temMinuscula = /[a-z]/.test(senha);
-    
-    if (senha.length >= 8 && temMaiuscula && temMinuscula && temNumeros && temEspeciais) {
-      pontuacao = 3; // Forte
-    }
-
-    // Mapeamento de pontuação para visual
-    if (senha.length < 6) {
-      setForcaSenha({ score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' });
-    } else if (pontuacao === 1) {
-      setForcaSenha({ score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' });
-    } else if (pontuacao === 2) {
-      setForcaSenha({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
-    } else {
-      setForcaSenha({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
-    }
-  }, [senha]);
 
   useEffect(() => {
     if (confirmarSenha && senha !== confirmarSenha) {
@@ -222,16 +179,7 @@ const Register = () => {
                 </div>
                 {tentativaEnvio && erros.password && <span className="error-message">{erros.password}</span>}
 
-                {senha && (
-                  <div className="password-strength-meter">
-                    <div className="strength-bar-bg">
-                      <div className={`strength-bar-fill score-${forcaSenha.score}`}></div>
-                    </div>
-                    <span className={`strength-label score-${forcaSenha.score}`}>
-                      Força da senha: <strong>{forcaSenha.label}</strong>
-                    </span>
-                  </div>
-                )}
+                <PasswordStrengthMeter password={senha} />
               </div>
               
               <div className="input-group">
