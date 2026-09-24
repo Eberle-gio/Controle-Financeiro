@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { walletService } from '../../services/walletService';
-import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut } from 'lucide-react';
+import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut, Plus, Edit2 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CategoryIcon from '../../components/CategoryIcon';
+import TransactionModal from '../../components/TransactionModal';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -40,7 +41,24 @@ const Dashboard = () => {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
-  // Busca perfil atualizado do usuário logado na API do backend
+  // Estados do Modal de Transação
+  const [modalTransacaoAberto, setModalTransacaoAberto] = useState(false);
+  const [transacaoSelecionada, setTransacaoSelecionada] = useState(null);
+
+  const abrirNovaTransacao = () => {
+    if (!carteiraAtiva && carteiras.length > 0) {
+      setCarteiraAtiva(carteiras[0]);
+    }
+    setTransacaoSelecionada(null);
+    setModalTransacaoAberto(true);
+  };
+
+  const abrirEditarTransacao = (transacao) => {
+    setTransacaoSelecionada(transacao);
+    setModalTransacaoAberto(true);
+  };
+
+  // Busca perfil atualizado do usuário logado 
   useEffect(() => {
     const buscarPerfilUsuario = async () => {
       try {
@@ -66,33 +84,34 @@ const Dashboard = () => {
     setDataFim(`${ano}-${mes}-${String(ultimoDia).padStart(2, '0')}`);
   }, []);
 
-  // Busca carteiras do usuário na API 
-  useEffect(() => {
-    const buscarCarteiras = async () => {
-      try {
-        let carteirasUsuario = await walletService.listarCarteiras();
-        
-        // Se o usuário ainda não tiver nenhuma carteira cadastrada no banco, cria uma padrão automaticamente
-        if (carteirasUsuario.length === 0) {
-          const carteiraPadrao = await walletService.criarCarteira('Minha Carteira', 'Carteira Principal');
-          carteirasUsuario = [carteiraPadrao];
-        }
+  // Busca carteiras do usuário
+  const buscarCarteiras = useCallback(async () => {
+    try {
+      let carteirasUsuario = await walletService.listarCarteiras();
+      
+      // Se o usuário ainda não tiver nenhuma carteira cadastrada no banco, cria uma padrão automaticamente
+      if (carteirasUsuario.length === 0) {
+        const carteiraPadrao = await walletService.criarCarteira('Minha Carteira', 'Carteira Principal');
+        carteirasUsuario = [carteiraPadrao];
+      }
 
-        setCarteiras(carteirasUsuario);
-        if (carteirasUsuario.length > 0) {
-          setCarteiraAtiva(carteirasUsuario[0]);
-        } else {
-          setCarregando(false);
-        }
-      } catch (err) {
-        setErro('Falha ao carregar carteiras da API');
+      setCarteiras(carteirasUsuario);
+      if (carteirasUsuario.length > 0) {
+        setCarteiraAtiva((atual) => atual || carteirasUsuario[0]);
+      } else {
         setCarregando(false);
       }
-    };
-    buscarCarteiras();
+    } catch (err) {
+      setErro('Falha ao carregar carteiras da API');
+      setCarregando(false);
+    }
   }, []);
 
-  // Busca dados de resumo da carteira ativa na API 
+  useEffect(() => {
+    buscarCarteiras();
+  }, [buscarCarteiras]);
+
+  // Busca dados de resumo da carteira ativa 
   const buscarResumo = useCallback(async () => {
     if (!carteiraAtiva) return;
     setCarregando(true);
@@ -214,6 +233,15 @@ const Dashboard = () => {
             <button onClick={buscarResumo} className="filter-btn" title="Atualizar Dados">
               <RefreshCw size={16} className={carregando ? 'spin-icon' : ''} /> Filtrar
             </button>
+
+            <button
+              type="button"
+              onClick={abrirNovaTransacao}
+              className="btn-new-transaction"
+              title="Adicionar nova transação"
+            >
+              <Plus size={16} /> Nova Transação
+            </button>
           </div>
         </section>
 
@@ -295,11 +323,26 @@ const Dashboard = () => {
           </div>
 
           <div className="details-card transactions-card">
-            <h3>Lançamentos Recentes</h3>
+            <div className="card-header-row">
+              <h3>Lançamentos Recentes</h3>
+              <button
+                type="button"
+                className="btn-quick-add"
+                onClick={abrirNovaTransacao}
+                title="Adicionar lançamento rápido"
+              >
+                <Plus size={14} /> Novo
+              </button>
+            </div>
             <div className="transactions-list">
               {resumo.recentTransactions.length > 0 ? (
                 resumo.recentTransactions.map((t) => (
-                  <div key={t.id} className="transaction-item">
+                  <div
+                    key={t.id}
+                    className="transaction-item clickable"
+                    onClick={() => abrirEditarTransacao(t)}
+                    title="Clique para editar ou excluir"
+                  >
                     <div className="transaction-info">
                       <span className="category-icon-badge">
                         <CategoryIcon name={t.categoryIcon} size={16} color={t.categoryColor || 'var(--primary)'} />
@@ -309,9 +352,12 @@ const Dashboard = () => {
                         <span className="transaction-date">{formatarData(t.data || t.date)}</span>
                       </div>
                     </div>
-                    <span className={`transaction-value ${t.tipo === 'RECEITA' ? 'income' : 'expense'}`}>
-                      {t.tipo === 'RECEITA' ? '+' : '-'} {formatarMoeda(t.valor)}
-                    </span>
+                    <div className="transaction-value-action">
+                      <span className={`transaction-value ${t.tipo === 'RECEITA' ? 'income' : 'expense'}`}>
+                        {t.tipo === 'RECEITA' ? '+' : '-'} {formatarMoeda(t.valor)}
+                      </span>
+                      <Edit2 size={13} className="edit-hint-icon" />
+                    </div>
                   </div>
                 ))
               ) : (
@@ -325,6 +371,20 @@ const Dashboard = () => {
         </section>
 
       </main>
+
+      {/* Modal de Transação (Criação / Edição / Exclusão) */}
+      <TransactionModal
+        isOpen={modalTransacaoAberto}
+        onClose={() => setModalTransacaoAberto(false)}
+        onSuccess={() => {
+          buscarCarteiras();
+          buscarResumo();
+        }}
+        walletId={carteiraAtiva?.id}
+        wallets={carteiras}
+        onWalletChange={(nova) => setCarteiraAtiva(nova)}
+        initialData={transacaoSelecionada}
+      />
     </div>
   );
 };

@@ -5,6 +5,9 @@ import Register from '../pages/Register/Register';
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword/ResetPassword';
 import Dashboard from '../pages/Dashboard/Dashboard';
+import Transactions from '../pages/Transactions/Transactions';
+import Wallets from '../pages/Wallets/Wallets';
+import Categories from '../pages/Categories/Categories';
 import ChangePassword from '../pages/ChangePassword/ChangePassword';
 import PrivateRoute from './PrivateRoute';
 
@@ -17,6 +20,9 @@ const AppRoutes = () => {
       <Route path="/recuperar-senha" element={<ForgotPassword />} />
       <Route path="/redefinir-senha/:token" element={<ResetPassword />} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/transacoes" element={<PrivateRoute><Transactions /></PrivateRoute>} />
+      <Route path="/carteiras" element={<PrivateRoute><Wallets /></PrivateRoute>} />
+      <Route path="/categorias" element={<PrivateRoute><Categories /></PrivateRoute>} />
       <Route path="/app/perfil/senha" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
     </Routes>
   );

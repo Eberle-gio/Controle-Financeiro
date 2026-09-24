@@ -194,6 +194,32 @@
   transform: scale(0.98);
 }
 
+.btn-new-transaction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.btn-new-transaction:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+}
+
+.btn-new-transaction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .spin-icon {
   animation: spin 1s linear infinite;
 }
@@ -358,6 +384,42 @@
 }
 
 /* Lista de Lançamentos Recentes */
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.card-header-row h3 {
+  margin-bottom: 0;
+}
+
+.btn-quick-add {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: var(--primary-hover);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-quick-add:hover:not(:disabled) {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-quick-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .transactions-list {
   display: flex;
   flex-direction: column;
@@ -375,11 +437,38 @@
   border-radius: var(--radius-md);
   background-color: var(--bg-tertiary);
   border: 1px solid var(--glass-border);
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .transaction-item:hover {
   background-color: rgba(31, 41, 55, 0.6);
+}
+
+.transaction-item.clickable {
+  cursor: pointer;
+}
+
+.transaction-item.clickable:hover {
+  background-color: rgba(45, 55, 72, 0.7);
+  transform: translateX(2px);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.transaction-value-action {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.edit-hint-icon {
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.transaction-item.clickable:hover .edit-hint-icon {
+  opacity: 1;
+  color: var(--primary-hover);
 }
 
 .transaction-info {

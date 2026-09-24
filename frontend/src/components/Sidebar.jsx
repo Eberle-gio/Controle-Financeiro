@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import {
   LayoutDashboard,
-  Lock,
-  Users,
+  ArrowLeftRight,
+  Wallet,
   Tag,
-  Wallet
+  Lock
 } from 'lucide-react';
 import logo from '../assets/images/Logo.svg';
 import './Sidebar.css';
@@ -28,6 +28,32 @@ const Sidebar = ({ usuarioAtual, currentUser, activeItem = 'dashboard', itemAtiv
           <LayoutDashboard size={18} />
           Dashboard
         </Link>
+
+        <Link
+          to="/transacoes"
+          className={`nav-item ${item === 'transacoes' ? 'active' : ''}`}
+        >
+          <ArrowLeftRight size={18} />
+          Transações
+        </Link>
+
+        <Link
+          to="/carteiras"
+          className={`nav-item ${item === 'carteiras' ? 'active' : ''}`}
+        >
+          <Wallet size={18} />
+          Carteiras
+        </Link>
+
+        <Link
+          to="/categorias"
+          className={`nav-item ${item === 'categorias' ? 'active' : ''}`}
+        >
+          <Tag size={18} />
+          Categorias
+        </Link>
+
+        <div className="nav-separator">Conta</div>
         <Link
           to="/app/perfil/senha"
           className={`nav-item ${item === 'senha' ? 'active' : ''}`}
@@ -35,11 +61,6 @@ const Sidebar = ({ usuarioAtual, currentUser, activeItem = 'dashboard', itemAtiv
           <Lock size={18} />
           Alterar Senha
         </Link>
-
-        <div className="nav-separator">Configurações (Em Breve)</div>
-        <span className="nav-item disabled"><Users size={18} /> Membros</span>
-        <span className="nav-item disabled"><Tag size={18} /> Categorias</span>
-        <span className="nav-item disabled"><Wallet size={18} /> Carteiras</span>
       </nav>
 
       <div className="sidebar-user">
