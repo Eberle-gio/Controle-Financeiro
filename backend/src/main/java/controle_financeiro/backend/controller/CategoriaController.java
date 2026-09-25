@@ -18,7 +18,7 @@ public class CategoriaController {
     @Autowired
     private CategoriaService categoriaService;
 
-    // GET /api/v1/categories (com suporte a filtro ?type=INCOME ou ?type=EXPENSE)
+    // GET /api/v1/categories 
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> listar(@RequestParam(required = false) String type) {
         List<CategoryResponse> categorias = categoriaService.listarPorUsuario(type);
@@ -40,7 +40,7 @@ public class CategoriaController {
         return ResponseEntity.ok(atualizada);
     }
 
-    // DELETE /api/v1/categories/{id} (retorna 422 caso existam transações vinculadas)
+    // DELETE /api/v1/categories/{id} 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         categoriaService.excluir(id);

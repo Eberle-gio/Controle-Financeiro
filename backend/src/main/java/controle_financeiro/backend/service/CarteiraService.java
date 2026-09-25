@@ -75,7 +75,7 @@ public class CarteiraService {
         return paraWalletResponse(salva, TipoPermissao.DONO);
     }
 
-    // Atualiza nome/descrição da carteira (somente DONO ou EDITOR)
+    // Atualiza nome/descrição da carteira 
     @Transactional
     public WalletResponse atualizarCarteira(Long id, WalletRequest request) {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
@@ -93,7 +93,7 @@ public class CarteiraService {
         return paraWalletResponse(salva, vinculo.getPapel());
     }
 
-    // Exclui carteira e seus membros (somente DONO)
+    // Exclui carteira e seus membros 
     @Transactional
     public void excluirCarteira(Long id) {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
@@ -107,10 +107,7 @@ public class CarteiraService {
         carteiraRepository.delete(vinculo.getCarteira());
     }
 
-    // ==========================================
     // GESTÃO DE MEMBROS DA CARTEIRA
-    // ==========================================
-
     // Lista membros da carteira
     public List<WalletMemberResponse> listarMembros(Long carteiraId) {
         Usuario usuario = usuarioService.getUsuarioAutenticado();

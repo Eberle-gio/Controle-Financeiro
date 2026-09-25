@@ -199,7 +199,7 @@ public class TransacaoService {
         transacaoRepository.delete(transacao);
     }
 
-    // Obter Resumo Consolidado do Dashboard
+    // Resumo do Dashboard
     public DashboardSummaryResponse obterResumoDashboard(Long walletId, LocalDate inicio, LocalDate fim) {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(walletId, usuario);
@@ -226,7 +226,7 @@ public class TransacaoService {
 
             // Agrupamento por Categoria
             Long catId = t.getCategoria() != null ? t.getCategoria().getId() : 0L;
-            String catName = t.getCategoria() != null ? t.getCategoria().getName() : "Sem Categoria";
+            String catName = t.getCategoria() != null ? t.getCategoria().getNome() : "Sem Categoria";
             String catColor = t.getCategoria() != null ? t.getCategoria().getCor() : "#6b7280";
             String catIcon = t.getCategoria() != null ? t.getCategoria().getIcone() : "Tag";
 
@@ -283,7 +283,7 @@ public class TransacaoService {
                 .valor(t.getValor())
                 .tipo(t.getTipo())
                 .categoryId(t.getCategoria() != null ? t.getCategoria().getId() : null)
-                .categoryName(t.getCategoria() != null ? t.getCategoria().getName() : "Sem Categoria")
+                .categoryName(t.getCategoria() != null ? t.getCategoria().getNome() : "Sem Categoria")
                 .categoryColor(t.getCategoria() != null ? t.getCategoria().getCor() : "#6b7280")
                 .categoryIcon(t.getCategoria() != null ? t.getCategoria().getIcone() : "Tag")
                 .criadoPorId(t.getCriadoPor().getId())

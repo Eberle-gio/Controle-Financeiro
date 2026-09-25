@@ -34,15 +34,10 @@ public class Categoria {
     @Column(nullable = false)
     private TipoMovimentacao tipo;
 
-    // Cor em formato hexadecimal (ex: #10b981)
     @Size(max = 7)
     private String cor;
 
-    // Nome do ícone Lucide React para exibição no frontend (ex: "UtensilsCrossed")
+
     @Size(max = 50)
     private String icone;
-
-    // Método de compatibilidade
-    public String getName() { return nome; }
-    public void setName(String name) { this.nome = name; }
 }

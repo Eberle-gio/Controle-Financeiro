@@ -21,7 +21,7 @@ public interface TransacaoRepository extends JpaRepository<Transacao, Long>, Jpa
     List<Transacao> findByCarteiraAndDataBetweenOrderByDataDesc(
             Carteira carteira, LocalDate inicio, LocalDate fim);
 
-    // Soma total por tipo (RECEITA / DESPESA) de uma carteira em um período
+    // Soma total por tipo (RECEITA / DESPESA) 
     @Query("SELECT COALESCE(SUM(t.valor), 0) FROM Transacao t " +
            "WHERE t.carteira = :carteira AND t.tipo = :tipo " +
            "AND t.data BETWEEN :inicio AND :fim")

@@ -67,7 +67,7 @@ public class CategoriaService {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         Categoria categoria = new Categoria();
         categoria.setUsuario(usuario);
-        categoria.setName(request.getName());
+        categoria.setNome(request.getName());
         categoria.setTipo(request.getTipo());
         categoria.setCor(request.getCor());
         categoria.setIcone(request.getIcone());
@@ -82,7 +82,7 @@ public class CategoriaService {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         Categoria categoria = buscarEntityPorIdEUsuario(id, usuario);
 
-        categoria.setName(request.getName());
+        categoria.setNome(request.getName());
         categoria.setTipo(request.getTipo());
         categoria.setCor(request.getCor());
         categoria.setIcone(request.getIcone());
@@ -118,7 +118,7 @@ public class CategoriaService {
     private Categoria criarCategoriaObject(Usuario usuario, String name, TipoMovimentacao tipo, String cor, String icone) {
         Categoria c = new Categoria();
         c.setUsuario(usuario);
-        c.setName(name);
+        c.setNome(name);
         c.setTipo(tipo);
         c.setCor(cor);
         c.setIcone(icone);
@@ -128,7 +128,7 @@ public class CategoriaService {
     private CategoryResponse paraDTO(Categoria c) {
         return CategoryResponse.builder()
                 .id(c.getId())
-                .name(c.getName())
+                .name(c.getNome())
                 .tipo(c.getTipo())
                 .cor(c.getCor())
                 .icone(c.getIcone())
