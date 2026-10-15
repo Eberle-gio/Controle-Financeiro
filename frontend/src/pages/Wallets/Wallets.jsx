@@ -35,7 +35,7 @@ const Wallets = () => {
   const [membros, setMembros] = useState([]);
   const [carregandoMembros, setCarregandoMembros] = useState(false);
   const [novoMembroEmail, setNovoMembroEmail] = useState('');
-  const [novoMembroPapel, setNovoMembroPapel] = useState('LEITURA');
+  const [novoMembroPapel, setNovoMembroPapel] = useState('VISUALIZADOR');
   const [adicionandoMembro, setAdicionandoMembro] = useState(false);
   const [erroMembros, setErroMembros] = useState('');
 
@@ -151,7 +151,7 @@ const Wallets = () => {
     if (!carteiraMembros) return;
     try {
       await walletService.removerMembro(carteiraMembros.id, userId);
-      setMembros((prev) => prev.filter((m) => m.userId !== userId));
+      setMembros((prev) => prev.filter((m) => m.usuarioId !== userId));
     } catch (err) {
       setErroMembros(err.message || 'Falha ao remover membro');
     }
@@ -186,7 +186,7 @@ const Wallets = () => {
                   <div>
                     <h3>{c.nome}</h3>
                     <span className="wallet-role-pill">
-                      <Shield size={12} /> {c.meuPapel || 'PROPRIETARIO'}
+                      <Shield size={12} /> {c.meuPapel}
                     </span>
                   </div>
                 </div>
@@ -332,9 +332,8 @@ const Wallets = () => {
                     value={novoMembroPapel}
                     onChange={(e) => setNovoMembroPapel(e.target.value)}
                   >
-                    <option value="LEITURA">Leitura</option>
-                    <option value="ESCRITA">Escrita (pode lançar)</option>
-                    <option value="ADMIN">Administrador</option>
+                    <option value="VISUALIZADOR">Leitura</option>
+                    <option value="EDITOR">Escrita (pode lançar)</option>
                   </select>
                 </div>
                 <button
@@ -355,20 +354,20 @@ const Wallets = () => {
                 ) : membros.length > 0 ? (
                   <div className="members-list">
                     {membros.map((m) => (
-                      <div key={m.userId} className="member-item">
+                      <div key={m.id} className="member-item">
                         <div className="member-avatar">
-                          {m.userName ? m.userName.charAt(0).toUpperCase() : 'M'}
+                          {m.usuarioNome ? m.usuarioNome.charAt(0).toUpperCase() : 'M'}
                         </div>
                         <div className="member-info">
-                          <span className="member-name">{m.userName || 'Membro'}</span>
-                          <span className="member-email">{m.userEmail}</span>
+                          <span className="member-name">{m.usuarioNome || 'Membro'}</span>
+                          <span className="member-email">{m.usuarioEmail}</span>
                         </div>
                         <div className="member-role-badge">{m.papel}</div>
-                        {m.papel !== 'PROPRIETARIO' && (
+                        {carteiraMembros?.meuPapel === 'DONO' && m.papel !== 'DONO' && (
                           <button
                             type="button"
                             className="btn-remove-member"
-                            onClick={() => removerMembro(m.userId)}
+                            onClick={() => removerMembro(m.usuarioId)}
                             title="Remover Membro"
                           >
                             <Trash2 size={15} />
