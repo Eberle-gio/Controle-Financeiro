@@ -67,8 +67,7 @@ const Dashboard = () => {
       try {
         const perfil = await authService.obterPerfil();
         setUsuarioAtual(perfil);
-      } catch (err) {
-      }
+      } catch { /* Mantem o perfil da sessao quando a atualizacao falha. */ }
     };
     buscarPerfilUsuario();
   }, []);
@@ -99,7 +98,7 @@ const Dashboard = () => {
         setCarregando(false);
       }
     } catch (err) {
-      setErro('Falha ao carregar carteiras da API');
+      setErro(err.message || 'Falha ao carregar carteiras da API');
       setCarregando(false);
     }
   }, []);
@@ -346,7 +345,7 @@ const Dashboard = () => {
                       </span>
                       <div className="transaction-desc-wrapper">
                         <span className="transaction-desc">{t.descricao || t.categoryName}</span>
-                        <span className="transaction-date">{formatarData(t.data || t.date)}</span>
+                        <span className="transaction-date">{formatarData(t.data)}</span>
                       </div>
                     </div>
                     <div className="transaction-value-action">

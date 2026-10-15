@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import './PasswordStrengthMeter.css';
 
 export default function PasswordStrengthMeter({ password }) {
-  const [strength, setStrength] = useState({ score: 0, label: 'Muito Curta', color: '#ef4444', percent: '0%' });
 
-  useEffect(() => {
+  const strength = useMemo(() => {
     if (!password) {
-      setStrength({ score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' });
-      return;
+      return { score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' };
     }
 
     let score = 0;
@@ -31,13 +29,13 @@ export default function PasswordStrengthMeter({ password }) {
     }
 
     if (password.length < 6) {
-      setStrength({ score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' });
+      return { score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' };
     } else if (score === 1) {
-      setStrength({ score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' });
+      return { score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' };
     } else if (score === 2) {
-      setStrength({ score: 2, label: 'Média', color: '#3b82f6', percent: '70%' });
+      return { score: 2, label: 'Média', color: '#3b82f6', percent: '70%' };
     } else {
-      setStrength({ score: 3, label: 'Forte', color: '#10b981', percent: '100%' });
+      return { score: 3, label: 'Forte', color: '#10b981', percent: '100%' };
     }
   }, [password]);
 

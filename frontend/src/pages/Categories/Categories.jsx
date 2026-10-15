@@ -35,7 +35,7 @@ const Categories = () => {
       try {
         const perfil = await authService.obterPerfil();
         setUsuarioAtual(perfil);
-      } catch (e) {}
+      } catch { /* Mantem o perfil da sessao quando a atualizacao falha. */ }
     };
     buscarPerfil();
   }, []);
@@ -114,7 +114,7 @@ const Categories = () => {
     <div className="categories-page">
       <Sidebar usuarioAtual={usuarioAtual} itemAtivo="categorias" />
 
-      <main className="categories-content">
+      <main className="categories-content" aria-busy={carregando}>
         <header className="page-header">
           <div className="header-titles">
             <h1>Categorias</h1>

@@ -37,7 +37,7 @@ const Transactions = () => {
       try {
         const perfil = await authService.obterPerfil();
         setUsuarioAtual(perfil);
-      } catch (e) {}
+      } catch { /* Mantem o perfil da sessao quando a atualizacao falha. */ }
     };
     buscarPerfil();
   }, []);
@@ -51,7 +51,7 @@ const Transactions = () => {
         setCarteiraAtiva((atual) => restoreWallet(lista, atual));
       }
     } catch (err) {
-      setErro('Falha ao carregar carteiras');
+      setErro(err.message || 'Falha ao carregar carteiras');
     }
   }, []);
 
@@ -237,7 +237,7 @@ const Transactions = () => {
                           </span>
                         </div>
                       </td>
-                      <td>{formatarData(t.data || t.date)}</td>
+                      <td>{formatarData(t.data)}</td>
                       <td>
                         <span className={`type-badge ${t.tipo === 'RECEITA' ? 'badge-income' : 'badge-expense'}`}>
                           {t.tipo === 'RECEITA' ? 'Receita' : 'Despesa'}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { ArrowLeft } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
@@ -7,7 +7,7 @@ import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import './ChangePassword.css';
 
 const ChangePassword = () => {
-  const navigate = useNavigate();
+
   const usuarioAtual = authService.obterUsuarioAtual();
 
   // Estados dos Campos
