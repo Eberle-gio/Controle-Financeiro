@@ -1,6 +1,6 @@
 # NodeBank - Sistema de Controle Financeiro
 
-Sistema completo de controle financeiro pessoal e compartilhado desenvolvido como aplicação Fullstack (Backend Spring Boot 3.x + Frontend React 18).
+Sistema completo de controle financeiro pessoal e compartilhado desenvolvido como aplicação Fullstack (Backend Spring Boot 4.1 + Frontend React 19).
 
 ---
 
@@ -12,7 +12,7 @@ O **NodeBank** permite que usuários controlem suas finanças pessoais e gerenci
 
 ```
 Controle-Financeiro/
-├── backend/                       # REST API Spring Boot 3.x
+├── backend/                       # REST API Spring Boot 4.1
 │   ├── src/main/java/controle_financeiro/backend/
 │   │   ├── controller/            # Controllers REST (Exposição dos Endpoints)
 │   │   ├── service/               # Camada de Regras de Negócio e Transações
@@ -24,7 +24,7 @@ Controle-Financeiro/
 │   │   └── config/                # Swagger / OpenAPI e configurações gerais
 │   └── pom.xml                    # Gerenciador de Dependências Maven
 │
-└── frontend/                      # Single Page Application (SPA) React 18 + Vite
+└── frontend/                      # Single Page Application (SPA) React 19 + Vite
     ├── src/
     │   ├── assets/                # Imagens e Vetores (Logo NodeBank)
     │   ├── components/            # Componentes Reutilizáveis (Sidebar, CategoryIcon)
@@ -104,53 +104,49 @@ erDiagram
 
 ---
 
-## 🛠️ Pré-requisitos
+## Configuração local
 
-Para compilar e executar o projeto localmente, certifique-se de ter instalado em sua máquina:
+Pré-requisitos: Java 21, Maven Wrapper incluído em backend/, MySQL em localhost:3306 e Node.js compatível com frontend/package-lock.json (Node 22.12+).
 
-* **Java 21 LTS** ou superior
-* **Maven 3.8+** (ou utilizar o wrapper `./mvnw` incluso na pasta do backend)
-* **Node.js 18+** e **npm 9+**
-* **PostgreSQL 15+** (opcional, H2 Database em memória já vem ativado no perfil de desenvolvimento/testes)
+O projeto usa MySQL; não há driver PostgreSQL nem perfil H2 configurado.
 
----
+Na raiz do projeto, copie os exemplos (PowerShell):
 
-## 🗄️ Instruções para Criar o Banco de Dados e Configurar Variáveis de Ambiente
+~~~powershell
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env
+~~~
 
-### 1. Criar o Banco de Dados no PostgreSQL
+Se os arquivos já existirem, edite-os sem sobrescrever suas configurações.
 
-Abra o terminal SQL (pgAdmin, DBeaver ou psql) e execute o comando abaixo para criar o banco de dados:
+O backend importa backend/.env como Java Properties quando iniciado **dentro de backend/**. Na IDE, configure essa pasta como diretório de trabalho. Use CHAVE=valor, sem export e sem aspas (aspas seriam parte do valor). Variáveis do sistema têm precedência. O antigo application-secrets.properties não é mais importado automaticamente.
 
-```sql
+| Variável | Configuração |
+| --- | --- |
+| SPRING_DATASOURCE_URL | URL JDBC MySQL; banco controle_financeiro no exemplo |
+| SPRING_DATASOURCE_USERNAME | Usuário MySQL; padrão local root |
+| SPRING_DATASOURCE_PASSWORD | Senha conforme sua instalação MySQL |
+| SPRING_MAIL_HOST / SPRING_MAIL_PORT | SMTP; padrões smtp.gmail.com / 587 |
+| SPRING_MAIL_USERNAME / SPRING_MAIL_PASSWORD | Credenciais para recuperação de senha; no Gmail, senha de app |
+| JWT_SECRET | Obrigatório: chave aleatória com pelo menos 32 bytes UTF-8 |
+| JWT_EXPIRATION | Validade em milissegundos; padrão 86400000 (24 horas) |
+| VITE_API_BASE_URL | Em frontend/.env; API pública, padrão http://localhost:8080 |
+
+Gere uma chave JWT e copie o resultado para JWT_SECRET:
+
+~~~sh
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+~~~
+
+A URL local usa createDatabaseIfNotExist=true, o que requer permissão de criação. Caso necessário, crie o banco previamente:
+
+~~~sql
 CREATE DATABASE controle_financeiro;
-```
+~~~
 
-### 2. Configurar as Variáveis de Ambiente
+O Hibernate cria/atualiza as tabelas com ddl-auto=update. A recuperação de senha requer SMTP válido. O link de recuperação aponta para localhost:5173; outras URLs exigem ajustes em UsuarioService e SecurityConfig (CORS).
 
-No backend, as configurações de banco de dados e segredo de autenticação JWT ficam centralizadas no arquivo [`backend/src/main/resources/application.properties`](file:///c:/Users/Giovana/OneDrive/WorkSpace/PW/Controle-Financeiro/backend/src/main/resources/application.properties):
-
-```properties
-# Configurações da Aplicação
-spring.application.name=backend
-server.port=8080
-
-# Conexão com o Banco de Dados PostgreSQL
-spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/controle_financeiro}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME:postgres}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:postgres}
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-# Configurações do JPA / Hibernate
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-
-# Configuração do JWT (Segredo de 256-bits e expiração de 24 horas)
-jwt.secret=${JWT_SECRET:ChaveSecretaSuperSeguraComPeloMenos256BitsDeComprimentoParaAlgoritmoHS256}
-jwt.expiration=${JWT_EXPIRATION:86400000}
-```
-
-> **Nota**: Você pode alterar os valores padrão diretamente no arquivo ou definir as variáveis de ambiente `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` e `JWT_SECRET` em seu sistema operacional.
+Os arquivos .env e o secrets real são ignorados pelo Git; versione apenas os exemplos. Como alternativa ao .env, consulte [application-secrets-example.properties](backend/src/main/resources/application-secrets-example.properties), com instruções para carregar o secrets explicitamente. Nunca coloque senhas ou JWT em variáveis VITE_, pois são expostas no navegador.
 
 ---
 
@@ -188,7 +184,7 @@ npm install
 npm run dev
 ```
 
-A aplicação web estará acessível no navegador pelo endereço: **`http://localhost:5173`** (ou `http://localhost:3000`).
+A aplicação web estará acessível no navegador pelo endereço: **`http://localhost:5173`** (confira a porta informada pelo Vite).
 
 ---
 
