@@ -53,11 +53,7 @@ const Wallets = () => {
     setCarregando(true);
     setErro('');
     try {
-      let lista = await walletService.listarCarteiras();
-      if (lista.length === 0) {
-        const padrao = await walletService.criarCarteira('Minha Carteira', 'Carteira Principal');
-        lista = [padrao];
-      }
+      const lista = await walletService.listarOuCriarCarteiraPadrao();
       setCarteiras(lista);
     } catch (err) {
       setErro(err.message || 'Falha ao carregar carteiras');

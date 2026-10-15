@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import controle_financeiro.backend.dto.WalletMemberRequest;
 import controle_financeiro.backend.dto.WalletMemberResponse;
@@ -55,10 +56,30 @@ public class CarteiraService {
         return paraWalletResponse(vinculo.getCarteira(), vinculo.getPapel());
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public WalletResponse garantirCarteiraPadrao() {
+        Usuario autenticado = usuarioService.getUsuarioAutenticado();
+        Usuario usuario = usuarioRepository.buscarPorIdComBloqueio(autenticado.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        List<MembroCarteira> vinculos = membroCarteiraRepository.findByUsuario(usuario);
+        if (!vinculos.isEmpty()) {
+            MembroCarteira existente = vinculos.getFirst();
+            return paraWalletResponse(existente.getCarteira(), existente.getPapel());
+        }
+        WalletRequest request = new WalletRequest();
+        request.setNome("Minha Carteira");
+        request.setDescricao("Carteira Principal");
+        return criarParaUsuario(usuario, request);
+    }
+
     // Cria nova carteira e define o usuário como DONO
     @Transactional
     public WalletResponse criarCarteira(WalletRequest request) {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
+        return criarParaUsuario(usuario, request);
+    }
+
+    private WalletResponse criarParaUsuario(Usuario usuario, WalletRequest request) {
         Carteira carteira = new Carteira();
         carteira.setDono(usuario);
         carteira.setNome(request.getNome());

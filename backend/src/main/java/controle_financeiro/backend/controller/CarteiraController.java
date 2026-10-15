@@ -15,6 +15,11 @@ import java.util.List;
 @RequestMapping("/api/v1/wallets")
 public class CarteiraController {
 
+    @PutMapping("/default")
+    public ResponseEntity<WalletResponse> garantirPadrao() {
+        return ResponseEntity.ok(carteiraService.garantirCarteiraPadrao());
+    }
+
     @Autowired
     private CarteiraService carteiraService;
 

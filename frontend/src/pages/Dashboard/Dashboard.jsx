@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { walletService } from '../../services/walletService';
+import { rememberWallet, restoreWallet } from '../../services/walletSelection';
 import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut, Plus, Edit2 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CategoryIcon from '../../components/CategoryIcon';
@@ -27,6 +28,8 @@ const Dashboard = () => {
   // Estados de Dados
   const [carteiras, setCarteiras] = useState([]);
   const [carteiraAtiva, setCarteiraAtiva] = useState(null);
+
+  useEffect(() => { rememberWallet(carteiraAtiva); }, [carteiraAtiva]);
   const [resumo, setResumo] = useState({
     totalIncome: 0,
     totalExpense: 0,
@@ -87,17 +90,11 @@ const Dashboard = () => {
   // Busca carteiras do usuário
   const buscarCarteiras = useCallback(async () => {
     try {
-      let carteirasUsuario = await walletService.listarCarteiras();
-      
-      // Se o usuário ainda não tiver nenhuma carteira cadastrada no banco, cria uma padrão automaticamente
-      if (carteirasUsuario.length === 0) {
-        const carteiraPadrao = await walletService.criarCarteira('Minha Carteira', 'Carteira Principal');
-        carteirasUsuario = [carteiraPadrao];
-      }
+      const carteirasUsuario = await walletService.listarOuCriarCarteiraPadrao();
 
       setCarteiras(carteirasUsuario);
       if (carteirasUsuario.length > 0) {
-        setCarteiraAtiva((atual) => atual || carteirasUsuario[0]);
+        setCarteiraAtiva((atual) => restoreWallet(carteirasUsuario, atual));
       } else {
         setCarregando(false);
       }

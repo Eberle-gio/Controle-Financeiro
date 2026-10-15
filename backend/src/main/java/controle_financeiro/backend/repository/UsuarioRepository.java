@@ -11,6 +11,9 @@ import java.util.Optional;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Usuario findByEmail(String email);
 
+    @Query(value = "select * from usuarios where id = :id for update", nativeQuery = true)
+    Optional<Usuario> buscarPorIdComBloqueio(@Param("id") Long id);
+
     // FOR UPDATE sem lista de aliases funciona em MySQL e MariaDB.
     @Query(value = "select * from usuarios where email = :email for update", nativeQuery = true)
     Optional<Usuario> buscarParaConfirmacaoPorEmail(@Param("email") String email);

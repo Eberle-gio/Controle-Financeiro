@@ -127,7 +127,7 @@ const TransactionModal = ({
           finalWalletId = wallets[0].id;
         } else {
           // Cria carteira padrão se o usuário ainda não tiver nenhuma
-          const novaCarteira = await walletService.criarCarteira('Minha Carteira', 'Carteira Principal');
+          const novaCarteira = await walletService.garantirCarteiraPadrao();
           finalWalletId = novaCarteira.id;
           onWalletChange?.(novaCarteira);
         }

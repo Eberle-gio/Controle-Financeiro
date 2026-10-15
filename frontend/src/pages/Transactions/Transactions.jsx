@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { walletService } from '../../services/walletService';
+import { rememberWallet, restoreWallet } from '../../services/walletSelection';
 import { transactionService } from '../../services/transactionService';
 import { authService } from '../../services/authService';
 import Sidebar from '../../components/Sidebar';
@@ -12,6 +13,8 @@ const Transactions = () => {
   const [usuarioAtual, setUsuarioAtual] = useState(() => authService.obterUsuarioAtual());
   const [carteiras, setCarteiras] = useState([]);
   const [carteiraAtiva, setCarteiraAtiva] = useState(null);
+
+  useEffect(() => { rememberWallet(carteiraAtiva); }, [carteiraAtiva]);
 
   // Filtros e Paginação
   const [transacoes, setTransacoes] = useState([]);
@@ -42,14 +45,10 @@ const Transactions = () => {
   // Busca carteiras
   const carregarCarteiras = useCallback(async () => {
     try {
-      let lista = await walletService.listarCarteiras();
-      if (lista.length === 0) {
-        const carteiraPadrao = await walletService.criarCarteira('Minha Carteira', 'Carteira Principal');
-        lista = [carteiraPadrao];
-      }
+      const lista = await walletService.listarOuCriarCarteiraPadrao();
       setCarteiras(lista);
       if (lista.length > 0) {
-        setCarteiraAtiva((atual) => atual || lista[0]);
+        setCarteiraAtiva((atual) => restoreWallet(lista, atual));
       }
     } catch (err) {
       setErro('Falha ao carregar carteiras');

@@ -1,7 +1,28 @@
 import api from '../config/axiosConfig';
+import { walletSelectionKey } from './walletSelection';
+
+const initialLoads = new Map();
 
 class WalletService {
+  // Compartilha a carga inicial para nao criar duas carteiras em efeitos simultaneos.
+  listarOuCriarCarteiraPadrao() {
+    const key = walletSelectionKey();
+    if (!initialLoads.has(key)) {
+      const loading = (async () => {
+        const wallets = await this.listarCarteiras();
+        return wallets.length ? wallets : [await this.garantirCarteiraPadrao()];
+      })().finally(() => initialLoads.delete(key));
+      initialLoads.set(key, loading);
+    }
+    return initialLoads.get(key);
+  }
+
   // Lista todas as carteiras onde o usuário é dono ou membro
+  async garantirCarteiraPadrao() {
+    const response = await api.put('/api/v1/wallets/default');
+    return response.data;
+  }
+
   async listarCarteiras() {
     const response = await api.get('/api/v1/wallets');
     return response.data;
