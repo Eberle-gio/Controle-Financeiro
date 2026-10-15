@@ -12,6 +12,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import controle_financeiro.backend.repository.UsuarioRepository;
+import controle_financeiro.backend.model.Usuario;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -26,6 +28,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -36,7 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (token != null && jwtUtils.validarToken(token)) {
                 String email = jwtUtils.obterEmailDoToken(token);
 
-                if (email != null && !email.isBlank()) {
+                Usuario usuario = email == null || email.isBlank() ? null : usuarioRepository.findByEmail(email);
+                if (usuario != null && Boolean.TRUE.equals(usuario.getEmailConfirmado())) {
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(email, null, authorities);

@@ -42,6 +42,15 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
+    private Boolean emailConfirmado = false;
+
+    @Column(unique = true, length = 64)
+    private String confirmacaoTokenHash;
+
+    private LocalDateTime confirmacaoExpiraEm;
+
+    private LocalDateTime confirmacaoEnviadaEm;
+
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 

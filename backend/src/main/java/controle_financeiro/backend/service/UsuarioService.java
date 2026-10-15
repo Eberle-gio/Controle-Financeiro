@@ -38,6 +38,9 @@ public class UsuarioService {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private ConfirmacaoCadastroService confirmacaoCadastroService;
+
     @Autowired(required = false)
     private EmailService emailService;
 
@@ -65,15 +68,7 @@ public class UsuarioService {
             categoriaService.criarCategoriasPadrao(usuarioSalvo);
         }
 
-        // Envia e-mail de boas-vindas assíncrono
-        if (emailService != null) {
-            try {
-                Context context = new Context();
-                context.setVariable("name", usuarioSalvo.getNome());
-                emailService.emailTemplate(usuarioSalvo.getEmail(), "Bem-vindo ao Controle Financeiro", context, "novoCadastro");
-            } catch (Exception ignored) {
-            }
-        }
+        confirmacaoCadastroService.prepararEnvio(usuarioSalvo);
 
         return UserResponseDTO.fromEntity(usuarioSalvo);
     }
@@ -84,6 +79,10 @@ public class UsuarioService {
 
         if (usuario == null || !passwordEncoder.matches(request.getPassword(), usuario.getSenha())) {
             throw new BusinessException("Credenciais inválidas.");
+        }
+
+        if (!Boolean.TRUE.equals(usuario.getEmailConfirmado())) {
+            throw new BusinessException("Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada ou solicite um novo link.");
         }
 
         String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail(), usuario.getNome());

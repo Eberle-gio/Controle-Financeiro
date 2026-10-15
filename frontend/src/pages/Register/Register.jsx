@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import './Register.css';
@@ -7,7 +7,6 @@ import './Register.css';
 import logo from '../../assets/images/Logo.svg';
 
 const Register = () => {
-  const navigate = useNavigate();
 
   // Estados dos Campos
   const [nome, setNome] = useState('');
@@ -77,10 +76,9 @@ const Register = () => {
 
     try {
       await authService.cadastrar(nome, email, senha);
-      setMensagemSucesso('Cadastro realizado com sucesso! Redirecionando...');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setMensagemSucesso('Sua conta foi criada! Confira seu e-mail e confirme o cadastro pelo link enviado.');
+      setSenha('');
+      setConfirmarSenha('');
     } catch (err) {
       setErros({ apiError: err.message });
     } finally {
@@ -112,12 +110,13 @@ const Register = () => {
             )}
 
             {mensagemSucesso && (
-              <div className="alert alert-success">
+              <div className="alert alert-success" role="status">
                 {mensagemSucesso}
+                <p><Link to="/confirmar-cadastro">Não recebeu? Reenviar confirmação</Link></p>
               </div>
             )}
 
-            <form onSubmit={lidarEnvio} noValidate>
+            {!mensagemSucesso && <form onSubmit={lidarEnvio} noValidate>
               
               <div className="input-group">
                 <label htmlFor="name">Nome Completo</label>
@@ -234,7 +233,7 @@ const Register = () => {
                 )}
               </button>
 
-            </form>
+            </form>}
 
             <div className="login-link">
               Já tem uma conta? <Link to="/login">Entrar</Link>

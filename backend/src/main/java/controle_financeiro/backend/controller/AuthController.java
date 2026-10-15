@@ -2,6 +2,9 @@ package controle_financeiro.backend.controller;
 
 import controle_financeiro.backend.dto.*;
 import controle_financeiro.backend.service.UsuarioService;
+import controle_financeiro.backend.service.ConfirmacaoCadastroService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +19,23 @@ public class AuthController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private ConfirmacaoCadastroService confirmacaoCadastroService;
+
+    public record ConfirmarCadastroRequest(@NotBlank @Size(max = 64) String token) {}
+
+    @PostMapping("/confirm-email")
+    public ResponseEntity<Map<String, String>> confirmarCadastro(@Valid @RequestBody ConfirmarCadastroRequest request) {
+        confirmacaoCadastroService.confirmar(request.token());
+        return ResponseEntity.ok(Map.of("message", "E-mail confirmado! Você já pode entrar no NodeBank."));
+    }
+
+    @PostMapping("/resend-confirmation")
+    public ResponseEntity<Map<String, String>> reenviarConfirmacao(@Valid @RequestBody ForgotPasswordRequest request) {
+        confirmacaoCadastroService.reenviar(request.getEmail());
+        return ResponseEntity.ok(Map.of("message", "Se houver um cadastro pendente, você receberá um novo link. Aguarde pelo menos um minuto entre solicitações."));
+    }
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> registrar(@Valid @RequestBody RegisterRequest request) {

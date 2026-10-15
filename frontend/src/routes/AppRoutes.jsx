@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import Login from '../pages/Login/Login';
 import Register from '../pages/Register/Register';
+import ConfirmRegistration from '../pages/ConfirmRegistration/ConfirmRegistration';
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword/ResetPassword';
 import Dashboard from '../pages/Dashboard/Dashboard';
@@ -17,6 +18,8 @@ const AppRoutes = () => {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Register />} />
+      <Route path="/confirmar-cadastro" element={<ConfirmRegistration />} />
+      <Route path="/confirmar-cadastro/:token" element={<ConfirmRegistration />} />
       <Route path="/recuperar-senha" element={<ForgotPassword />} />
       <Route path="/redefinir-senha/:token" element={<ResetPassword />} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

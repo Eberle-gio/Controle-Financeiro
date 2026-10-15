@@ -1,6 +1,24 @@
 import api from '../config/axiosConfig';
 
 class AuthService {
+  async confirmarCadastro(token) {
+    try {
+      const response = await api.post('/api/auth/confirm-email', { token });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Não foi possível confirmar seu cadastro. Tente novamente.');
+    }
+  }
+
+  async reenviarConfirmacao(email) {
+    try {
+      const response = await api.post('/api/auth/resend-confirmation', { email });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Não foi possível reenviar a confirmação. Tente novamente.');
+    }
+  }
+
   async cadastrar(nome, email, senha) {
     try {
       const response = await api.post('/api/auth/register', { name: nome, email, password: senha });

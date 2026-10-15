@@ -163,6 +163,7 @@ const Login = () => {
 
             <div className="register-link">
               Não possui conta? <Link to="/cadastro">Criar conta</Link>
+              <p><Link to="/confirmar-cadastro">Reenviar confirmação de cadastro</Link></p>
             </div>
 
           </div>

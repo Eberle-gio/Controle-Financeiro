@@ -123,6 +123,7 @@ O backend importa backend/.env como Java Properties quando iniciado **dentro de 
 
 | Variável | Configuração |
 | --- | --- |
+| APP_FRONTEND_URL | URL do frontend usada no link de confirmação; padrão http://localhost:5173 |
 | SPRING_DATASOURCE_URL | URL JDBC MySQL; banco controle_financeiro no exemplo |
 | SPRING_DATASOURCE_USERNAME | Usuário MySQL; padrão local root |
 | SPRING_DATASOURCE_PASSWORD | Senha conforme sua instalação MySQL |
@@ -147,6 +148,10 @@ CREATE DATABASE controle_financeiro;
 O Hibernate cria/atualiza as tabelas com ddl-auto=update. A recuperação de senha requer SMTP válido. O link de recuperação aponta para localhost:5173; outras URLs exigem ajustes em UsuarioService e SecurityConfig (CORS).
 
 Os arquivos .env e o secrets real são ignorados pelo Git; versione apenas os exemplos. Como alternativa ao .env, consulte [application-secrets-example.properties](backend/src/main/resources/application-secrets-example.properties), com instruções para carregar o secrets explicitamente. Nunca coloque senhas ou JWT em variáveis VITE_, pois são expostas no navegador.
+
+Novos cadastros recebem um e-mail NodeBank com link de confirmação válido por 24 horas. O login fica bloqueado até a confirmação. A página `/confirmar-cadastro` permite reenviar o link, com intervalo mínimo de um minuto; o reenvio invalida o link anterior. O envio ocorre depois da confirmação da transação do cadastro e requer SMTP válido. Contas anteriores a esse fluxo também precisam confirmar o e-mail e podem solicitar o link pela tela de reenvio. Somente contas com emailConfirmado=true podem fazer login ou usar tokens JWT. O Hibernate adiciona os campos de confirmação à tabela `usuarios` com a configuração atual `ddl-auto=update`.
+
+Endpoints públicos: `POST /api/auth/confirm-email` com `{ "token": "..." }` e `POST /api/auth/resend-confirmation` com `{ "email": "..." }`. O token de confirmação não é retornado pela API nem armazenado em texto no banco. O e-mail contém a logo existente como imagem inline, sem depender de uma URL externa.
 
 ---
 

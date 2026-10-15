@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -48,9 +49,15 @@ public class EmailService {
     @Async
     public void emailTemplate(String para, String assunto, Context variaveisEmail, String arquivoTemplate) {
         try {
+            if ("novoCadastro".equals(arquivoTemplate)) {
+                Object link = variaveisEmail.getVariable("confirmUrl");
+                if (!(link instanceof String url) || !url.matches("https?://[^\\s]+")) {
+                    throw new IllegalArgumentException("E-mail de cadastro sem link de confirmação válido.");
+                }
+            }
             String process = templateEngine.process(arquivoTemplate, variaveisEmail);
             MimeMessage message = javaMail.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_RELATED, "UTF-8");
 
             if (remetente != null && !remetente.isBlank()) {
                 helper.setFrom(remetente);
@@ -58,6 +65,9 @@ public class EmailService {
             helper.setTo(para);
             helper.setSubject(assunto);
             helper.setText(process, true);
+            if ("novoCadastro".equals(arquivoTemplate)) {
+                helper.addInline("nodebank-logo", new ClassPathResource("email/NodeBank.png"), "image/png");
+            }
 
             javaMail.send(message);
             log.info("E-mail template '{}' enviado com sucesso para {}", arquivoTemplate, para);
