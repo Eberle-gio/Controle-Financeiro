@@ -41,6 +41,9 @@ public class UsuarioService {
     @Autowired
     private ConfirmacaoCadastroService confirmacaoCadastroService;
 
+    @org.springframework.beans.factory.annotation.Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Autowired(required = false)
     private EmailService emailService;
 
@@ -90,7 +93,7 @@ public class UsuarioService {
         return LoginResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
-                .expiresIn(86400)
+                .expiresIn(jwtUtils.getExpirationSeconds())
                 .build();
     }
 
@@ -119,7 +122,7 @@ public class UsuarioService {
                 Context context = new Context();
                 context.setVariable("name", usuario.getNome());
                 context.setVariable("token", tokenUUID);
-                context.setVariable("resetUrl", "http://localhost:5173/redefinir-senha/" + tokenUUID);
+                context.setVariable("resetUrl", frontendUrl.replaceAll("/+$", "") + "/redefinir-senha/" + tokenUUID);
                 emailService.emailTemplate(usuario.getEmail(), "Recuperação de Senha - Controle Financeiro", context, "recuperacaoSenha");
             } catch (Exception ignored) {
             }

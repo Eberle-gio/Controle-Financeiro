@@ -1,4 +1,5 @@
 import api from '../config/axiosConfig';
+import { decodeJwt, tokenIsCurrent } from './sessionUtils';
 
 class AuthService {
   async confirmarCadastro(token) {
@@ -39,17 +40,13 @@ class AuthService {
 
       let objetoUsuario = { email, name: email.split('@')[0] };
       try {
-        const payloadBase64 = accessToken.split('.')[1];
-        const jsonDecodificado = atob(payloadBase64);
-        const payload = JSON.parse(jsonDecodificado);
+        const payload = decodeJwt(accessToken);
         objetoUsuario = {
           id: payload.sub,
           email: payload.email || email,
           name: payload.name || email.split('@')[0]
         };
-      } catch (e) {
-        
-      }
+      } catch { /* Usa o e-mail como identificacao se o payload nao puder ser decodificado. */ }
       
       const sessao = {
         token: accessToken,
@@ -119,17 +116,7 @@ class AuthService {
   }
 
   isAuthenticated() {
-    const token = localStorage.getItem('accessToken');
-    if (token) return true;
-
-    const sessao = localStorage.getItem('current_session');
-    if (!sessao) return false;
-    try {
-      const parseado = JSON.parse(sessao);
-      return !!(parseado?.accessToken || parseado?.token);
-    } catch {
-      return false;
-    }
+    return tokenIsCurrent(localStorage.getItem('accessToken'));
   }
 
   logout() {

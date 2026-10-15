@@ -23,6 +23,10 @@ public class JwtUtils {
 
     private SecretKey key;
 
+    public long getExpirationSeconds() {
+        return jwtExpirationMs / 1000;
+    }
+
     @PostConstruct
     public void init() {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));

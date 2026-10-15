@@ -42,6 +42,7 @@ const Register = () => {
   const validarFormulario = () => {
     const errosTemporarios = {};
     if (!nome.trim()) errosTemporarios.name = 'Nome é obrigatório';
+    else if (nome.trim().length < 3 || nome.trim().length > 100) errosTemporarios.name = 'O nome deve ter entre 3 e 100 caracteres';
     
     if (!email) {
       errosTemporarios.email = 'E-mail é obrigatório';
@@ -75,7 +76,7 @@ const Register = () => {
     setErros({});
 
     try {
-      await authService.cadastrar(nome, email, senha);
+      await authService.cadastrar(nome.trim(), email.trim(), senha);
       setMensagemSucesso('Sua conta foi criada! Confira seu e-mail e confirme o cadastro pelo link enviado.');
       setSenha('');
       setConfirmarSenha('');

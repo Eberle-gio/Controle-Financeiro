@@ -51,11 +51,10 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        String debugToken = usuarioService.solicitarRecuperacaoSenha(request.getEmail());
+        usuarioService.solicitarRecuperacaoSenha(request.getEmail());
         
         Map<String, String> resposta = Map.of(
-            "message", "Se este e-mail estiver cadastrado, você receberá as instruções em breve.",
-            "debugToken", debugToken
+            "message", "Se este e-mail estiver cadastrado, você receberá as instruções em breve."
         );
         return ResponseEntity.ok(resposta);
     }
