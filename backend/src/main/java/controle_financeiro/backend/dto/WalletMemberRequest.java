@@ -16,5 +16,5 @@ public class WalletMemberRequest {
     @Email(message = "E-mail em formato inválido")
     private String email;
 
-    private TipoPermissao papel;
+    private TipoPermissao papel = TipoPermissao.VISUALIZADOR;
 }

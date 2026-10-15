@@ -4,6 +4,7 @@ import { transactionService } from '../services/transactionService';
 import { categoryService } from '../services/categoryService';
 import { walletService } from '../services/walletService';
 import CategoryIcon from './CategoryIcon';
+import { localDate } from '../utils/localDate';
 import './TransactionModal.css';
 
 const TransactionModal = ({
@@ -53,7 +54,7 @@ const TransactionModal = ({
       setTipo(initialData.tipo || 'DESPESA');
       setDescricao(initialData.descricao || '');
       setValor(initialData.valor != null ? String(initialData.valor) : '');
-      setData(initialData.data || initialData.date || new Date().toISOString().split('T')[0]);
+      setData(initialData.data || localDate());
       setCategoryId(initialData.categoryId ? String(initialData.categoryId) : '');
       if (initialData.walletId) {
         setSelectedWalletId(String(initialData.walletId));
@@ -62,7 +63,7 @@ const TransactionModal = ({
       setTipo('DESPESA');
       setDescricao('');
       setValor('');
-      setData(new Date().toISOString().split('T')[0]);
+      setData(localDate());
       setCategoryId('');
     }
   }, [isOpen, initialData]);
@@ -75,6 +76,10 @@ const TransactionModal = ({
       setCarregandoCategorias(true);
       try {
         const lista = await categoryService.listarCategorias(tipo);
+        if (initialData?.categoryId && initialData.tipo === tipo
+            && !lista.some(category => category.id === initialData.categoryId)) {
+          lista.push({ id: initialData.categoryId, name: initialData.categoryName, tipo });
+        }
         setCategorias(lista);
       } catch (err) {
         console.error('Falha ao carregar categorias:', err);
@@ -84,7 +89,7 @@ const TransactionModal = ({
     };
 
     carregarCategorias();
-  }, [isOpen, tipo]);
+  }, [isOpen, tipo, initialData]);
 
   // Fechar com tecla ESC
   useEffect(() => {
@@ -227,6 +232,7 @@ const TransactionModal = ({
               <select
                 id="tx-wallet"
                 value={selectedWalletId}
+                disabled={isEditing}
                 onChange={(e) => {
                   setSelectedWalletId(e.target.value);
                   const found = wallets.find(w => w.id === Number(e.target.value));

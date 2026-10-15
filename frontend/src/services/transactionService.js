@@ -2,7 +2,7 @@ import api from '../config/axiosConfig';
 
 class TransactionService {
   // Lista transações paginadas de uma carteira
-  async listarTransacoes(carteiraId, { pagina = 0, tamanho = 20, ordenacao = 'date,desc', dataInicio, dataFim, categoriaId, tipo } = {}) {
+  async listarTransacoes(carteiraId, { pagina = 0, tamanho = 20, ordenacao = 'data,desc', dataInicio, dataFim, categoriaId, tipo } = {}) {
     try {
       const params = { page: pagina, size: tamanho, sort: ordenacao };
       if (dataInicio) params.startDate = dataInicio;

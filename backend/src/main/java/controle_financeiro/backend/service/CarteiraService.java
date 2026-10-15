@@ -23,6 +23,7 @@ import controle_financeiro.backend.model.Usuario;
 import controle_financeiro.backend.repository.CarteiraRepository;
 import controle_financeiro.backend.repository.MembroCarteiraRepository;
 import controle_financeiro.backend.repository.UsuarioRepository;
+import controle_financeiro.backend.repository.TransacaoRepository;
 
 @Service
 public class CarteiraService {
@@ -35,6 +36,9 @@ public class CarteiraService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private TransacaoRepository transacaoRepository;
 
     @Lazy
     @Autowired
@@ -124,6 +128,9 @@ public class CarteiraService {
             throw new AccessDeniedException("Apenas o dono da carteira pode excluí-la.");
         }
 
+        if (transacaoRepository.existsByCarteira(vinculo.getCarteira())) {
+            throw new BusinessException("Não é possível excluir uma carteira com transações vinculadas.");
+        }
         membroCarteiraRepository.deleteByCarteira(vinculo.getCarteira());
         carteiraRepository.delete(vinculo.getCarteira());
     }
@@ -161,7 +168,10 @@ public class CarteiraService {
             throw new DataIntegrityViolationException("O usuário já é membro desta carteira.");
         }
 
-        TipoPermissao papel = request.getPapel() != null ? request.getPapel() : TipoPermissao.EDITOR;
+        TipoPermissao papel = request.getPapel() != null ? request.getPapel() : TipoPermissao.VISUALIZADOR;
+        if (papel == TipoPermissao.DONO) {
+            throw new BusinessException("Membros podem ser EDITOR ou VISUALIZADOR. A carteira possui um único dono.");
+        }
 
         MembroCarteira novoMembro = new MembroCarteira();
         novoMembro.setCarteira(carteira);
@@ -175,6 +185,9 @@ public class CarteiraService {
     // Altera o papel de um membro (somente DONO)
     @Transactional
     public WalletMemberResponse alterarPapelMembro(Long carteiraId, Long membroUsuarioId, TipoPermissao novoPapel) {
+        if (novoPapel == null || novoPapel == TipoPermissao.DONO) {
+            throw new BusinessException("Membros podem ser EDITOR ou VISUALIZADOR. A carteira possui um único dono.");
+        }
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculoDono = buscarVinculoOuFalhar(carteiraId, usuario);
 

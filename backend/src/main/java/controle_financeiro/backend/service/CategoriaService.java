@@ -82,6 +82,10 @@ public class CategoriaService {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         Categoria categoria = buscarEntityPorIdEUsuario(id, usuario);
 
+        if (categoria.getTipo() != request.getTipo() && transacaoRepository.existsByCategoriaId(id)) {
+            throw new BusinessException("Não é possível alterar o tipo de uma categoria com transações vinculadas.");
+        }
+
         categoria.setNome(request.getName());
         categoria.setTipo(request.getTipo());
         categoria.setCor(request.getCor());

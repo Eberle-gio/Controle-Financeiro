@@ -32,4 +32,5 @@ public interface TransacaoRepository extends JpaRepository<Transacao, Long>, Jpa
 
     // Verifica se existem transações vinculadas a uma categoria
     boolean existsByCategoriaId(Long categoriaId);
+    boolean existsByCarteira(Carteira carteira);
 }

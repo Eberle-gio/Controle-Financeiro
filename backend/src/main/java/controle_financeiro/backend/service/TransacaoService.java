@@ -24,6 +24,7 @@ import controle_financeiro.backend.dto.PageResponse;
 import controle_financeiro.backend.dto.TransactionRequest;
 import controle_financeiro.backend.dto.TransactionResponse;
 import controle_financeiro.backend.exception.ResourceNotFoundException;
+import controle_financeiro.backend.exception.BusinessException;
 import controle_financeiro.backend.model.Carteira;
 import controle_financeiro.backend.model.Categoria;
 import controle_financeiro.backend.model.MembroCarteira;
@@ -37,6 +38,21 @@ import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class TransacaoService {
+
+    private void validarPeriodo(LocalDate inicio, LocalDate fim) {
+        if (inicio != null && fim != null && inicio.isAfter(fim)) {
+            throw new IllegalArgumentException("A data inicial não pode ser posterior à data final.");
+        }
+    }
+
+    private void validarCategoria(Categoria categoria, Usuario usuario, TipoMovimentacao tipo, boolean mantida) {
+        if (!mantida && !categoria.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccessDeniedException("Você não pode selecionar uma categoria de outro usuário.");
+        }
+        if (categoria.getTipo() != tipo) {
+            throw new BusinessException("A categoria deve ter o mesmo tipo da transação.");
+        }
+    }
 
     @Autowired
     private TransacaoRepository transacaoRepository;
@@ -65,12 +81,22 @@ public class TransacaoService {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(walletId, usuario);
 
+        if (page < 0 || size < 1 || size > 100) {
+            throw new IllegalArgumentException("Página deve ser >= 0 e tamanho deve estar entre 1 e 100.");
+        }
+        validarPeriodo(startDate, endDate);
         Sort.Direction direction = Sort.Direction.DESC;
         String property = "data";
 
         if (sort != null && !sort.isBlank()) {
             String[] parts = sort.split(",");
             property = parts[0];
+            if ("date".equals(property)) property = "data";
+            if (!List.of("data", "valor", "descricao", "tipo", "criadoEm", "id").contains(property)
+                    || parts.length > 2 || (parts.length > 1
+                    && !"asc".equalsIgnoreCase(parts[1]) && !"desc".equalsIgnoreCase(parts[1]))) {
+                throw new IllegalArgumentException("Ordenação inválida.");
+            }
             if (parts.length > 1 && "asc".equalsIgnoreCase(parts[1])) {
                 direction = Sort.Direction.ASC;
             }
@@ -141,6 +167,7 @@ public class TransacaoService {
                     .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
         }
 
+        if (categoria != null) validarCategoria(categoria, usuario, request.getTipo(), false);
         Transacao transacao = new Transacao();
         transacao.setCarteira(vinculo.getCarteira());
         transacao.setCategoria(categoria);
@@ -173,6 +200,11 @@ public class TransacaoService {
                     .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada."));
         }
 
+        if (categoria != null) {
+            boolean mantida = transacao.getCategoria() != null
+                    && transacao.getCategoria().getId().equals(categoria.getId());
+            validarCategoria(categoria, usuario, request.getTipo(), mantida);
+        }
         transacao.setCategoria(categoria);
         transacao.setTipo(request.getTipo());
         transacao.setValor(request.getValor());
@@ -201,12 +233,14 @@ public class TransacaoService {
 
     // Resumo do Dashboard
     public DashboardSummaryResponse obterResumoDashboard(Long walletId, LocalDate inicio, LocalDate fim) {
+        validarPeriodo(inicio, fim);
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(walletId, usuario);
         Carteira carteira = vinculo.getCarteira();
 
         LocalDate dataInicio = inicio != null ? inicio : LocalDate.now().withDayOfMonth(1);
         LocalDate dataFim = fim != null ? fim : LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth());
+        validarPeriodo(dataInicio, dataFim);
 
         List<Transacao> transacoes = transacaoRepository.findByCarteiraAndDataBetweenOrderByDataDesc(carteira, dataInicio, dataFim);
 

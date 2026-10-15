@@ -44,7 +44,7 @@ const Wallets = () => {
       try {
         const perfil = await authService.obterPerfil();
         setUsuarioAtual(perfil);
-      } catch (e) {}
+      } catch { /* Mantem o perfil da sessao quando a atualizacao falha. */ }
     };
     buscarPerfil();
   }, []);
@@ -103,7 +103,7 @@ const Wallets = () => {
   };
 
   const excluirCarteira = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta carteira e todas as suas transações?')) return;
+    if (!window.confirm('Deseja excluir esta carteira? Carteiras com transações não podem ser excluídas.')) return;
     try {
       await walletService.excluirCarteira(id);
       carregarCarteiras();
@@ -161,7 +161,7 @@ const Wallets = () => {
     <div className="wallets-page">
       <Sidebar usuarioAtual={usuarioAtual} itemAtivo="carteiras" />
 
-      <main className="wallets-content">
+      <main className="wallets-content" aria-busy={carregando}>
         <header className="page-header">
           <div className="header-titles">
             <h1>Minhas Carteiras</h1>
@@ -195,12 +195,13 @@ const Wallets = () => {
                   <button
                     type="button"
                     onClick={() => abrirEditarCarteira(c)}
+                    disabled={c.meuPapel === 'VISUALIZADOR'}
                     className="icon-action-btn"
                     title="Editar Carteira"
                   >
                     <Edit2 size={16} />
                   </button>
-                  {carteiras.length > 1 && (
+                  {carteiras.length > 1 && c.meuPapel === 'DONO' && (
                     <button
                       type="button"
                       onClick={() => excluirCarteira(c.id)}
@@ -319,7 +320,7 @@ const Wallets = () => {
               )}
 
               {/* Formulário Convidar Membro */}
-              <form onSubmit={adicionarMembro} className="invite-member-form">
+              {carteiraMembros?.meuPapel === 'DONO' && <form onSubmit={adicionarMembro} className="invite-member-form">
                 <div className="invite-inputs">
                   <input
                     type="email"
@@ -344,7 +345,7 @@ const Wallets = () => {
                   <UserPlus size={16} />
                   {adicionandoMembro ? 'Adicionando...' : 'Convidar'}
                 </button>
-              </form>
+              </form>}
 
               {/* Lista de Membros Existentes */}
               <div className="members-list-wrapper">
