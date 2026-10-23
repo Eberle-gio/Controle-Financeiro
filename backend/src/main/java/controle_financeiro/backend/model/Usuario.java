@@ -44,6 +44,9 @@ public class Usuario {
 
     private Boolean emailConfirmado = false;
 
+    @Column(columnDefinition = "bigint default 0")
+    private Long versaoSessao = 0L;
+
     @Column(unique = true, length = 64)
     private String confirmacaoTokenHash;
 

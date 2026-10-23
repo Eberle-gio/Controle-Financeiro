@@ -21,6 +21,31 @@ import static org.mockito.Mockito.*;
 
 class EmailCadastroTest {
     @Test
+    void conviteEnviaEmailComLinkSemPrecisarDeContaEComNomesEscapados() throws Exception {
+        var resolver = new ClassLoaderTemplateResolver();
+        resolver.setPrefix("templates/"); resolver.setSuffix(".html");
+        resolver.setTemplateMode("HTML"); resolver.setCharacterEncoding("UTF-8");
+        var engine = new SpringTemplateEngine(); engine.setTemplateResolver(resolver);
+        var sender = mock(JavaMailSender.class);
+        var message = new MimeMessage(Session.getInstance(new Properties()));
+        when(sender.createMimeMessage()).thenReturn(message);
+        var emailService = new EmailService();
+        ReflectionTestUtils.setField(emailService, "javaMail", sender);
+        ReflectionTestUtils.setField(emailService, "templateEngine", engine);
+        ReflectionTestUtils.setField(emailService, "remetente", "nodebank@example.com");
+        var listener = new ConviteEmailListener(emailService);
+        String link = "https://nodebank.example/convites/" + "a".repeat(64);
+        listener.enviar(new ConviteCarteiraService.ConvitePendente("sem-cadastro@example.com", "<script>carteira</script>", "<b>Dono</b>", link));
+        verify(sender).send(message);
+        assertEquals("sem-cadastro@example.com", message.getAllRecipients()[0].toString());
+        message.saveChanges();
+        String html = (String) encontrarParte(message, "text/html").getContent();
+        assertTrue(html.contains("href=\"" + link + "\""));
+        assertFalse(html.contains("<script>")); assertFalse(html.contains("<b>Dono</b>"));
+        assertTrue(html.contains("7 dias"));
+    }
+
+    @Test
     void enviaTemplateComLinkEscapadoELogoInline() throws Exception {
         var resolver = new ClassLoaderTemplateResolver();
         resolver.setPrefix("templates/");

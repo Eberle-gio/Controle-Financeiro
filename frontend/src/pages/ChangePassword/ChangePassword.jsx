@@ -73,7 +73,7 @@ const ChangePassword = () => {
 
     try {
       await authService.alterarSenha(senhaAtual, novaSenha);
-      setMensagemSucesso('Senha alterada com sucesso!');
+      setMensagemSucesso('Senha alterada! Suas sessões foram encerradas. Entre novamente com a nova senha.');
       
       // Limpa formulário
       setSenhaAtual('');
@@ -81,9 +81,6 @@ const ChangePassword = () => {
       setConfirmarSenha('');
       setTentativaEnvio(false);
       
-      setTimeout(() => {
-        setMensagemSucesso('');
-      }, 3000);
     } catch (err) {
       setErros({ apiError: err.message });
     } finally {
@@ -115,7 +112,8 @@ const ChangePassword = () => {
             </div>
           )}
 
-          <form onSubmit={lidarEnvio} noValidate>
+          {mensagemSucesso && <Link to="/login">Entrar novamente</Link>}
+          {!mensagemSucesso && <form onSubmit={lidarEnvio} noValidate>
             
             <div className="input-group">
               <label htmlFor="currentPassword">Senha Atual</label>
@@ -244,7 +242,7 @@ const ChangePassword = () => {
               )}
             </button>
 
-          </form>
+          </form>}
 
           <div className="back-dashboard-wrapper">
             <Link to="/dashboard" className="back-dashboard-btn">

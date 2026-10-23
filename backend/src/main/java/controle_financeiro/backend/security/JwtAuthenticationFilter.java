@@ -42,7 +42,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtUtils.obterEmailDoToken(token);
 
                 Usuario usuario = email == null || email.isBlank() ? null : usuarioRepository.findByEmail(email);
-                if (usuario != null && Boolean.TRUE.equals(usuario.getEmailConfirmado())) {
+                if (usuario != null && Boolean.TRUE.equals(usuario.getEmailConfirmado())
+                        && jwtUtils.obterVersaoSessao(token) == (usuario.getVersaoSessao() == null ? 0L : usuario.getVersaoSessao())) {
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(email, null, authorities);

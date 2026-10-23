@@ -17,6 +17,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
@@ -25,6 +27,18 @@ import java.util.UUID;
 
 @Service
 public class UsuarioService {
+    private static final Logger log = LoggerFactory.getLogger(UsuarioService.class);
+
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
+    private Usuario bloquearUsuario(Long id) {
+        Usuario usuario = usuarioRepository.buscarPorIdComBloqueio(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        // A autenticação ou o token podem já ter carregado uma versão antiga na sessão JPA.
+        entityManager.refresh(usuario);
+        return usuario;
+    }
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -88,7 +102,7 @@ public class UsuarioService {
             throw new BusinessException("Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada ou solicite um novo link.");
         }
 
-        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail(), usuario.getNome());
+        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail(), usuario.getNome(), usuario.getVersaoSessao());
 
         return LoginResponse.builder()
                 .accessToken(token)
@@ -100,7 +114,7 @@ public class UsuarioService {
     @Transactional
     public String solicitarRecuperacaoSenha(String email) {
         String emailNormalizado = EmailUtils.normalizar(email);
-        Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
+        Usuario usuario = usuarioRepository.buscarParaConfirmacaoPorEmail(emailNormalizado).orElse(null);
         
         // Retorna um token simulado sem salvar caso o e-mail não exista para não expor e-mails cadastrados
         if (usuario == null) {
@@ -108,6 +122,7 @@ public class UsuarioService {
         }
 
         String tokenUUID = UUID.randomUUID().toString();
+        resetTokenRepository.invalidarTodos(usuario);
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setUsuario(usuario);
         resetToken.setToken(tokenUUID);
@@ -124,19 +139,22 @@ public class UsuarioService {
                 context.setVariable("token", tokenUUID);
                 context.setVariable("resetUrl", frontendUrl.replaceAll("/+$", "") + "/redefinir-senha/" + tokenUUID);
                 emailService.emailTemplate(usuario.getEmail(), "Recuperação de Senha - Controle Financeiro", context, "recuperacaoSenha");
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.error("Falha ao solicitar envio de recuperação de senha para o usuário {}", usuario.getId(), e);
             }
         }
 
         return tokenUUID;
     }
 
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void redefinirSenha(ResetPasswordRequest request) {
         PasswordResetToken resetToken = resetTokenRepository.findByToken(request.getToken())
                 .orElseThrow(() -> new IllegalArgumentException("Token de redefinição inválido ou não encontrado."));
 
-        if (resetToken.isUtilizado()) {
+        Usuario usuario = bloquearUsuario(resetToken.getUsuario().getId());
+        // Releitura após o bloqueio do usuário evita reutilização simultânea do mesmo link.
+        if (resetToken.isUtilizado() || resetTokenRepository.existsByTokenAndUtilizadoTrue(request.getToken())) {
             throw new IllegalArgumentException("Token de redefinição já utilizado.");
         }
 
@@ -144,23 +162,24 @@ public class UsuarioService {
             throw new IllegalArgumentException("Token de redefinição expirado.");
         }
 
-        Usuario usuario = resetToken.getUsuario();
         usuario.setSenha(passwordEncoder.encode(request.getNewPassword()));
+        usuario.setVersaoSessao((usuario.getVersaoSessao() == null ? 0L : usuario.getVersaoSessao()) + 1);
         usuarioRepository.save(usuario);
 
-        resetToken.setUtilizado(true);
-        resetTokenRepository.save(resetToken);
+        resetTokenRepository.invalidarTodos(usuario);
     }
 
     @Transactional
     public void alterarSenha(String senhaAtual, String novaSenha) {
-        Usuario usuario = getUsuarioAutenticado();
+        Usuario usuario = bloquearUsuario(getUsuarioAutenticado().getId());
         if (!passwordEncoder.matches(senhaAtual, usuario.getSenha())) {
             throw new BusinessException("Senha atual incorreta.");
         }
 
         usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuario.setVersaoSessao((usuario.getVersaoSessao() == null ? 0L : usuario.getVersaoSessao()) + 1);
         usuarioRepository.save(usuario);
+        resetTokenRepository.invalidarTodos(usuario);
     }
 
     @Transactional

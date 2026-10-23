@@ -33,11 +33,16 @@ public class JwtUtils {
     }
 
     public String gerarToken(Long userId, String email, String name) {
+        return gerarToken(userId, email, name, 0L);
+    }
+
+    public String gerarToken(Long userId, String email, String name, Long versaoSessao) {
         Date agora = new Date();
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("email", email)
                 .claim("name", name)
+                .claim("sessionVersion", versaoSessao == null ? 0L : versaoSessao)
                 .issuedAt(agora)
                 .expiration(new Date(agora.getTime() + jwtExpirationMs))
                 .signWith(key)
@@ -60,6 +65,11 @@ public class JwtUtils {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public long obterVersaoSessao(String token) {
+        Number versao = extrairClaims(token).get("sessionVersion", Number.class);
+        return versao == null ? 0L : versao.longValue();
     }
 
     private Claims extrairClaims(String token) {

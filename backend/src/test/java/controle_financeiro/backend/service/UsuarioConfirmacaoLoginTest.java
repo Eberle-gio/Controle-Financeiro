@@ -38,7 +38,7 @@ class UsuarioConfirmacaoLoginTest {
         request.setPassword("senha");
         when(usuarios.findByEmail(usuario.getEmail())).thenReturn(usuario);
         when(encoder.matches("senha", "hash")).thenReturn(true);
-        when(jwt.gerarToken(1L, usuario.getEmail(), "Cliente")).thenReturn("jwt");
+        when(jwt.gerarToken(1L, usuario.getEmail(), "Cliente", 0L)).thenReturn("jwt");
         when(jwt.getExpirationSeconds()).thenReturn(604800L);
     }
 

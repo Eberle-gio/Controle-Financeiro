@@ -19,4 +19,18 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+api.interceptors.response.use(
+  response => response,
+  error => {
+    const token = localStorage.getItem('accessToken');
+    if (error.response?.status === 401 && token
+        && error.config?.headers?.Authorization === `Bearer ${token}`) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('current_session');
+      window.location.assign('/login');
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
