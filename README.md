@@ -2,8 +2,6 @@
 
 Sistema completo de controle financeiro pessoal e compartilhado desenvolvido como aplicação Fullstack (Backend Spring Boot 4.1 + Frontend React 19).
 
-Convites agora podem ser enviados a pessoas sem cadastro, com aceite após cadastro e confirmação do e-mail. Consulte [Parte 1: convites e segurança](docs/PARTE_1_CONVITES_SEGURANCA.md) para configuração, endpoints e roteiro de validação.
-
 ---
 
 ## 📌 Descrição da Aplicação e Arquitetura
