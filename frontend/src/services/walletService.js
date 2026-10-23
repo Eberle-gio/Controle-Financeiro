@@ -100,10 +100,10 @@ class WalletService {
 
   async adicionarMembro(carteiraId, email, papel) {
     try {
-      const response = await api.post(`/api/v1/wallets/${carteiraId}/members`, { email, papel });
+      const response = await api.post(`/api/v1/wallets/${carteiraId}/invitations`, { email, papel });
       return response.data;
     } catch (error) {
-      const mensagemErro = error.response?.data?.message || 'Erro ao adicionar membro';
+      const mensagemErro = error.response?.data?.message || 'Erro ao enviar convite';
       throw new Error(mensagemErro);
     }
   }
@@ -116,6 +116,16 @@ class WalletService {
       const mensagemErro = error.response?.data?.message || 'Erro ao remover membro';
       throw new Error(mensagemErro);
     }
+  }
+
+  async listarConvites(carteiraId) {
+    try { return (await api.get(`/api/v1/wallets/${carteiraId}/invitations`)).data; }
+    catch (error) { throw new Error(error.response?.data?.message || 'Erro ao carregar convites.'); }
+  }
+
+  async cancelarConvite(carteiraId, conviteId) {
+    try { await api.delete(`/api/v1/wallets/${carteiraId}/invitations/${conviteId}`); }
+    catch (error) { throw new Error(error.response?.data?.message || 'Erro ao cancelar convite.'); }
   }
 }
 

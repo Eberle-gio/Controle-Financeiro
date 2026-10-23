@@ -2,11 +2,13 @@
 
 Sistema completo de controle financeiro pessoal e compartilhado desenvolvido como aplicação Fullstack (Backend Spring Boot 4.1 + Frontend React 19).
 
+Convites agora podem ser enviados a pessoas sem cadastro, com aceite após cadastro e confirmação do e-mail. Consulte [Parte 1: convites e segurança](docs/PARTE_1_CONVITES_SEGURANCA.md) para configuração, endpoints e roteiro de validação.
+
 ---
 
 ## 📌 Descrição da Aplicação e Arquitetura
 
-O **NodeBank** permite que usuários controlem suas finanças pessoais e gerenciem carteiras compartilhadas com múltiplos membros, oferecendo acompanhamento de receitas, despesas, categorização de lançamentos e análise visual por meio de gráficos de evolução e relatórios consolidados em tempo real.
+O **NodeBank** permite que usuários controlem suas finanças pessoais e gerenciem carteiras compartilhadas com múltiplos membros, oferecendo acompanhamento de receitas, despesas, categorização de lançamentos e análise visual por meio de gráficos de evolução e extratos por período.
 
 ### Arquitetura do Sistema
 
@@ -60,7 +62,7 @@ erDiagram
         Long id PK
         Long carteira_id FK
         Long usuario_id FK
-        PapelCarteira papel
+        TipoPermissao papel
         LocalDateTime entradoEm
     }
 
@@ -124,6 +126,7 @@ O backend importa backend/.env como Java Properties quando iniciado **dentro de 
 | Variável | Configuração |
 | --- | --- |
 | APP_FRONTEND_URL | URL do frontend usada no link de confirmação; padrão http://localhost:5173 |
+| APP_CORS_ALLOWED_ORIGINS | Origens autorizadas do frontend, separadas por vírgula, sem barra final; configure o domínio publicado no deploy |
 | SPRING_DATASOURCE_URL | URL JDBC MySQL; banco controle_financeiro no exemplo |
 | SPRING_DATASOURCE_USERNAME | Usuário MySQL; padrão local root |
 | SPRING_DATASOURCE_PASSWORD | Senha conforme sua instalação MySQL |
@@ -145,7 +148,7 @@ A URL local usa createDatabaseIfNotExist=true, o que requer permissão de criaç
 CREATE DATABASE controle_financeiro;
 ~~~
 
-O Hibernate cria/atualiza as tabelas com ddl-auto=update. A recuperação de senha requer SMTP válido. O link de recuperação aponta para localhost:5173; outras URLs exigem ajustes em UsuarioService e SecurityConfig (CORS).
+O Hibernate cria/atualiza as tabelas com ddl-auto=update. Confirmação de cadastro, recuperação de senha e convites requerem SMTP válido. Todos esses links usam APP_FRONTEND_URL. Para outro domínio, configure também APP_CORS_ALLOWED_ORIGINS.
 
 Os arquivos .env e o secrets real são ignorados pelo Git; versione apenas os exemplos. Como alternativa ao .env, consulte [application-secrets-example.properties](backend/src/main/resources/application-secrets-example.properties), com instruções para carregar o secrets explicitamente. Nunca coloque senhas ou JWT em variáveis VITE_, pois são expostas no navegador.
 
@@ -211,7 +214,7 @@ Optou-se pela utilização do Spring Security com sessão **Stateless** e assina
 No frontend, o arquivo `axiosConfig.js` possui um interceptor de requisições que insere automaticamente o cabeçalho `Authorization: Bearer <token>` extraído do `localStorage`. Isso centralizou o controle de segurança e eliminou código repetitivo nos serviços.
 
 ### 3. Modelo de Permissões de Membros da Carteira (`DONO`, `EDITOR`, `VISUALIZADOR`)
-Para suporte a carteiras compartilhadas, foi criada a entidade `MembroCarteira` com a enumeração `PapelCarteira`:
+Para suporte a carteiras compartilhadas, foi criada a entidade `MembroCarteira` com a enumeração `TipoPermissao`:
 * **`DONO`**: Acesso total, incluindo permissão de exclusão da carteira, adição e alteração de papéis dos membros.
 * **`EDITOR`**: Permissão de leitura e escrita (criação, edição e remoção de lançamentos/transações).
 * **`VISUALIZADOR`**: Permissão estritamente de leitura (bloqueado em tentativas de modificação com erro HTTP 403).

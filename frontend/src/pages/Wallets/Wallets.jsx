@@ -38,6 +38,8 @@ const Wallets = () => {
   const [novoMembroPapel, setNovoMembroPapel] = useState('VISUALIZADOR');
   const [adicionandoMembro, setAdicionandoMembro] = useState(false);
   const [erroMembros, setErroMembros] = useState('');
+  const [convites, setConvites] = useState([]);
+  const [sucessoConvite, setSucessoConvite] = useState('');
 
   useEffect(() => {
     const buscarPerfil = async () => {
@@ -117,11 +119,15 @@ const Wallets = () => {
     setCarteiraMembros(carteira);
     setModalMembrosAberto(true);
     setErroMembros('');
+    setSucessoConvite('');
+    setMembros([]);
+    setConvites([]);
     setNovoMembroEmail('');
     setCarregandoMembros(true);
     try {
       const lista = await walletService.listarMembros(carteira.id);
       setMembros(lista);
+      if (carteira.meuPapel === 'DONO') setConvites(await walletService.listarConvites(carteira.id));
     } catch (err) {
       setErroMembros(err.message || 'Erro ao carregar membros');
     } finally {
@@ -135,11 +141,12 @@ const Wallets = () => {
 
     setAdicionandoMembro(true);
     setErroMembros('');
+    setSucessoConvite('');
     try {
       await walletService.adicionarMembro(carteiraMembros.id, novoMembroEmail.trim(), novoMembroPapel);
       setNovoMembroEmail('');
-      const lista = await walletService.listarMembros(carteiraMembros.id);
-      setMembros(lista);
+      setSucessoConvite('Convite preparado para envio por e-mail. A pessoa entrará na carteira após aceitar.');
+      setConvites(await walletService.listarConvites(carteiraMembros.id));
     } catch (err) {
       setErroMembros(err.message || 'Falha ao convidar membro');
     } finally {
@@ -155,6 +162,25 @@ const Wallets = () => {
     } catch (err) {
       setErroMembros(err.message || 'Falha ao remover membro');
     }
+  };
+
+  const reenviarConvite = async (convite) => {
+    setAdicionandoMembro(true); setErroMembros(''); setSucessoConvite('');
+    try {
+      await walletService.adicionarMembro(carteiraMembros.id, convite.email, convite.papel);
+      setConvites(await walletService.listarConvites(carteiraMembros.id));
+      setSucessoConvite('Novo convite preparado para envio. O link anterior foi invalidado.');
+    } catch (err) { setErroMembros(err.message); }
+    finally { setAdicionandoMembro(false); }
+  };
+
+  const cancelarConvite = async (conviteId) => {
+    setAdicionandoMembro(true); setErroMembros(''); setSucessoConvite('');
+    try {
+      await walletService.cancelarConvite(carteiraMembros.id, conviteId);
+      setConvites(prev => prev.filter(convite => convite.id !== conviteId));
+    } catch (err) { setErroMembros(err.message); }
+    finally { setAdicionandoMembro(false); }
   };
 
   return (
@@ -312,6 +338,7 @@ const Wallets = () => {
             </header>
 
             <div className="modal-body-content">
+              {sucessoConvite && <p className="alert alert-success" role="status">{sucessoConvite}</p>}
               {erroMembros && (
                 <div className="modal-error-alert">
                   <AlertCircle size={16} />
@@ -321,10 +348,13 @@ const Wallets = () => {
 
               {/* Formulário Convidar Membro */}
               {carteiraMembros?.meuPapel === 'DONO' && <form onSubmit={adicionarMembro} className="invite-member-form">
+                <p>Convide por e-mail, mesmo que a pessoa ainda não tenha cadastro.</p>
                 <div className="invite-inputs">
                   <input
                     type="email"
-                    placeholder="E-mail do membro cadastrado"
+                    placeholder="E-mail da pessoa convidada"
+                    aria-label="E-mail da pessoa convidada"
+                    maxLength={254}
                     value={novoMembroEmail}
                     onChange={(e) => setNovoMembroEmail(e.target.value)}
                     required
@@ -343,9 +373,25 @@ const Wallets = () => {
                   disabled={adicionandoMembro}
                 >
                   <UserPlus size={16} />
-                  {adicionandoMembro ? 'Adicionando...' : 'Convidar'}
+                  {adicionandoMembro ? 'Aguarde...' : 'Enviar convite'}
                 </button>
               </form>}
+
+              {carteiraMembros?.meuPapel === 'DONO' && convites.length > 0 && (
+                <section className="members-list-wrapper">
+                  <h4>Convites aguardando aceite</h4>
+                  {convites.map(convite => (
+                    <div className="member-item" key={convite.id}>
+                      <div className="member-info">
+                        <span className="member-email">{convite.email}</span>
+                        <span>{convite.papel} · {convite.status === 'EXPIRADO' ? 'Expirado' : 'Pendente'}</span>
+                      </div>
+                      <button type="button" className="btn-secondary" disabled={adicionandoMembro} onClick={() => reenviarConvite(convite)}>Reenviar</button>
+                      <button type="button" className="btn-remove-member" disabled={adicionandoMembro} onClick={() => cancelarConvite(convite.id)} aria-label={`Cancelar convite para ${convite.email}`}><X size={16} /></button>
+                    </div>
+                  ))}
+                </section>
+              )}
 
               {/* Lista de Membros Existentes */}
               <div className="members-list-wrapper">

@@ -14,6 +14,7 @@ public class WalletMemberRequest {
 
     @NotBlank(message = "O e-mail do membro é obrigatório")
     @Email(message = "E-mail em formato inválido")
+    @jakarta.validation.constraints.Size(max = 254)
     private String email;
 
     private TipoPermissao papel = TipoPermissao.VISUALIZADOR;

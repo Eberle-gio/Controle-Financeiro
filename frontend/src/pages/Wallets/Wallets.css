@@ -231,7 +231,13 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
+
+.members-modal .modal-body-content { max-height: 70vh; overflow-y: auto; }
+.members-modal .invite-member-form > p { font-size: 0.875rem; color: var(--text-secondary); }
+.member-item .btn-secondary { padding: 0.4rem 0.6rem; }
 
 .member-name {
   font-size: 0.875rem;

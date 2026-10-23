@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import './Register.css';
@@ -7,10 +7,11 @@ import './Register.css';
 import logo from '../../assets/images/Logo.svg';
 
 const Register = () => {
+  const [params] = useSearchParams();
 
   // Estados dos Campos
   const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => params.get('email') || '');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
 

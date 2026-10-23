@@ -90,6 +90,7 @@ const Transactions = () => {
   }, [carregarTransacoes]);
 
   const abrirNovaTransacao = () => {
+    if (carteiraAtiva?.meuPapel === 'VISUALIZADOR') return;
     setTransacaoSelecionada(null);
     setModalAberto(true);
   };
@@ -119,7 +120,7 @@ const Transactions = () => {
             <h1>Extrato de Transações</h1>
             <p>Gerencie e visualize todas as movimentações financeiras das suas carteiras.</p>
           </div>
-          <button onClick={abrirNovaTransacao} className="btn-primary-action">
+          <button onClick={abrirNovaTransacao} className="btn-primary-action" disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR'}>
             <Plus size={18} /> Nova Transação
           </button>
         </header>
@@ -256,7 +257,7 @@ const Transactions = () => {
                             e.stopPropagation();
                             abrirEditarTransacao(t);
                           }}
-                          title="Editar transação"
+                          title={carteiraAtiva?.meuPapel === 'VISUALIZADOR' ? 'Ver transação' : 'Editar transação'}
                         >
                           <Edit2 size={15} />
                         </button>

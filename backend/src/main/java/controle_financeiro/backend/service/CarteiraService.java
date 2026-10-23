@@ -4,13 +4,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
 
-import controle_financeiro.backend.dto.WalletMemberRequest;
 import controle_financeiro.backend.dto.WalletMemberResponse;
 import controle_financeiro.backend.dto.WalletRequest;
 import controle_financeiro.backend.dto.WalletResponse;
@@ -39,6 +37,9 @@ public class CarteiraService {
 
     @Autowired
     private TransacaoRepository transacaoRepository;
+
+    @Autowired
+    private controle_financeiro.backend.repository.ConviteCarteiraRepository conviteRepository;
 
     @Lazy
     @Autowired
@@ -132,6 +133,7 @@ public class CarteiraService {
             throw new BusinessException("Não é possível excluir uma carteira com transações vinculadas.");
         }
         membroCarteiraRepository.deleteByCarteira(vinculo.getCarteira());
+        conviteRepository.deleteByCarteira(vinculo.getCarteira());
         carteiraRepository.delete(vinculo.getCarteira());
     }
 
@@ -144,42 +146,6 @@ public class CarteiraService {
         return membros.stream()
                 .map(this::paraMemberResponse)
                 .toList();
-    }
-
-    // Adiciona novo membro por e-mail (somente DONO)
-    @Transactional
-    public WalletMemberResponse adicionarMembro(Long carteiraId, WalletMemberRequest request) {
-        Usuario usuario = usuarioService.getUsuarioAutenticado();
-        MembroCarteira vinculoDono = buscarVinculoOuFalhar(carteiraId, usuario);
-
-        if (vinculoDono.getPapel() != TipoPermissao.DONO) {
-            throw new AccessDeniedException("Apenas o dono da carteira pode adicionar membros.");
-        }
-
-        String emailNormalizado = controle_financeiro.backend.util.EmailUtils.normalizar(request.getEmail());
-        Usuario novoMembroUsuario = usuarioRepository.findByEmail(emailNormalizado);
-        if (novoMembroUsuario == null) {
-            throw new ResourceNotFoundException("Usuário com o e-mail informado não foi encontrado.");
-        }
-
-        Carteira carteira = vinculoDono.getCarteira();
-
-        if (membroCarteiraRepository.existsByCarteiraAndUsuario(carteira, novoMembroUsuario)) {
-            throw new DataIntegrityViolationException("O usuário já é membro desta carteira.");
-        }
-
-        TipoPermissao papel = request.getPapel() != null ? request.getPapel() : TipoPermissao.VISUALIZADOR;
-        if (papel == TipoPermissao.DONO) {
-            throw new BusinessException("Membros podem ser EDITOR ou VISUALIZADOR. A carteira possui um único dono.");
-        }
-
-        MembroCarteira novoMembro = new MembroCarteira();
-        novoMembro.setCarteira(carteira);
-        novoMembro.setUsuario(novoMembroUsuario);
-        novoMembro.setPapel(papel);
-
-        MembroCarteira salvo = membroCarteiraRepository.save(novoMembro);
-        return paraMemberResponse(salvo);
     }
 
     // Altera o papel de um membro (somente DONO)

@@ -33,6 +33,7 @@ const TransactionModal = ({
   const [excluindo, setExcluindo] = useState(false);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const [erro, setErro] = useState('');
+  const readOnly = wallets.find(wallet => String(wallet.id) === selectedWalletId)?.meuPapel === 'VISUALIZADOR';
 
   // Atualiza selectedWalletId quando prop muda
   useEffect(() => {
@@ -81,8 +82,9 @@ const TransactionModal = ({
           lista.push({ id: initialData.categoryId, name: initialData.categoryName, tipo });
         }
         setCategorias(lista);
-      } catch (err) {
-        console.error('Falha ao carregar categorias:', err);
+      } catch {
+        setCategorias([]);
+        setErro('Não foi possível carregar as categorias. Feche e abra a transação para tentar novamente.');
       } finally {
         setCarregandoCategorias(false);
       }
@@ -106,6 +108,7 @@ const TransactionModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (readOnly) return;
     setErro('');
 
     if (!descricao.trim()) {
@@ -161,7 +164,7 @@ const TransactionModal = ({
   };
 
   const handleExcluir = async () => {
-    if (!isEditing || !initialData?.id) return;
+    if (readOnly || !isEditing || !initialData?.id) return;
 
     setExcluindo(true);
     setErro('');
@@ -182,7 +185,7 @@ const TransactionModal = ({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <header className="modal-header">
-          <h2>{isEditing ? 'Editar Transação' : 'Nova Transação'}</h2>
+          <h2>{readOnly ? 'Detalhes da transação' : isEditing ? 'Editar Transação' : 'Nova Transação'}</h2>
           <button
             type="button"
             className="modal-close-btn"
@@ -201,6 +204,8 @@ const TransactionModal = ({
         )}
 
         <form onSubmit={handleSubmit} className="modal-form">
+          {readOnly && <p>Você tem acesso somente de leitura nesta carteira.</p>}
+          <fieldset disabled={readOnly || salvando || excluindo} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: 'grid', gap: '1rem' }}>
           {/* Seletor Tipo: Receita x Despesa */}
           <div className="type-toggle-group">
             <button
@@ -240,7 +245,7 @@ const TransactionModal = ({
                 }}
                 required
               >
-                {wallets.map((w) => (
+                {wallets.filter(w => isEditing || w.meuPapel !== 'VISUALIZADOR').map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''}
                   </option>
@@ -316,9 +321,10 @@ const TransactionModal = ({
             </div>
           </div>
 
+          </fieldset>
           {/* Ações do Modal */}
           <div className="modal-actions">
-            {isEditing && (
+            {isEditing && !readOnly && (
               <div className="modal-delete-wrapper">
                 {confirmandoExclusao ? (
                   <div className="confirm-delete-box">
@@ -361,9 +367,9 @@ const TransactionModal = ({
                 onClick={onClose}
                 disabled={salvando || excluindo}
               >
-                Cancelar
+                {readOnly ? 'Fechar' : 'Cancelar'}
               </button>
-              <button
+              {!readOnly && <button
                 type="submit"
                 className={`btn-primary ${tipo === 'RECEITA' ? 'submit-income' : 'submit-expense'}`}
                 disabled={salvando || excluindo}
@@ -376,7 +382,7 @@ const TransactionModal = ({
                     {isEditing ? 'Atualizar' : 'Salvar Transação'}
                   </>
                 )}
-              </button>
+              </button>}
             </div>
           </div>
         </form>

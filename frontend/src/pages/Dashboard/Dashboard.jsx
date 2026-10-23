@@ -49,6 +49,7 @@ const Dashboard = () => {
   const [transacaoSelecionada, setTransacaoSelecionada] = useState(null);
 
   const abrirNovaTransacao = () => {
+    if (carteiraAtiva?.meuPapel === 'VISUALIZADOR') return;
     if (!carteiraAtiva && carteiras.length > 0) {
       setCarteiraAtiva(carteiras[0]);
     }
@@ -234,6 +235,7 @@ const Dashboard = () => {
               type="button"
               onClick={abrirNovaTransacao}
               className="btn-new-transaction"
+              disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR'}
               title="Adicionar nova transação"
             >
               <Plus size={16} /> Nova Transação
@@ -325,6 +327,7 @@ const Dashboard = () => {
                 type="button"
                 className="btn-quick-add"
                 onClick={abrirNovaTransacao}
+                disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR'}
                 title="Adicionar lançamento rápido"
               >
                 <Plus size={14} /> Novo
@@ -337,7 +340,7 @@ const Dashboard = () => {
                     key={t.id}
                     className="transaction-item clickable"
                     onClick={() => abrirEditarTransacao(t)}
-                    title="Clique para editar ou excluir"
+                    title={carteiraAtiva?.meuPapel === 'VISUALIZADOR' ? 'Ver transação' : 'Clique para editar ou excluir'}
                   >
                     <div className="transaction-info">
                       <span className="category-icon-badge">

@@ -87,6 +87,7 @@ class AuthService {
   async alterarSenha(senhaAtual, novaSenha) {
     try {
       const response = await api.patch('/api/v1/users/me/password', { currentPassword: senhaAtual, newPassword: novaSenha });
+      this.logout();
       return response.data;
     } catch (error) {
       const mensagemErro = error.response?.data?.message || 'Erro ao alterar senha';

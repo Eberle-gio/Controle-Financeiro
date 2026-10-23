@@ -30,18 +30,17 @@ class ApiContractTest {
 
     @Test
     void membrosAceitamCamposEPermissoesDoFormulario() throws Exception {
-        var service = mock(CarteiraService.class);
-        when(service.adicionarMembro(eq(2L), any())).thenReturn(WalletMemberResponse.builder()
-                .id(7L).usuarioId(9L).usuarioNome("João").usuarioEmail("cliente@example.com")
-                .papel(TipoPermissao.VISUALIZADOR).build());
+        var service = mock(ConviteCarteiraService.class);
+        when(service.convidar(eq(2L), any())).thenReturn(new WalletInvitationResponse(
+                7L, 2L, "Casa", "João", "cliente@example.com", TipoPermissao.VISUALIZADOR, "PENDENTE", java.time.LocalDateTime.now().plusDays(7)));
         var controller = new CarteiraController();
-        ReflectionTestUtils.setField(controller, "carteiraService", service);
+        ReflectionTestUtils.setField(controller, "conviteService", service);
         var mvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build();
         mvc.perform(post("/api/v1/wallets/2/members").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"cliente@example.com\",\"papel\":\"VISUALIZADOR\"}"))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.usuarioId").value(9))
-                .andExpect(jsonPath("$.usuarioNome").value("João"))
-                .andExpect(jsonPath("$.userId").doesNotExist());
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.status").value("PENDENTE"))
+                .andExpect(jsonPath("$.email").value("cliente@example.com"))
+                .andExpect(jsonPath("$.tokenHash").doesNotExist());
         mvc.perform(post("/api/v1/wallets/2/members").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"cliente@example.com\",\"papel\":\"LEITURA\"}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").isNotEmpty());

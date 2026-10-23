@@ -11,6 +11,7 @@ import Wallets from '../pages/Wallets/Wallets';
 import Categories from '../pages/Categories/Categories';
 import ChangePassword from '../pages/ChangePassword/ChangePassword';
 import PrivateRoute from './PrivateRoute';
+import Invitation from '../pages/Invitation/Invitation';
 
 const AppRoutes = () => {
   return (
@@ -18,6 +19,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Register />} />
+      <Route path="/convites/:token" element={<Invitation />} />
       <Route path="/confirmar-cadastro" element={<ConfirmRegistration />} />
       <Route path="/confirmar-cadastro/:token" element={<ConfirmRegistration />} />
       <Route path="/recuperar-senha" element={<ForgotPassword />} />

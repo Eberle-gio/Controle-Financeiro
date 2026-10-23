@@ -23,6 +23,9 @@ public class CarteiraController {
     @Autowired
     private CarteiraService carteiraService;
 
+    @Autowired
+    private controle_financeiro.backend.service.ConviteCarteiraService conviteService;
+
     // GET /api/v1/wallets
     @GetMapping
     public ResponseEntity<List<WalletResponse>> listar() {
@@ -71,12 +74,18 @@ public class CarteiraController {
     }
 
     // POST /api/v1/wallets/{id}/members
-    @PostMapping("/{id}/members")
-    public ResponseEntity<WalletMemberResponse> adicionarMembro(@PathVariable Long id,
+    @PostMapping({"/{id}/members", "/{id}/invitations"})
+    public ResponseEntity<WalletInvitationResponse> adicionarMembro(@PathVariable Long id,
                                                                 @Valid @RequestBody WalletMemberRequest request) {
-        WalletMemberResponse membro = carteiraService.adicionarMembro(id, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(membro);
+        return ResponseEntity.status(HttpStatus.CREATED).body(conviteService.convidar(id, request));
     }
+
+    @GetMapping("/{id}/invitations")
+    public List<WalletInvitationResponse> listarConvites(@PathVariable Long id) { return conviteService.listar(id); }
+
+    @DeleteMapping("/{id}/invitations/{inviteId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelarConvite(@PathVariable Long id, @PathVariable Long inviteId) { conviteService.cancelar(id, inviteId); }
 
     // PATCH /api/v1/wallets/{id}/members/{userId}
     @PatchMapping("/{id}/members/{userId}")

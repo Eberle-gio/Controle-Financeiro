@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
+import { pendingInvitationPath } from '../../services/pendingInvitation';
 import './Login.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -21,7 +22,7 @@ const Login = () => {
   // Redireciona se o usuário já estiver logado
   useEffect(() => {
     if (authService.isAuthenticated()) {
-      navigate('/dashboard');
+      navigate(pendingInvitationPath());
     }
   }, [navigate]);
 
@@ -54,7 +55,7 @@ const Login = () => {
 
     try {
       await authService.login(email, senha);
-      navigate('/dashboard');
+      navigate(pendingInvitationPath());
     } catch (err) {
       setErros({ apiError: err.message });
     } finally {
