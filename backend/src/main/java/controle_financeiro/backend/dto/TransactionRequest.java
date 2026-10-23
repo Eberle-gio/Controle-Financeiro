@@ -2,6 +2,7 @@ package controle_financeiro.backend.dto;
 
 import controle_financeiro.backend.model.TipoMovimentacao;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,6 +24,7 @@ public class TransactionRequest {
 
     @NotNull(message = "O valor é obrigatório")
     @DecimalMin(value = "0.01", message = "O valor deve ser maior que zero")
+    @Digits(integer = 13, fraction = 2, message = "O valor deve ter no máximo 13 dígitos inteiros e 2 casas decimais")
     private BigDecimal valor;
 
     @NotNull(message = "O tipo é obrigatório (RECEITA ou DESPESA)")

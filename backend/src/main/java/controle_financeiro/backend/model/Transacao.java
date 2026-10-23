@@ -42,6 +42,7 @@ public class Transacao {
 
     @NotNull(message = "O valor é obrigatório")
     @DecimalMin(value = "0.01", message = "O valor deve ser maior que zero")
+    @jakarta.validation.constraints.Digits(integer = 13, fraction = 2)
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;
 
