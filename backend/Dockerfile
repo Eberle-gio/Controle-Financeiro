@@ -8,11 +8,11 @@ COPY mvnw mvnw.cmd pom.xml ./
 COPY .mvn .mvn
 
 # Baixa as dependências (camada cacheada enquanto o pom.xml não mudar)
-RUN ./mvnw dependency:go-offline -q
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -q
 
 # Copia o código-fonte e gera o JAR
 COPY src ./src
-RUN ./mvnw package -DskipTests -q
+RUN chmod +x mvnw && ./mvnw package -DskipTests -q
 
 # ── Estágio 2: Runtime ────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-alpine
