@@ -107,8 +107,8 @@ public class CarteiraService {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculo = buscarVinculoOuFalhar(id, usuario);
 
-        if (vinculo.getPapel() == TipoPermissao.VISUALIZADOR) {
-            throw new AccessDeniedException("Você não tem permissão de edição nesta carteira.");
+        if (vinculo.getPapel() != TipoPermissao.DONO) {
+            throw new AccessDeniedException("Apenas o dono da carteira pode alterar seus dados.");
         }
 
         Carteira carteira = vinculo.getCarteira();

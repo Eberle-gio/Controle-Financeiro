@@ -221,7 +221,7 @@ const Wallets = () => {
                   <button
                     type="button"
                     onClick={() => abrirEditarCarteira(c)}
-                    disabled={c.meuPapel === 'VISUALIZADOR'}
+                    disabled={c.meuPapel !== 'DONO'}
                     className="icon-action-btn"
                     title="Editar Carteira"
                   >
