@@ -30,6 +30,8 @@ public class DashboardSummaryResponse {
         private String categoryColor;
         private String categoryIcon;
         private BigDecimal total;
+        private BigDecimal totalIncome;
+        private BigDecimal totalExpense;
     }
 
     @Data

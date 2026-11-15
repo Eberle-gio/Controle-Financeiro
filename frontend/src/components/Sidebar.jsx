@@ -4,7 +4,8 @@ import {
   ArrowLeftRight,
   Wallet,
   Tag,
-  Lock
+  Lock,
+  FileText
 } from 'lucide-react';
 import logo from '../assets/images/Logo.svg';
 import './Sidebar.css';
@@ -51,6 +52,14 @@ const Sidebar = ({ usuarioAtual, currentUser, activeItem = 'dashboard', itemAtiv
         >
           <Tag size={18} />
           Categorias
+        </Link>
+
+        <Link
+          to="/relatorios"
+          className={`nav-item ${item === 'relatorios' ? 'active' : ''}`}
+        >
+          <FileText size={18} />
+          Relatórios
         </Link>
 
         <div className="nav-separator">Conta</div>

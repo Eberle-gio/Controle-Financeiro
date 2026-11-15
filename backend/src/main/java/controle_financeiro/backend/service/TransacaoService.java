@@ -264,9 +264,15 @@ public class TransacaoService {
             String catColor = t.getCategoria() != null ? t.getCategoria().getCor() : "#6b7280";
             String catIcon = t.getCategoria() != null ? t.getCategoria().getIcone() : "Tag";
 
-            byCategoryMap.putIfAbsent(catId, new DashboardSummaryResponse.CategorySummaryDTO(catId, catName, catColor, catIcon, BigDecimal.ZERO));
+            byCategoryMap.putIfAbsent(catId, new DashboardSummaryResponse.CategorySummaryDTO(
+                    catId, catName, catColor, catIcon, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
             DashboardSummaryResponse.CategorySummaryDTO catDto = byCategoryMap.get(catId);
             catDto.setTotal(catDto.getTotal().add(valor));
+            if (t.getTipo() == TipoMovimentacao.RECEITA) {
+                catDto.setTotalIncome(catDto.getTotalIncome().add(valor));
+            } else {
+                catDto.setTotalExpense(catDto.getTotalExpense().add(valor));
+            }
 
             // Agrupamento por Data
             String dateKey = t.getData().toString();

@@ -9,6 +9,7 @@ import Dashboard from '../pages/Dashboard/Dashboard';
 import Transactions from '../pages/Transactions/Transactions';
 import Wallets from '../pages/Wallets/Wallets';
 import Categories from '../pages/Categories/Categories';
+import Reports from '../pages/Reports/Reports';
 import ChangePassword from '../pages/ChangePassword/ChangePassword';
 import PrivateRoute from './PrivateRoute';
 import Invitation from '../pages/Invitation/Invitation';
@@ -28,6 +29,7 @@ const AppRoutes = () => {
       <Route path="/transacoes" element={<PrivateRoute><Transactions /></PrivateRoute>} />
       <Route path="/carteiras" element={<PrivateRoute><Wallets /></PrivateRoute>} />
       <Route path="/categorias" element={<PrivateRoute><Categories /></PrivateRoute>} />
+      <Route path="/relatorios" element={<PrivateRoute><Reports /></PrivateRoute>} />
       <Route path="/app/perfil/senha" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
     </Routes>
   );
