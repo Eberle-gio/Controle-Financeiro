@@ -7,6 +7,7 @@ import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut, Plus, Edit2 } 
 import Sidebar from '../../components/Sidebar';
 import CategoryIcon from '../../components/CategoryIcon';
 import TransactionModal from '../../components/TransactionModal';
+import { subscribeToWallet } from '../../services/walletRealtime';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -126,7 +127,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     buscarResumo();
-  }, [buscarResumo]);
+    if (!carteiraAtiva) return undefined;
+    return subscribeToWallet(carteiraAtiva.id, buscarResumo);
+  }, [buscarResumo, carteiraAtiva]);
 
   const lidarLogout = () => {
     authService.logout();

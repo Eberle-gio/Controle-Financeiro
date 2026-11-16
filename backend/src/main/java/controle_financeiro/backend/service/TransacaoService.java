@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +63,9 @@ public class TransacaoService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Lazy
     @Autowired
@@ -178,6 +182,7 @@ public class TransacaoService {
         transacao.setData(request.getData());
 
         Transacao salva = transacaoRepository.save(transacao);
+        eventPublisher.publishEvent(new CarteiraRealtimeService.TransacaoAlterada(walletId, "CRIADA"));
         return paraDTO(salva);
     }
 
@@ -212,6 +217,7 @@ public class TransacaoService {
         transacao.setData(request.getData());
 
         Transacao salva = transacaoRepository.save(transacao);
+        eventPublisher.publishEvent(new CarteiraRealtimeService.TransacaoAlterada(walletId, "ATUALIZADA"));
         return paraDTO(salva);
     }
 
@@ -229,6 +235,7 @@ public class TransacaoService {
         }
 
         transacaoRepository.delete(transacao);
+        eventPublisher.publishEvent(new CarteiraRealtimeService.TransacaoAlterada(walletId, "EXCLUIDA"));
     }
 
     // Resumo do Dashboard

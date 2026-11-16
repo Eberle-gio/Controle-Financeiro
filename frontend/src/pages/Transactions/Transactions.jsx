@@ -6,6 +6,7 @@ import { authService } from '../../services/authService';
 import Sidebar from '../../components/Sidebar';
 import CategoryIcon from '../../components/CategoryIcon';
 import TransactionModal from '../../components/TransactionModal';
+import { subscribeToWallet } from '../../services/walletRealtime';
 import { Plus, RefreshCw, Filter, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
 import './Transactions.css';
 
@@ -87,7 +88,9 @@ const Transactions = () => {
 
   useEffect(() => {
     carregarTransacoes();
-  }, [carregarTransacoes]);
+    if (!carteiraAtiva) return undefined;
+    return subscribeToWallet(carteiraAtiva.id, carregarTransacoes);
+  }, [carregarTransacoes, carteiraAtiva]);
 
   const abrirNovaTransacao = () => {
     if (carteiraAtiva?.meuPapel === 'VISUALIZADOR') return;

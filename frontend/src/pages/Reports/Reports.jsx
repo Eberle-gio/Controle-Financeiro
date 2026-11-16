@@ -4,6 +4,7 @@ import Sidebar from '../../components/Sidebar';
 import { authService } from '../../services/authService';
 import { walletService } from '../../services/walletService';
 import { rememberWallet, restoreWallet } from '../../services/walletSelection';
+import { subscribeToWallet } from '../../services/walletRealtime';
 import './Reports.css';
 
 const periodoDoMes = () => {
@@ -61,7 +62,11 @@ const Reports = () => {
     }
   }, [carteiraAtiva, periodo]);
 
-  useEffect(() => { buscarRelatorio(); }, [buscarRelatorio]);
+  useEffect(() => {
+    buscarRelatorio();
+    if (!carteiraAtiva) return undefined;
+    return subscribeToWallet(carteiraAtiva.id, buscarRelatorio);
+  }, [buscarRelatorio, carteiraAtiva]);
 
   const categorias = useMemo(() => (resumo?.byCategory || []).slice().sort((a, b) =>
     (Number(b.totalIncome || 0) + Number(b.totalExpense || 0))
