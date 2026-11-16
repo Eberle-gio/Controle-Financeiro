@@ -2,6 +2,7 @@
 FROM eclipse-temurin:21-jdk-alpine AS build
 
 WORKDIR /app
+ENV PORT=10000
 
 # Copia os arquivos do Maven Wrapper e o pom.xml primeiro (cache de dependências)
 COPY mvnw mvnw.cmd pom.xml ./
@@ -22,7 +23,7 @@ WORKDIR /app
 # Copia apenas o JAR do estágio de build
 COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 10000
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
