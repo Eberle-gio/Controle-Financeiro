@@ -76,36 +76,12 @@ const Reports = () => {
     style: 'currency', currency: 'BRL'
   }).format(Number(valor) || 0);
 
-  const exportarCsv = () => {
+  const exportarPdf = () => {
     if (!resumo || !carteiraAtiva) return;
-    const linhas = [
-      ['Relatório financeiro NodeBank'],
-      ['Carteira', carteiraAtiva.nome],
-      ['Período', periodo.inicio, 'até', periodo.fim],
-      [],
-      ['Resumo', 'Valor (R$)'],
-      ['Receitas', resumo.totalIncome],
-      ['Despesas', resumo.totalExpense],
-      ['Saldo do período', resumo.balance],
-      ['Quantidade de lançamentos', resumo.transactionCount],
-      [],
-      ['Detalhamento por categoria', 'Receitas (R$)', 'Despesas (R$)', 'Saldo (R$)'],
-      ...categorias.map(categoria => [
-        categoria.categoryName,
-        categoria.totalIncome || 0,
-        categoria.totalExpense || 0,
-        Number(categoria.totalIncome || 0) - Number(categoria.totalExpense || 0)
-      ])
-    ];
-    const csv = '\uFEFF' + linhas.map(linha => linha.map(escaparCsv).join(';')).join('\r\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `nodebank-relatorio-${periodo.inicio}-${periodo.fim}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    const tituloOriginal = document.title;
+    document.title = `nodebank-relatorio-${periodo.inicio}-${periodo.fim}`;
+    window.addEventListener('afterprint', () => { document.title = tituloOriginal; }, { once: true });
+    window.print();
   };
 
   return (
@@ -117,8 +93,8 @@ const Reports = () => {
             <h1>Relatórios</h1>
             <p>Resumo financeiro por carteira e período, com detalhamento por categoria.</p>
           </div>
-          <button className="report-export-button" type="button" onClick={exportarCsv} disabled={!resumo || carregando}>
-            <Download size={17} /> Exportar CSV
+          <button className="report-export-button" type="button" onClick={exportarPdf} disabled={!resumo || carregando}>
+            <Download size={17} /> Salvar como PDF
           </button>
         </header>
 

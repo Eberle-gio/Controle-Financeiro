@@ -57,7 +57,10 @@ const Login = () => {
       await authService.login(email, senha);
       navigate(pendingInvitationPath());
     } catch (err) {
-      setErros({ apiError: err.message });
+      const mensagem = typeof err?.message === 'string' && err.message !== '[object Object]'
+        ? err.message
+        : 'Não foi possível entrar. O servidor retornou uma resposta inesperada.';
+      setErros({ apiError: mensagem });
     } finally {
       setCarregando(false);
     }

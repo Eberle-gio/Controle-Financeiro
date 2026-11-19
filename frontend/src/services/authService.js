@@ -1,6 +1,20 @@
 import api from '../config/axiosConfig';
 import { decodeJwt, tokenIsCurrent } from './sessionUtils';
 
+// Remove a sessao persistente salva por versoes anteriores do aplicativo.
+localStorage.removeItem('accessToken');
+localStorage.removeItem('current_session');
+
+const mensagemDeErro = (error, fallback) => {
+  const status = error.response?.status;
+  const data = error.response?.data;
+  if (status >= 500) return 'O servidor falhou ao processar o login. Tente novamente mais tarde.';
+  if (typeof data === 'string' && data.trim()) return data;
+  if (typeof data?.message === 'string' && data.message.trim()) return data.message;
+  if (typeof data?.error === 'string' && data.error.trim()) return data.error;
+  return fallback;
+};
+
 class AuthService {
   async confirmarCadastro(token) {
     try {
@@ -35,8 +49,8 @@ class AuthService {
       const response = await api.post('/api/auth/login', { email, password: senha });
       const { accessToken, tokenType, expiresIn } = response.data;
 
-      // Salva o token JWT principal no localStorage
-      localStorage.setItem('accessToken', accessToken);
+      // Mantém a autenticação apenas nesta aba; ao fechá-la, a sessão termina.
+      sessionStorage.setItem('accessToken', accessToken);
 
       let objetoUsuario = { email, name: email.split('@')[0] };
       try {
@@ -55,11 +69,11 @@ class AuthService {
         expiresIn,
         user: objetoUsuario
       };
-      localStorage.setItem('current_session', JSON.stringify(sessao));
+      sessionStorage.setItem('current_session', JSON.stringify(sessao));
 
       return sessao;
     } catch (error) {
-      const mensagemErro = error.response?.data?.message || error.response?.data || 'Credenciais inválidas';
+      const mensagemErro = mensagemDeErro(error, 'Nao foi possivel entrar. Confira seus dados e tente novamente.');
       throw new Error(mensagemErro);
     }
   }
@@ -106,7 +120,7 @@ class AuthService {
   }
 
   obterUsuarioAtual() {
-    const sessao = localStorage.getItem('current_session');
+    const sessao = sessionStorage.getItem('current_session');
     if (!sessao) return null;
     try {
       const parseado = JSON.parse(sessao);
@@ -117,12 +131,12 @@ class AuthService {
   }
 
   isAuthenticated() {
-    return tokenIsCurrent(localStorage.getItem('accessToken'));
+    return tokenIsCurrent(sessionStorage.getItem('accessToken'));
   }
 
   logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('current_session');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('current_session');
   }
 }
 

@@ -1,6 +1,6 @@
 export function walletSelectionKey() {
   try {
-    const session = JSON.parse(localStorage.getItem('current_session'));
+    const session = JSON.parse(sessionStorage.getItem('current_session'));
     const user = session?.user;
     return user?.id || user?.email
       ? `nodebank:active-wallet:${user.id || user.email}`

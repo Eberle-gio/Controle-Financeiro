@@ -10,7 +10,7 @@ const api = axios.create({
 // Interceptor para injetar o token JWT Bearer em todas as requisições autenticadas
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -22,11 +22,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   response => response,
   error => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (error.response?.status === 401 && token
         && error.config?.headers?.Authorization === `Bearer ${token}`) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('current_session');
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('current_session');
       window.location.assign('/login');
     }
     return Promise.reject(error);

@@ -38,7 +38,7 @@ export function subscribeToWallet(walletId, onTransactionChanged) {
   const connect = async () => {
     while (!stopped) {
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = sessionStorage.getItem('accessToken');
         if (!token) return;
         controller = new AbortController();
         const url = new URL(`/api/v1/wallets/${encodeURIComponent(walletId)}/events`, apiBaseUrl);
