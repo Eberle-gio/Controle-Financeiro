@@ -54,6 +54,11 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.CONFLICT, "Conflito de integridade dos dados (ex: e-mail já cadastrado)");
     }
 
+    @ExceptionHandler(AiServiceUnavailableException.class)
+    public ResponseEntity<StandardError> aiServiceUnavailable(AiServiceUnavailableException e) {
+        return buildError(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
     private ResponseEntity<StandardError> buildError(HttpStatus status, String message) {
         StandardError err = new StandardError(
                 LocalDateTime.now(),

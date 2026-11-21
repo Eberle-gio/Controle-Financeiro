@@ -52,12 +52,17 @@ public class SensitiveRouteLimitFilter extends OncePerRequestFilter {
             case "/api/auth/register", "/api/auth/forgot-password", "/api/auth/resend-confirmation" -> 5;
             default -> 0;
         };
+        boolean aiInsight = path.matches("/api/v1/wallets/\\d+/insights");
+        if (aiInsight) limit = 5;
         boolean invite = path.matches("/api/v1/wallets/\\d+/(invitations|members)");
         if (invite) limit = 30;
         if (limit > 0 && "POST".equals(request.getMethod())) {
             var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-            String identity = invite && auth != null && auth.isAuthenticated() ? auth.getName() : request.getRemoteAddr();
-            long retry = retryAfter((invite ? "wallet-invitations" : path) + ":" + identity, limit, 15 * 60_000L);
+            boolean authenticatedUser = auth != null && auth.isAuthenticated()
+                    && !"anonymousUser".equals(auth.getName());
+            String identity = (invite || aiInsight) && authenticatedUser ? auth.getName() : request.getRemoteAddr();
+            String routeKey = aiInsight ? "ai-insights" : invite ? "wallet-invitations" : path;
+            long retry = retryAfter(routeKey + ":" + identity, limit, 15 * 60_000L);
             if (retry > 0) {
                 response.setStatus(429);
                 response.setHeader("Retry-After", String.valueOf(retry));

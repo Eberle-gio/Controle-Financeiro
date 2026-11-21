@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Download, FileText, RefreshCw, TrendingDown, TrendingUp, Wallet as WalletIcon } from 'lucide-react';
+import { Download, FileText, RefreshCw, Sparkles, TrendingDown, TrendingUp, Wallet as WalletIcon } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import { authService } from '../../services/authService';
+import { financeInsightsService } from '../../services/financeInsightsService';
 import { walletService } from '../../services/walletService';
 import { rememberWallet, restoreWallet } from '../../services/walletSelection';
 import { subscribeToWallet } from '../../services/walletRealtime';
@@ -29,6 +30,9 @@ const Reports = () => {
   const [resumo, setResumo] = useState(null);
   const [carregandoCarteiras, setCarregandoCarteiras] = useState(true);
   const [carregando, setCarregando] = useState(false);
+  const [gerandoInsight, setGerandoInsight] = useState(false);
+  const [insight, setInsight] = useState([]);
+  const [erroInsight, setErroInsight] = useState('');
   const [erro, setErro] = useState('');
 
   useEffect(() => { rememberWallet(carteiraAtiva); }, [carteiraAtiva]);
@@ -75,6 +79,21 @@ const Reports = () => {
   const formatarMoeda = valor => new Intl.NumberFormat('pt-BR', {
     style: 'currency', currency: 'BRL'
   }).format(Number(valor) || 0);
+
+  const gerarInsight = async () => {
+    if (!carteiraAtiva || !resumo) return;
+    setGerandoInsight(true);
+    setErroInsight('');
+    setInsight([]);
+    try {
+      const resultado = await financeInsightsService.gerar(carteiraAtiva.id, periodo.inicio, periodo.fim);
+      setInsight(resultado.insights || []);
+    } catch (err) {
+      setErroInsight(err.message || 'Não foi possível gerar a análise financeira agora.');
+    } finally {
+      setGerandoInsight(false);
+    }
+  };
 
   const exportarPdf = () => {
     if (!resumo || !carteiraAtiva) return;
@@ -142,6 +161,27 @@ const Reports = () => {
                 <span><FileText size={18} /> Lançamentos</span>
                 <strong>{resumo.transactionCount || 0}</strong>
               </article>
+            </section>
+
+            <section className="report-ai-card" aria-labelledby="report-ai-title">
+              <div className="report-ai-heading">
+                <div>
+                  <h2 id="report-ai-title"><Sparkles size={19} /> Análise financeira com IA</h2>
+                  <p>Insights sobre os totais e categorias deste período.</p>
+                </div>
+                <button type="button" onClick={gerarInsight} disabled={gerandoInsight || carregando}>
+                  <Sparkles size={16} /> {gerandoInsight ? 'Analisando...' : insight.length ? 'Atualizar análise' : 'Gerar análise'}
+                </button>
+              </div>
+              <p className="report-ai-privacy">A análise envia à Gemini apenas os totais e nomes das categorias, sem descrições de lançamentos.</p>
+              {erroInsight && <p className="report-ai-error" role="alert">{erroInsight}</p>}
+              {insight.length > 0 && <div className="report-ai-insights">
+                {insight.map((item, index) => <article className="report-ai-insight" key={`${item.title}-${index}`}>
+                  <h3>{item.title}</h3>
+                  <p>{item.observation}</p>
+                  <p><strong>Próximo passo:</strong> {item.nextStep}</p>
+                </article>)}
+              </div>}
             </section>
 
             <section className="report-table-card">

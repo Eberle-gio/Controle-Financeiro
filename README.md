@@ -231,3 +231,14 @@ Para evitar vazamento ou sobreposição de regras de CSS entre páginas autentic
 ## 📝 Licença
 
 Projeto desenvolvido para a disciplina de Programação Web / Controle Financeiro.
+
+## Analise financeira com IA
+
+A tela de relatorios pode gerar observacoes sobre receitas, despesas, saldo e categorias usando a Gemini API. A chamada e feita pelo backend autenticado; a chave nunca e enviada ao navegador. O backend envia somente os totais do periodo e os nomes das categorias, sem descricoes individuais dos lancamentos.
+
+1. Crie uma chave no [Google AI Studio](https://aistudio.google.com/apikey).
+2. Copie `backend/.env.example` para `backend/.env` e preencha `GEMINI_API_KEY`.
+3. Opcionalmente, altere `GEMINI_MODEL` (principal) e `GEMINI_FALLBACK_MODEL` (reserva). Os padroes sao `gemini-3.5-flash-lite` e `gemini-3.1-flash-lite`.
+4. No Render, configure `GEMINI_API_KEY` nas variaveis de ambiente do servico backend. O `render.yaml` declara essa variavel sem armazenar a chave no repositorio.
+
+Sem a chave, as outras funcoes continuam disponiveis e a tela informa que a analise por IA nao foi configurada. O endpoint aceita no maximo cinco analises por usuario a cada 15 minutos.
