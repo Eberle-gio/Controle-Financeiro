@@ -16,6 +16,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,13 +104,60 @@ public class UsuarioService {
             throw new BusinessException("Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada ou solicite um novo link.");
         }
 
-        String token = jwtUtils.gerarToken(usuario.getId(), usuario.getEmail(), usuario.getNome(), usuario.getVersaoSessao());
+        String accessToken = jwtUtils.gerarAccessToken(
+                usuario.getId(), usuario.getEmail(), usuario.getNome(), usuario.getVersaoSessao());
+        String refreshToken = jwtUtils.gerarRefreshToken(
+                usuario.getId(), usuario.getEmail(), usuario.getNome(), usuario.getVersaoSessao());
 
         return LoginResponse.builder()
-                .accessToken(token)
-                .tokenType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .user(UserResponseDTO.fromEntity(usuario))
+                .tokenType("Cookie")
                 .expiresIn(jwtUtils.getExpirationSeconds())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public LoginResponse renovarSessao(String refreshToken) {
+        if (!jwtUtils.validarRefreshToken(refreshToken)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sua sessão expirou. Entre novamente.");
+        }
+
+        Usuario usuario = usuarioRepository.findById(jwtUtils.obterIdUsuarioDoToken(refreshToken))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Sua sessão expirou. Entre novamente."));
+        if (!Boolean.TRUE.equals(usuario.getEmailConfirmado())
+                || jwtUtils.obterVersaoSessao(refreshToken) != versaoAtual(usuario)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sua sessão expirou. Entre novamente.");
+        }
+
+        return LoginResponse.builder()
+                .accessToken(jwtUtils.gerarAccessToken(
+                        usuario.getId(), usuario.getEmail(), usuario.getNome(), usuario.getVersaoSessao()))
+                .refreshToken(refreshToken)
+                .user(UserResponseDTO.fromEntity(usuario))
+                .tokenType("Cookie")
+                .expiresIn(jwtUtils.getExpirationSeconds())
+                .build();
+    }
+
+    @Transactional
+    public void encerrarSessao(String accessToken, String refreshToken) {
+        String token = jwtUtils.validarRefreshToken(refreshToken) ? refreshToken
+                : jwtUtils.validarAccessToken(accessToken) ? accessToken : null;
+        if (token == null) return;
+
+        Usuario usuario = usuarioRepository.buscarPorIdComBloqueio(jwtUtils.obterIdUsuarioDoToken(token))
+                .orElse(null);
+        if (usuario == null || jwtUtils.obterVersaoSessao(token) != versaoAtual(usuario)) return;
+
+        usuario.setVersaoSessao(versaoAtual(usuario) + 1);
+        usuarioRepository.save(usuario);
+    }
+
+    private long versaoAtual(Usuario usuario) {
+        return usuario.getVersaoSessao() == null ? 0L : usuario.getVersaoSessao();
     }
 
     @Transactional

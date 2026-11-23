@@ -21,9 +21,9 @@ const Login = () => {
 
   // Redireciona se o usuário já estiver logado
   useEffect(() => {
-    if (authService.isAuthenticated()) {
-      navigate(pendingInvitationPath());
-    }
+    authService.validarSessao().then(usuario => {
+      if (usuario) navigate(pendingInvitationPath(), { replace: true });
+    });
   }, [navigate]);
 
   const validarFormulario = () => {

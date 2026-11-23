@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import controle_financeiro.backend.repository.UsuarioRepository;
 import controle_financeiro.backend.model.Usuario;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -36,9 +35,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String token = extrairTokenDoHeader(request);
+            String token = request.getCookies() == null ? null : java.util.Arrays.stream(request.getCookies())
+                    .filter(cookie -> "access_token".equals(cookie.getName()))
+                    .map(jakarta.servlet.http.Cookie::getValue)
+                    .findFirst().orElse(null);
 
-            if (token != null && jwtUtils.validarToken(token)) {
+            if (token != null && jwtUtils.validarAccessToken(token)) {
                 String email = jwtUtils.obterEmailDoToken(token);
 
                 Usuario usuario = email == null || email.isBlank() ? null : usuarioRepository.findByEmail(email);
@@ -59,11 +61,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String extrairTokenDoHeader(HttpServletRequest request) {
-        String headerAuth = request.getHeader("Authorization");
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
-        }
-        return null;
-    }
 }

@@ -14,8 +14,8 @@ export default function Invitation() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
-  const signedIn = authService.isAuthenticated();
-  const user = authService.obterUsuarioAtual();
+  const [signedIn, setSignedIn] = useState(authService.isAuthenticated());
+  const [user, setUser] = useState(authService.obterUsuarioAtual());
   const sameEmail = user?.email?.trim().toLowerCase() === invite?.email;
 
   useEffect(() => {
@@ -26,6 +26,13 @@ export default function Invitation() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [token]);
+
+  useEffect(() => {
+    authService.validarSessao().then(currentUser => {
+      setUser(currentUser);
+      setSignedIn(Boolean(currentUser));
+    });
+  }, []);
 
   async function accept() {
     setBusy(true); setError('');
@@ -38,7 +45,7 @@ export default function Invitation() {
     finally { setBusy(false); }
   }
 
-  function switchAccount() { authService.logout(); navigate('/login'); }
+  async function switchAccount() { await authService.logout(); navigate('/login'); }
   const registerUrl = `/cadastro?email=${encodeURIComponent(invite?.email || '')}`;
 
   return (

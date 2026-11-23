@@ -15,8 +15,14 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-      - key: JWT_EXPIRATION
-        value: 86400000
+      - key: JWT_ACCESS_EXPIRATION
+        value: 3600000
+      - key: JWT_REFRESH_EXPIRATION
+        value: 7200000
+      - key: APP_COOKIE_SECURE
+        value: true
+      - key: APP_COOKIE_SAME_SITE
+        value: None
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL

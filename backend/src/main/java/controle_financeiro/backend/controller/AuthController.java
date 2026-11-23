@@ -8,7 +8,12 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.csrf.CsrfToken;
+import java.time.Duration;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,6 +27,12 @@ public class AuthController {
 
     @Autowired
     private ConfirmacaoCadastroService confirmacaoCadastroService;
+
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
 
     public record ConfirmarCadastroRequest(@NotBlank @Size(max = 64) String token) {}
 
@@ -46,7 +57,45 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = usuarioService.login(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, criarCookie("access_token", response.getAccessToken(), "/", false).toString())
+                .header(HttpHeaders.SET_COOKIE, criarCookie("refresh_token", response.getRefreshToken(), "/api/auth", false).toString())
+                .body(response);
+    }
+
+    @GetMapping("/csrf")
+    public Map<String, String> csrf(CsrfToken csrfToken) {
+        return Map.of("token", csrfToken.getToken());
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(
+            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
+        LoginResponse response = usuarioService.renovarSessao(refreshToken);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, criarCookie("access_token", response.getAccessToken(), "/", false).toString())
+                .body(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = "access_token", required = false) String accessToken,
+            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
+        usuarioService.encerrarSessao(accessToken, refreshToken);
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, criarCookie("access_token", "", "/", true).toString())
+                .header(HttpHeaders.SET_COOKIE, criarCookie("refresh_token", "", "/api/auth", true).toString())
+                .build();
+    }
+
+    private ResponseCookie criarCookie(String name, String value, String path, boolean limpar) {
+        ResponseCookie.ResponseCookieBuilder cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
+                .path(path);
+        if (limpar) cookie.maxAge(Duration.ZERO);
+        return cookie.build();
     }
 
     @PostMapping("/forgot-password")

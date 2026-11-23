@@ -1,3 +1,5 @@
+import api from '../config/axiosConfig';
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
 
 export function subscribeToWallet(walletId, onTransactionChanged) {
@@ -38,16 +40,24 @@ export function subscribeToWallet(walletId, onTransactionChanged) {
   const connect = async () => {
     while (!stopped) {
       try {
-        const token = sessionStorage.getItem('accessToken');
-        if (!token) return;
         controller = new AbortController();
         const url = new URL(`/api/v1/wallets/${encodeURIComponent(walletId)}/events`, apiBaseUrl);
         const response = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'text/event-stream' },
+          credentials: 'include',
+          headers: { Accept: 'text/event-stream' },
           signal: controller.signal
         });
 
-        if (response.status === 401 || response.status === 403) return;
+        if (response.status === 401) {
+          try {
+            await api.post('/api/auth/refresh');
+            retryDelay = 1000;
+            continue;
+          } catch {
+            return;
+          }
+        }
+        if (response.status === 403) return;
         if (!response.ok || !response.body) throw new Error('SSE connection failed');
 
         onTransactionChanged();

@@ -131,7 +131,8 @@ O backend importa backend/.env como Java Properties quando iniciado **dentro de 
 | SPRING_MAIL_HOST / SPRING_MAIL_PORT | SMTP; padrões smtp.gmail.com / 587 |
 | SPRING_MAIL_USERNAME / SPRING_MAIL_PASSWORD | Credenciais para recuperação de senha; no Gmail, senha de app |
 | JWT_SECRET | Obrigatório: chave aleatória com pelo menos 32 bytes UTF-8 |
-| JWT_EXPIRATION | Validade em milissegundos; padrão 86400000 (24 horas) |
+| JWT_ACCESS_EXPIRATION / JWT_REFRESH_EXPIRATION | Validades em milissegundos; padrões de 1 hora e 2 horas |
+| APP_COOKIE_SECURE / APP_COOKIE_SAME_SITE | Segurança e política SameSite dos cookies; no Render HTTPS, true e None |
 | VITE_API_BASE_URL | Em frontend/.env; API pública, padrão http://localhost:8080 |
 
 Gere uma chave JWT e copie o resultado para JWT_SECRET:
@@ -240,5 +241,7 @@ A tela de relatorios pode gerar observacoes sobre receitas, despesas, saldo e ca
 2. Copie `backend/.env.example` para `backend/.env` e preencha `GEMINI_API_KEY`.
 3. Opcionalmente, altere `GEMINI_MODEL` (principal) e `GEMINI_FALLBACK_MODEL` (reserva). Os padroes sao `gemini-3.5-flash-lite` e `gemini-3.1-flash-lite`.
 4. No Render, configure `GEMINI_API_KEY` nas variaveis de ambiente do servico backend. O `render.yaml` declara essa variavel sem armazenar a chave no repositorio.
+
+A autenticacao usa cookies `HttpOnly`: o access token dura 1 hora e o refresh token tem validade maxima de 2 horas, como cookie de sessao do navegador. Em deploy HTTPS, mantenha `APP_COOKIE_SECURE=true` e `APP_COOKIE_SAME_SITE=None`; em localhost HTTP, use `false` e `Lax`. As operacoes que alteram dados usam protecao CSRF.
 
 Sem a chave, as outras funcoes continuam disponiveis e a tela informa que a analise por IA nao foi configurada. O endpoint aceita no maximo cinco analises por usuario a cada 15 minutos.
