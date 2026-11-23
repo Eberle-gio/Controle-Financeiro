@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { ArrowLeft } from 'lucide-react';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
+import { getPasswordValidationMessage, MAX_PASSWORD_LENGTH } from '../../utils/passwordPolicy';
 import './ResetPassword.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -43,8 +44,8 @@ const ResetPassword = () => {
     const errosTemporarios = {};
     if (!senha) {
       errosTemporarios.password = 'A nova senha é obrigatória';
-    } else if (senha.length < 6) {
-      errosTemporarios.password = 'A senha deve ter no mínimo 6 caracteres';
+    } else if (getPasswordValidationMessage(senha)) {
+      errosTemporarios.password = getPasswordValidationMessage(senha);
     }
 
     if (!confirmarSenha) {
@@ -113,7 +114,8 @@ const ResetPassword = () => {
               <input
                 id="password"
                 type={exibirSenha ? 'text' : 'password'}
-                placeholder="No mínimo 6 caracteres"
+                placeholder="Crie uma senha com pelo menos 8 caracteres"
+                maxLength={MAX_PASSWORD_LENGTH}
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 className={tentativaEnvio && erros.password ? 'input-error' : ''}

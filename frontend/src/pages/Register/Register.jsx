@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
+import { getPasswordValidationMessage, MAX_PASSWORD_LENGTH } from '../../utils/passwordPolicy';
 import './Register.css';
 
 import logo from '../../assets/images/Logo.svg';
@@ -53,8 +54,8 @@ const Register = () => {
     
     if (!senha) {
       errosTemporarios.password = 'Senha é obrigatória';
-    } else if (senha.length < 6) {
-      errosTemporarios.password = 'A senha deve ter no mínimo 6 caracteres';
+    } else if (getPasswordValidationMessage(senha)) {
+      errosTemporarios.password = getPasswordValidationMessage(senha);
     }
 
     if (!confirmarSenha) {
@@ -152,7 +153,8 @@ const Register = () => {
                   <input
                     id="password"
                     type={exibirSenha ? 'text' : 'password'}
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="Crie uma senha com pelo menos 8 caracteres"
+                    maxLength={MAX_PASSWORD_LENGTH}
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     className={tentativaEnvio && erros.password ? 'input-error' : ''}

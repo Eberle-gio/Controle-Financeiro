@@ -1,53 +1,54 @@
-import { useMemo } from 'react';
+import {
+  MIN_PASSWORD_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  MAX_PASSWORD_UTF8_BYTES,
+  getPasswordUtf8ByteLength,
+} from '../utils/passwordPolicy';
 import './PasswordStrengthMeter.css';
 
-export default function PasswordStrengthMeter({ password }) {
-
-  const strength = useMemo(() => {
-    if (!password) {
-      return { score: 0, label: 'Muito Curta', color: '#9ca3af', percent: '0%' };
-    }
-
-    let score = 0;
-    if (password.length >= 6) {
-      score = 1;
-    }
-    
-    const hasLetters = /[a-zA-Z]/.test(password);
-    const hasNumbers = /[0-9]/.test(password);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(password);
-    
-    if (password.length >= 6 && hasLetters && hasNumbers) {
-      score = 2;
-    }
-
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    
-    if (password.length >= 8 && hasUpper && hasLower && hasNumbers && hasSpecial) {
-      score = 3;
-    }
-
-    if (password.length < 6) {
-      return { score: 0, label: 'Muito Curta (mínimo 6 chars)', color: '#ef4444', percent: '20%' };
-    } else if (score === 1) {
-      return { score: 1, label: 'Fraca', color: '#f59e0b', percent: '40%' };
-    } else if (score === 2) {
-      return { score: 2, label: 'Média', color: '#3b82f6', percent: '70%' };
-    } else {
-      return { score: 3, label: 'Forte', color: '#10b981', percent: '100%' };
-    }
-  }, [password]);
-
-  if (!password) return null;
+export default function PasswordStrengthMeter({ password = '' }) {
+  const minimumMet = password.length >= MIN_PASSWORD_LENGTH;
+  const maximumLengthMet = password.length <= MAX_PASSWORD_LENGTH;
+  const maximumBytesMet = getPasswordUtf8ByteLength(password) <= MAX_PASSWORD_UTF8_BYTES;
+  const valid = minimumMet && maximumLengthMet && maximumBytesMet;
+  const progress = Math.min(100, (password.length / MIN_PASSWORD_LENGTH) * 100);
 
   return (
-    <div className="password-strength-meter">
-      <div className="strength-bar-bg">
-        <div className={`strength-bar-fill score-${strength.score}`}></div>
+    <div className="password-strength-meter" aria-live="polite">
+      <div
+        className="strength-bar-bg"
+        role="progressbar"
+        aria-label="Progresso do tamanho mínimo da senha"
+        aria-valuemin={0}
+        aria-valuemax={MIN_PASSWORD_LENGTH}
+        aria-valuenow={Math.min(password.length, MIN_PASSWORD_LENGTH)}
+      >
+        <div
+          className={`strength-bar-fill ${valid ? 'is-valid' : 'is-incomplete'}`}
+          style={{ width: `${progress}%` }}
+        />
       </div>
-      <span className={`strength-label score-${strength.score}`}>
-        Força da senha: <strong>{strength.label}</strong>
+      <p className={`strength-label ${valid ? 'is-valid' : 'is-incomplete'}`}>
+        {valid ? 'Senha atende aos requisitos.' : 'Para aceitar a senha, falta:'}
+      </p>
+      <ul className="password-requirements">
+        <li className={minimumMet ? 'requirement-met' : 'requirement-missing'}>
+          <span aria-hidden="true">{minimumMet ? '✓' : '○'}</span>
+          Pelo menos {MIN_PASSWORD_LENGTH} caracteres
+          <span className="requirement-count">{password.length}/{MIN_PASSWORD_LENGTH}</span>
+        </li>
+        <li className={maximumLengthMet ? 'requirement-met' : 'requirement-missing'}>
+          <span aria-hidden="true">{maximumLengthMet ? '✓' : '○'}</span>
+          No máximo {MAX_PASSWORD_LENGTH} caracteres
+        </li>
+        <li className={maximumBytesMet ? 'requirement-met' : 'requirement-missing'}>
+          <span aria-hidden="true">{maximumBytesMet ? '✓' : '○'}</span>
+          No máximo {MAX_PASSWORD_UTF8_BYTES} bytes em UTF-8
+          <span className="requirement-count">{getPasswordUtf8ByteLength(password)}/{MAX_PASSWORD_UTF8_BYTES}</span>
+        </li>
+      </ul>
+      <span className="password-tip">
+        Uma frase longa, fácil de lembrar e difícil de adivinhar, ajuda a proteger sua conta.
       </span>
     </div>
   );
