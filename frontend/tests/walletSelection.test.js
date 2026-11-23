@@ -3,14 +3,20 @@ import assert from 'node:assert/strict';
 import { rememberWallet, restoreWallet } from '../src/services/walletSelection.js';
 
 const values = new Map();
+const sessionValues = new Map();
 globalThis.localStorage = {
   getItem: key => values.get(key) ?? null,
   setItem: (key, value) => values.set(key, String(value)),
 };
+globalThis.sessionStorage = {
+  getItem: key => sessionValues.get(key) ?? null,
+  setItem: (key, value) => sessionValues.set(key, String(value)),
+};
 
 test.beforeEach(() => {
   values.clear();
-  localStorage.setItem('current_session', JSON.stringify({ user: { id: 1 } }));
+  sessionValues.clear();
+  sessionStorage.setItem('current_session', JSON.stringify({ user: { id: 1 } }));
 });
 
 test('recarregar restaura a carteira escolhida, mesmo mudando a ordem da API', () => {
@@ -29,7 +35,7 @@ test('nao reutiliza uma carteira removida ou sem acesso', () => {
 
 test('a escolha de um usuario nao altera a carteira de outro', () => {
   rememberWallet({ id: 20 });
-  localStorage.setItem('current_session', JSON.stringify({ user: { id: 2 } }));
+  sessionStorage.setItem('current_session', JSON.stringify({ user: { id: 2 } }));
   assert.equal(restoreWallet([{ id: 10 }, { id: 20 }], null).id, 10);
 });
 

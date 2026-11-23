@@ -38,7 +38,7 @@ class SenhaSessaoTest {
     @Test void trocaInvalidaSessaoAnteriorETodosOsLinks() throws Exception {
         JwtUtils jwt = new JwtUtils();
         ReflectionTestUtils.setField(jwt, "jwtSecret", "chave-de-teste-com-pelo-menos-32-bytes");
-        ReflectionTestUtils.setField(jwt, "jwtExpirationMs", 60_000L); jwt.init();
+        ReflectionTestUtils.setField(jwt, "accessExpirationMs", 60_000L); jwt.init();
         String antigo = jwt.gerarToken(1L, usuario.getEmail(), usuario.getNome(), 0L);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(usuario.getEmail(), null, java.util.List.of()));
         when(encoder.matches("senha-atual", "hash-antigo")).thenReturn(true);
@@ -47,11 +47,11 @@ class SenhaSessaoTest {
         var filter = new JwtAuthenticationFilter();
         ReflectionTestUtils.setField(filter, "jwtUtils", jwt); ReflectionTestUtils.setField(filter, "usuarioRepository", usuarios);
         SecurityContextHolder.clearContext(); var request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer " + antigo);
+        request.setCookies(new jakarta.servlet.http.Cookie("access_token", antigo));
         filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
         assertNull(SecurityContextHolder.getContext().getAuthentication());
         String novo = jwt.gerarToken(1L, usuario.getEmail(), usuario.getNome(), usuario.getVersaoSessao());
-        request = new MockHttpServletRequest(); request.addHeader("Authorization", "Bearer " + novo);
+        request = new MockHttpServletRequest(); request.setCookies(new jakarta.servlet.http.Cookie("access_token", novo));
         filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
     }

@@ -38,8 +38,9 @@ class UsuarioConfirmacaoLoginTest {
         request.setPassword("senha");
         when(usuarios.findByEmail(usuario.getEmail())).thenReturn(usuario);
         when(encoder.matches("senha", "hash")).thenReturn(true);
-        when(jwt.gerarToken(1L, usuario.getEmail(), "Cliente", 0L)).thenReturn("jwt");
-        when(jwt.getExpirationSeconds()).thenReturn(604800L);
+        when(jwt.gerarAccessToken(1L, usuario.getEmail(), "Cliente", 0L)).thenReturn("access-jwt");
+        when(jwt.gerarRefreshToken(1L, usuario.getEmail(), "Cliente", 0L)).thenReturn("refresh-jwt");
+        when(jwt.getExpirationSeconds()).thenReturn(3600L);
     }
 
     @Test
@@ -53,8 +54,9 @@ class UsuarioConfirmacaoLoginTest {
     void contaConfirmadaPodeEntrar() {
         usuario.setEmailConfirmado(true);
         var response = service.login(request);
-        assertEquals("jwt", response.getAccessToken());
-        assertEquals(604800L, response.getExpiresIn());
+        assertEquals("access-jwt", response.getAccessToken());
+        assertEquals("refresh-jwt", response.getRefreshToken());
+        assertEquals(3600L, response.getExpiresIn());
     }
 
     @Test

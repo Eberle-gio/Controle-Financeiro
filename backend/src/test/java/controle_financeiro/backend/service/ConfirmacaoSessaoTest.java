@@ -24,14 +24,14 @@ class ConfirmacaoSessaoTest {
         var usuarios = mock(UsuarioRepository.class);
         var usuario = new Usuario();
         usuario.setEmailConfirmado(confirmado);
-        when(jwt.validarToken("token")).thenReturn(true);
+        when(jwt.validarAccessToken("token")).thenReturn(true);
         when(jwt.obterEmailDoToken("token")).thenReturn("cliente@example.com");
         when(usuarios.findByEmail("cliente@example.com")).thenReturn(usuario);
         var filter = new JwtAuthenticationFilter();
         ReflectionTestUtils.setField(filter, "jwtUtils", jwt);
         ReflectionTestUtils.setField(filter, "usuarioRepository", usuarios);
         var request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer token");
+        request.setCookies(new jakarta.servlet.http.Cookie("access_token", "token"));
         filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
     }
 
