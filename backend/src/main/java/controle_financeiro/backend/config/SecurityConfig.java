@@ -16,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
@@ -67,6 +68,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(org.springframework.security.config.Customizer.withDefaults())
+                .referrerPolicy(referrer -> referrer.policy(
+                    ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+                ))
+            )
             .csrf(csrf -> {
                 CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
                 csrfRepository.setCookiePath("/");
@@ -79,7 +87,7 @@ public class SecurityConfig {
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                 .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/invitations/*").permitAll()
-                .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
