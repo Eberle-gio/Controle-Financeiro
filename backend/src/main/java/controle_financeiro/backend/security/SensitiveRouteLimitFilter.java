@@ -5,8 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import controle_financeiro.backend.service.RateLimitService;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +21,19 @@ import java.util.Map;
 public class SensitiveRouteLimitFilter extends OncePerRequestFilter {
     private final Map<String, Window> windows = new HashMap<>();
     private final Clock clock;
+    private final RateLimitService persistentRateLimit;
     private long lastCleanup;
 
+    @Autowired
+    public SensitiveRouteLimitFilter(RateLimitService persistentRateLimit) {
+        this.clock = Clock.systemUTC();
+        this.persistentRateLimit = persistentRateLimit;
+    }
     public SensitiveRouteLimitFilter() { this(Clock.systemUTC()); }
-    public SensitiveRouteLimitFilter(Clock clock) { this.clock = clock; }
+    public SensitiveRouteLimitFilter(Clock clock) {
+        this.clock = clock;
+        this.persistentRateLimit = null;
+    }
     private record Window(long until, int count) {}
 
     synchronized long retryAfter(String key, int limit, long duration) {
@@ -43,10 +57,6 @@ public class SensitiveRouteLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         String path = request.getServletPath();
-        if (path.startsWith("/api/")) {
-            response.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
-            response.setHeader("Referrer-Policy", "no-referrer");
-        }
         int limit = switch (path) {
             case "/api/auth/login", "/api/auth/reset-password" -> 10;
             case "/api/auth/register", "/api/auth/forgot-password", "/api/auth/resend-confirmation" -> 5;
@@ -62,7 +72,10 @@ public class SensitiveRouteLimitFilter extends OncePerRequestFilter {
                     && !"anonymousUser".equals(auth.getName());
             String identity = (invite || aiInsight) && authenticatedUser ? auth.getName() : request.getRemoteAddr();
             String routeKey = aiInsight ? "ai-insights" : invite ? "wallet-invitations" : path;
-            long retry = retryAfter(routeKey + ":" + identity, limit, 15 * 60_000L);
+            String key = routeKey + ":" + identity;
+            long retry = persistentRateLimit == null
+                    ? retryAfter(key, limit, 15 * 60_000L)
+                    : persistentRateLimit.retryAfter(hashKey(key), limit, 15 * 60_000L);
             if (retry > 0) {
                 response.setStatus(429);
                 response.setHeader("Retry-After", String.valueOf(retry));
@@ -72,5 +85,14 @@ public class SensitiveRouteLimitFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private String hashKey(String value) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 indisponível.", exception);
+        }
     }
 }
