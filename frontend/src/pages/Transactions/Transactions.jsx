@@ -104,7 +104,11 @@ const Transactions = () => {
   };
 
   const formatarMoeda = (val) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+    const formatado = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(val || 0);
+    return `R$ ${formatado}`;
   };
 
   const formatarData = (str) => {
@@ -126,7 +130,6 @@ const Transactions = () => {
         <header className="page-header">
           <div className="header-titles">
             <h1>Extrato de Transações</h1>
-            <p>Gerencie e visualize todas as movimentações financeiras das suas carteiras.</p>
           </div>
           <button onClick={abrirNovaTransacao} className="btn-primary-action" disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR' || !carteiraAtiva.ativa}>
             <Plus size={18} /> Nova Transação
@@ -150,7 +153,7 @@ const Transactions = () => {
             >
               {carteiras.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''} {!w.ativa ? '(Inativa)' : ''}
+                  {w.nome} {w.meuPapel && w.meuPapel !== 'DONO' ? `(${w.meuPapel})` : ''} {!w.ativa ? '(Inativa)' : ''}
                 </option>
               ))}
             </select>

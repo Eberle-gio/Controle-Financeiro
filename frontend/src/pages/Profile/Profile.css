@@ -8,7 +8,7 @@
 .profile-content {
   width: min(100%, 1100px);
   margin: 0 auto;
-  padding: 2.5rem clamp(1.25rem, 4vw, 3rem);
+  padding: 3.25rem clamp(1.25rem, 4vw, 3rem) 2.5rem;
 }
 
 .profile-heading {
@@ -266,7 +266,6 @@
 
 @media (max-width: 850px) {
   .profile-page { grid-template-columns: 1fr; }
-  .profile-page > .app-sidebar { display: none; }
 }
 
 @media (max-width: 560px) {

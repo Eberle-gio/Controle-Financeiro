@@ -9,7 +9,7 @@
 
 /* Área de Conteúdo */
 .dashboard-content {
-  padding: 2.5rem 3rem;
+  padding: 3.25rem 3rem 2.5rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -44,62 +44,6 @@
 .title-wrapper p {
   color: var(--text-secondary);
   font-size: 1rem;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.user-welcome {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: var(--bg-secondary);
-  padding: 0.5rem 1rem 0.5rem 0.5rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-}
-
-.user-welcome .avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: white;
-  font-size: 0.95rem;
-}
-
-.user-name-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border-radius: var(--radius-md);
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.logout-btn:hover {
-  background-color: var(--bg-tertiary);
-  border-color: var(--danger);
-  color: var(--danger);
 }
 
 /* Barra de Controles (Seletor de Carteira e Filtros de Data) */
@@ -559,9 +503,6 @@
   .dashboard-page {
     grid-template-columns: 1fr;
   }
-  .app-sidebar {
-    display: none;
-  }
   .dashboard-content {
     padding: 2rem;
   }
@@ -592,10 +533,6 @@
   .content-header {
     flex-direction: column;
     align-items: flex-start;
-  }
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
   }
 }
 

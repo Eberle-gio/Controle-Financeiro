@@ -248,7 +248,7 @@ const TransactionModal = ({
               >
                 {wallets.filter(w => isEditing || w.meuPapel !== 'VISUALIZADOR').map((w) => (
                   <option key={w.id} value={w.id}>
-                    {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''}
+                    {w.nome} {w.meuPapel && w.meuPapel !== 'DONO' ? `(${w.meuPapel})` : ''}
                   </option>
                 ))}
               </select>

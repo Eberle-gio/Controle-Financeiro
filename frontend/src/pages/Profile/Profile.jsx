@@ -111,7 +111,6 @@ const Profile = () => {
           <div className="profile-heading-icon"><UserRound size={24} /></div>
           <div>
             <h1>Meu perfil</h1>
-            <p>Gerencie seus dados pessoais e preferências da conta.</p>
           </div>
         </header>
 

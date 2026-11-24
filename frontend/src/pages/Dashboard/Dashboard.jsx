@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { walletService } from '../../services/walletService';
 import { rememberWallet, restoreWallet } from '../../services/walletSelection';
-import { CreditCard, TrendingUp, TrendingDown, RefreshCw, LogOut, Plus, Edit2 } from 'lucide-react';
+import { CreditCard, TrendingUp, TrendingDown, RefreshCw, Plus, Edit2 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import CategoryIcon from '../../components/CategoryIcon';
 import TransactionModal from '../../components/TransactionModal';
@@ -21,7 +20,6 @@ import {
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
 
   // Estado do Usuário Conectado
   const [usuarioAtual, setUsuarioAtual] = useState(() => authService.obterUsuarioAtual());
@@ -131,19 +129,12 @@ const Dashboard = () => {
     return subscribeToWallet(carteiraAtiva.id, buscarResumo);
   }, [buscarResumo, carteiraAtiva]);
 
-  const lidarLogout = async () => {
-    try {
-      await authService.logout();
-    } finally {
-      navigate('/login');
-    }
-  };
-
   const formatarMoeda = (valor) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
+    const formatado = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(valor || 0);
+    return `R$ ${formatado}`;
   };
 
   // Formata datas
@@ -179,20 +170,6 @@ const Dashboard = () => {
         <header className="content-header">
           <div className="title-wrapper">
             <h1>Visão Geral</h1>
-            <p>Acompanhe o desempenho financeiro das suas carteiras em tempo real.</p>
-          </div>
-          
-          <div className="header-actions">
-            <div className="user-welcome">
-              <div className="avatar">
-                {usuarioAtual?.name ? usuarioAtual.name.charAt(0).toUpperCase() : 'U'}
-              </div>
-              <span className="user-name-label">{usuarioAtual?.name || 'Usuário'}</span>
-            </div>
-            
-            <button onClick={lidarLogout} className="logout-btn" title="Sair da Conta">
-              <LogOut size={18} /> Sair
-            </button>
           </div>
         </header>
 
@@ -211,7 +188,7 @@ const Dashboard = () => {
             >
               {carteiras.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''} {!w.ativa ? '(Inativa)' : ''}
+                  {w.nome} {w.meuPapel && w.meuPapel !== 'DONO' ? `(${w.meuPapel})` : ''} {!w.ativa ? '(Inativa)' : ''}
                 </option>
               ))}
             </select>

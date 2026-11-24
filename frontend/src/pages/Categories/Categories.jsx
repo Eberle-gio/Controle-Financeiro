@@ -118,7 +118,6 @@ const Categories = () => {
         <header className="page-header">
           <div className="header-titles">
             <h1>Categorias</h1>
-            <p>Classifique suas receitas e despesas para ter um controle preciso do seu dinheiro.</p>
           </div>
           <button onClick={abrirCriar} className="btn-primary-action">
             <Plus size={18} /> Nova Categoria

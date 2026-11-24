@@ -191,7 +191,6 @@ const Wallets = () => {
         <header className="page-header">
           <div className="header-titles">
             <h1>Minhas Carteiras</h1>
-            <p>Organize suas finanças individuais ou compartilhe orçamentos com outras pessoas.</p>
           </div>
           <button onClick={abrirCriarCarteira} className="btn-primary-action">
             <Plus size={18} /> Nova Carteira
@@ -211,9 +210,11 @@ const Wallets = () => {
                   </div>
                   <div>
                     <h3>{c.nome}</h3>
-                    <span className="wallet-role-pill">
-                      <Shield size={12} /> {c.meuPapel}
-                    </span>
+                    {c.meuPapel !== 'DONO' && (
+                      <span className="wallet-role-pill">
+                        <Shield size={12} /> {c.meuPapel}
+                      </span>
+                    )}
                     {!c.ativa && <span className="wallet-archived-pill">Inativa · somente consulta</span>}
                   </div>
                 </div>

@@ -76,9 +76,10 @@ const Reports = () => {
     (Number(b.totalIncome || 0) + Number(b.totalExpense || 0))
     - (Number(a.totalIncome || 0) + Number(a.totalExpense || 0))), [resumo]);
 
-  const formatarMoeda = valor => new Intl.NumberFormat('pt-BR', {
-    style: 'currency', currency: 'BRL'
-  }).format(Number(valor) || 0);
+  const formatarMoeda = valor => `R$ ${new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(valor) || 0)}`;
 
   const gerarInsight = async () => {
     if (!carteiraAtiva || !resumo) return;
@@ -110,7 +111,6 @@ const Reports = () => {
         <header className="reports-header">
           <div>
             <h1>Relatórios</h1>
-            <p>Resumo financeiro por carteira e período, com detalhamento por categoria.</p>
           </div>
           <button className="report-export-button" type="button" onClick={exportarPdf} disabled={!resumo || carregando}>
             <Download size={17} /> Salvar como PDF

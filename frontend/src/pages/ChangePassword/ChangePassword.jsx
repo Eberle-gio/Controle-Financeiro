@@ -91,14 +91,13 @@ const ChangePassword = () => {
 
   return (
     <div className="change-pass-page">
-      <Sidebar usuarioAtual={usuarioAtual} activeItem="senha" />
+      <Sidebar usuarioAtual={usuarioAtual} activeItem="perfil" />
 
       <main className="change-pass-content">
 
         <div className="change-pass-card">
           <div className="card-header-centered">
             <h1>Alterar Senha</h1>
-            <p>Mantenha sua conta segura atualizando sua senha periodicamente.</p>
           </div>
 
           {mensagemSucesso && (
