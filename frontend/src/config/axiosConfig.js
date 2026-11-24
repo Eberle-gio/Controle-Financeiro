@@ -6,23 +6,25 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 });
 
-let csrfToken = null;
-let csrfPromise = null;
 let refreshPromise = null;
 
 const limparSessaoLocal = () => sessionStorage.removeItem('current_session');
 
+const obterCsrfDoCookie = () => {
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
 const obterCsrfToken = async () => {
-  if (csrfToken) return csrfToken;
-  if (!csrfPromise) {
-    csrfPromise = api.get('/api/auth/csrf')
-      .then(response => {
-        csrfToken = response.data?.token || null;
-        return csrfToken;
-      })
-      .finally(() => { csrfPromise = null; });
+  const cookieToken = obterCsrfDoCookie();
+  if (cookieToken) return cookieToken;
+
+  try {
+    const response = await api.get('/api/auth/csrf');
+    return response.data?.token || obterCsrfDoCookie();
+  } catch {
+    return obterCsrfDoCookie();
   }
-  return csrfPromise;
 };
 
 const rotaDeAutenticacao = url =>

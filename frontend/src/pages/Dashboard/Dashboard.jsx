@@ -50,7 +50,7 @@ const Dashboard = () => {
   const [transacaoSelecionada, setTransacaoSelecionada] = useState(null);
 
   const abrirNovaTransacao = () => {
-    if (carteiraAtiva?.meuPapel === 'VISUALIZADOR') return;
+    if (carteiraAtiva?.meuPapel === 'VISUALIZADOR' || carteiraAtiva?.ativa === false) return;
     if (!carteiraAtiva && carteiras.length > 0) {
       setCarteiraAtiva(carteiras[0]);
     }
@@ -131,9 +131,12 @@ const Dashboard = () => {
     return subscribeToWallet(carteiraAtiva.id, buscarResumo);
   }, [buscarResumo, carteiraAtiva]);
 
-  const lidarLogout = () => {
-    authService.logout();
-    navigate('/login');
+  const lidarLogout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      navigate('/login');
+    }
   };
 
   const formatarMoeda = (valor) => {
@@ -168,6 +171,11 @@ const Dashboard = () => {
       <Sidebar usuarioAtual={usuarioAtual} activeItem="dashboard" />
 
       <main className="dashboard-content">
+        {carteiraAtiva && !carteiraAtiva.ativa && (
+          <div className="archived-wallet-notice" role="status">
+            Esta carteira foi inativada e está disponível somente para consulta. O histórico foi preservado.
+          </div>
+        )}
         <header className="content-header">
           <div className="title-wrapper">
             <h1>Visão Geral</h1>
@@ -203,7 +211,7 @@ const Dashboard = () => {
             >
               {carteiras.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''}
+                  {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''} {!w.ativa ? '(Inativa)' : ''}
                 </option>
               ))}
             </select>
@@ -238,8 +246,8 @@ const Dashboard = () => {
               type="button"
               onClick={abrirNovaTransacao}
               className="btn-new-transaction"
-              disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR'}
-              title="Adicionar nova transação"
+              disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR' || !carteiraAtiva.ativa}
+              title={!carteiraAtiva?.ativa ? 'Carteira inativa: somente consulta' : 'Adicionar nova transação'}
             >
               <Plus size={16} /> Nova Transação
             </button>
@@ -330,7 +338,7 @@ const Dashboard = () => {
                 type="button"
                 className="btn-quick-add"
                 onClick={abrirNovaTransacao}
-                disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR'}
+                disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR' || !carteiraAtiva.ativa}
                 title="Adicionar lançamento rápido"
               >
                 <Plus size={14} /> Novo
