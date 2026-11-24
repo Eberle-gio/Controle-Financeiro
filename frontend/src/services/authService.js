@@ -125,6 +125,9 @@ class AuthService {
   }
 
   async validarSessao() {
+    if (!sessionStorage.getItem('current_session')) {
+      return null;
+    }
     try {
       return await this.obterPerfil();
     } catch {
