@@ -2,6 +2,7 @@ package controle_financeiro.backend.service;
 
 import controle_financeiro.backend.model.RateLimitWindow;
 import controle_financeiro.backend.repository.RateLimitWindowRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ public class RateLimitService {
     private final Clock clock;
     private final AtomicLong nextCleanupAt = new AtomicLong();
 
+    @Autowired
     public RateLimitService(RateLimitWindowRepository repository) {
         this(repository, Clock.systemUTC());
     }
