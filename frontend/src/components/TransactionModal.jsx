@@ -33,7 +33,8 @@ const TransactionModal = ({
   const [excluindo, setExcluindo] = useState(false);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const [erro, setErro] = useState('');
-  const readOnly = wallets.find(wallet => String(wallet.id) === selectedWalletId)?.meuPapel === 'VISUALIZADOR';
+  const selectedWallet = wallets.find(wallet => String(wallet.id) === selectedWalletId);
+  const readOnly = selectedWallet?.meuPapel === 'VISUALIZADOR' || selectedWallet?.ativa === false;
 
   // Atualiza selectedWalletId quando prop muda
   useEffect(() => {
@@ -204,7 +205,7 @@ const TransactionModal = ({
         )}
 
         <form onSubmit={handleSubmit} className="modal-form">
-          {readOnly && <p>Você tem acesso somente de leitura nesta carteira.</p>}
+          {readOnly && <p>{selectedWallet?.ativa === false ? 'Esta carteira foi inativada e está disponível somente para consulta.' : 'Você tem acesso somente de leitura nesta carteira.'}</p>}
           <fieldset disabled={readOnly || salvando || excluindo} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: 'grid', gap: '1rem' }}>
           {/* Seletor Tipo: Receita x Despesa */}
           <div className="type-toggle-group">

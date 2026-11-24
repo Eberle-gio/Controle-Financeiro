@@ -44,6 +44,9 @@ public class Usuario {
 
     private Boolean emailConfirmado = false;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private Boolean ativo = true;
+
     @Column(columnDefinition = "bigint default 0")
     private Long versaoSessao = 0L;
 

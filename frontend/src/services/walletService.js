@@ -10,7 +10,8 @@ class WalletService {
     if (!initialLoads.has(key)) {
       const loading = (async () => {
         const wallets = await this.listarCarteiras();
-        return wallets.length ? wallets : [await this.garantirCarteiraPadrao()];
+        const hasActiveWallet = wallets.some(wallet => wallet.ativa !== false);
+        return hasActiveWallet ? wallets : [...wallets, await this.garantirCarteiraPadrao()];
       })().finally(() => initialLoads.delete(key));
       initialLoads.set(key, loading);
     }

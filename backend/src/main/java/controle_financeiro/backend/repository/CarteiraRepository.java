@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface CarteiraRepository extends JpaRepository<Carteira, Long> {
     List<Carteira> findByDono(Usuario dono);
+    List<Carteira> findByDonoAndAtivaTrue(Usuario dono);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select c from Carteira c where c.id = :id")

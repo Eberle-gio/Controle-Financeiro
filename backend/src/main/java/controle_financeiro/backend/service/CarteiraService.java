@@ -67,8 +67,9 @@ public class CarteiraService {
         Usuario usuario = usuarioRepository.buscarPorIdComBloqueio(autenticado.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         List<MembroCarteira> vinculos = membroCarteiraRepository.findByUsuario(usuario);
-        if (!vinculos.isEmpty()) {
-            MembroCarteira existente = vinculos.getFirst();
+        var carteiraAtiva = vinculos.stream().filter(vinculo -> vinculo.getCarteira().isAtiva()).findFirst();
+        if (carteiraAtiva.isPresent()) {
+            MembroCarteira existente = carteiraAtiva.get();
             return paraWalletResponse(existente.getCarteira(), existente.getPapel());
         }
         WalletRequest request = new WalletRequest();
@@ -110,6 +111,7 @@ public class CarteiraService {
         if (vinculo.getPapel() != TipoPermissao.DONO) {
             throw new AccessDeniedException("Apenas o dono da carteira pode alterar seus dados.");
         }
+        validarCarteiraAtiva(vinculo.getCarteira());
 
         Carteira carteira = vinculo.getCarteira();
         carteira.setNome(request.getNome());
@@ -128,6 +130,7 @@ public class CarteiraService {
         if (vinculo.getPapel() != TipoPermissao.DONO) {
             throw new AccessDeniedException("Apenas o dono da carteira pode excluí-la.");
         }
+        validarCarteiraAtiva(vinculo.getCarteira());
 
         if (transacaoRepository.existsByCarteira(vinculo.getCarteira())) {
             throw new BusinessException("Não é possível excluir uma carteira com transações vinculadas.");
@@ -157,6 +160,8 @@ public class CarteiraService {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculoDono = buscarVinculoOuFalhar(carteiraId, usuario);
 
+        validarCarteiraAtiva(vinculoDono.getCarteira());
+
         if (vinculoDono.getPapel() != TipoPermissao.DONO) {
             throw new AccessDeniedException("Apenas o dono da carteira pode alterar papéis dos membros.");
         }
@@ -181,6 +186,7 @@ public class CarteiraService {
     public void removerMembro(Long carteiraId, Long membroUsuarioId) {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         MembroCarteira vinculoSolicitante = buscarVinculoOuFalhar(carteiraId, usuario);
+        validarCarteiraAtiva(vinculoSolicitante.getCarteira());
 
         boolean ehODono = vinculoSolicitante.getPapel() == TipoPermissao.DONO;
         boolean ehOSroprioMembro = usuario.getId().equals(membroUsuarioId);
@@ -211,6 +217,12 @@ public class CarteiraService {
                 .orElseThrow(() -> new AccessDeniedException("Você não tem acesso a esta carteira."));
     }
 
+    public void validarCarteiraAtiva(Carteira carteira) {
+        if (!carteira.isAtiva()) {
+            throw new BusinessException("Esta carteira está inativa e disponível somente para consulta.");
+        }
+    }
+
     private WalletResponse paraWalletResponse(Carteira c, TipoPermissao meuPapel) {
         return WalletResponse.builder()
                 .id(c.getId())
@@ -219,6 +231,7 @@ public class CarteiraService {
                 .donoId(c.getDono().getId())
                 .donoNome(c.getDono().getNome())
                 .meuPapel(meuPapel)
+                .ativa(c.isAtiva())
                 .criadoEm(c.getCriadoEm())
                 .build();
     }

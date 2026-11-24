@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
     Optional<PasswordResetToken> findByToken(String token);
+    void deleteByUsuario(Usuario usuario);
     boolean existsByTokenAndUtilizadoTrue(String token);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)

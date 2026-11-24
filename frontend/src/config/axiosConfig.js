@@ -43,7 +43,10 @@ api.interceptors.request.use(async config => {
 
 api.interceptors.response.use(response => response, async error => {
   const request = error.config;
-  if (error.response?.status !== 401 || !request || request._retry || rotaDeAutenticacao(request.url)) {
+  
+  // Se for 401 na tela de login ou rota de auth, não tenta refresh token
+  const estaNaTelaDeLogin = window.location.pathname === '/login' || window.location.pathname === '/';
+  if (error.response?.status !== 401 || !request || request._retry || rotaDeAutenticacao(request.url) || estaNaTelaDeLogin) {
     return Promise.reject(error);
   }
 
@@ -59,7 +62,7 @@ api.interceptors.response.use(response => response, async error => {
     return api.request(request);
   } catch {
     limparSessaoLocal();
-    if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+    if (!estaNaTelaDeLogin) {
       window.location.assign('/login');
     }
     return Promise.reject(error);

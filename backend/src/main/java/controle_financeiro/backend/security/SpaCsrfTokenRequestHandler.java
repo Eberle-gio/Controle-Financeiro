@@ -10,6 +10,8 @@ import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler
 import org.springframework.util.StringUtils;
 
 public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
+    public static final String RAW_TOKEN_ATTRIBUTE = SpaCsrfTokenRequestHandler.class.getName() + ".RAW_TOKEN";
+
     private final CsrfTokenRequestAttributeHandler plain = new CsrfTokenRequestAttributeHandler();
     private final XorCsrfTokenRequestAttributeHandler xor = new XorCsrfTokenRequestAttributeHandler();
 
@@ -17,7 +19,8 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response,
                        Supplier<CsrfToken> csrfToken) {
         xor.handle(request, response, csrfToken);
-        csrfToken.get();
+        CsrfToken token = csrfToken.get();
+        request.setAttribute(RAW_TOKEN_ATTRIBUTE, token.getToken());
     }
 
     @Override

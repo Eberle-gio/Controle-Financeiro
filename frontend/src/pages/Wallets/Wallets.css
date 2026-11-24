@@ -81,6 +81,18 @@
   border-radius: var(--radius-sm);
 }
 
+.wallet-archived-pill {
+  display: inline-flex;
+  margin-top: 0.4rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.btn-members-manage:disabled { cursor: not-allowed; opacity: 0.55; }
+
 .wallet-card-actions {
   display: flex;
   align-items: center;

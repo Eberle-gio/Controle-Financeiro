@@ -4,7 +4,11 @@ import controle_financeiro.backend.dto.*;
 import controle_financeiro.backend.exception.*;
 import controle_financeiro.backend.exception.ResourceNotFoundException;
 import controle_financeiro.backend.model.PasswordResetToken;
+import controle_financeiro.backend.model.Carteira;
 import controle_financeiro.backend.model.Usuario;
+import controle_financeiro.backend.repository.CarteiraRepository;
+import controle_financeiro.backend.repository.MembroCarteiraRepository;
+import controle_financeiro.backend.repository.ConviteCarteiraRepository;
 import controle_financeiro.backend.repository.PasswordResetTokenRepository;
 import controle_financeiro.backend.repository.UsuarioRepository;
 import controle_financeiro.backend.security.JwtUtils;
@@ -26,6 +30,7 @@ import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class UsuarioService {
@@ -47,6 +52,15 @@ public class UsuarioService {
 
     @Autowired
     private PasswordResetTokenRepository resetTokenRepository;
+
+    @Autowired
+    private CarteiraRepository carteiraRepository;
+
+    @Autowired
+    private MembroCarteiraRepository membroCarteiraRepository;
+
+    @Autowired
+    private ConviteCarteiraRepository conviteCarteiraRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -96,7 +110,8 @@ public class UsuarioService {
         String emailNormalizado = EmailUtils.normalizar(request.getEmail());
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
 
-        if (usuario == null || !passwordEncoder.matches(request.getPassword(), usuario.getSenha())) {
+        if (usuario == null || !Boolean.TRUE.equals(usuario.getAtivo())
+                || !passwordEncoder.matches(request.getPassword(), usuario.getSenha())) {
             throw new BusinessException("Credenciais inválidas.");
         }
 
@@ -127,7 +142,7 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(jwtUtils.obterIdUsuarioDoToken(refreshToken))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Sua sessão expirou. Entre novamente."));
-        if (!Boolean.TRUE.equals(usuario.getEmailConfirmado())
+        if (!Boolean.TRUE.equals(usuario.getAtivo()) || !Boolean.TRUE.equals(usuario.getEmailConfirmado())
                 || jwtUtils.obterVersaoSessao(refreshToken) != versaoAtual(usuario)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sua sessão expirou. Entre novamente.");
         }
@@ -166,7 +181,7 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.buscarParaConfirmacaoPorEmail(emailNormalizado).orElse(null);
         
         // Retorna um token simulado sem salvar caso o e-mail não exista para não expor e-mails cadastrados
-        if (usuario == null) {
+        if (usuario == null || !Boolean.TRUE.equals(usuario.getAtivo())) {
             return UUID.randomUUID().toString();
         }
 
@@ -242,6 +257,47 @@ public class UsuarioService {
         return UserResponseDTO.fromEntity(salvo);
     }
 
+    @Transactional(readOnly = true)
+    public AccountDeletionSummaryResponse resumoExclusaoConta() {
+        Usuario usuario = getUsuarioAutenticado();
+        List<String> carteirasAtivas = carteiraRepository.findByDonoAndAtivaTrue(usuario).stream()
+                .map(Carteira::getNome)
+                .toList();
+        return new AccountDeletionSummaryResponse(carteirasAtivas.size(), carteirasAtivas);
+    }
+
+    @Transactional
+    public void excluirConta(String senhaAtual, String confirmacao) {
+        Usuario autenticado = getUsuarioAutenticado();
+        Usuario usuario = bloquearUsuario(autenticado.getId());
+        if (!passwordEncoder.matches(senhaAtual, usuario.getSenha())) {
+            throw new BusinessException("Senha atual incorreta.");
+        }
+        if (!"EXCLUIR".equals(confirmacao)) {
+            throw new BusinessException("Digite EXCLUIR para confirmar a remoção da conta.");
+        }
+
+        String emailAnterior = usuario.getEmail();
+        for (Carteira carteira : carteiraRepository.findByDonoAndAtivaTrue(usuario)) {
+            carteira.setAtiva(false);
+            conviteCarteiraRepository.deleteByCarteira(carteira);
+        }
+        conviteCarteiraRepository.deleteByEmail(emailAnterior);
+        membroCarteiraRepository.deleteByUsuario(usuario);
+        resetTokenRepository.deleteByUsuario(usuario);
+
+        usuario.setNome("Conta excluída");
+        usuario.setEmail("removido+" + usuario.getId() + "+" + UUID.randomUUID() + "@deleted.invalid");
+        usuario.setSenha(passwordEncoder.encode(UUID.randomUUID().toString()));
+        usuario.setEmailConfirmado(false);
+        usuario.setAtivo(false);
+        usuario.setVersaoSessao(versaoAtual(usuario) + 1);
+        usuario.setConfirmacaoTokenHash(null);
+        usuario.setConfirmacaoExpiraEm(null);
+        usuario.setConfirmacaoEnviadaEm(null);
+        usuarioRepository.save(usuario);
+    }
+
     public Usuario buscarPorEmail(String email) {
         String emailNormalizado = EmailUtils.normalizar(email);
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado);
@@ -258,7 +314,7 @@ public class UsuarioService {
         }
         String email = autenticacao.getName();
         Usuario usuario = usuarioRepository.findByEmail(email);
-        if (usuario == null) {
+        if (usuario == null || !Boolean.TRUE.equals(usuario.getAtivo())) {
             throw new ResourceNotFoundException("Usuário autenticado não encontrado.");
         }
         return usuario;

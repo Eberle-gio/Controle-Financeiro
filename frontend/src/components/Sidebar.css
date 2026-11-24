@@ -25,6 +25,8 @@
   filter: brightness(0) invert(1);
 }
 
+:root[data-theme='light'] .sidebar-brand .logo-icon { filter: brightness(0); }
+
 .sidebar-brand h2 {
   font-family: var(--font-logo);
   font-size: 1.1rem;

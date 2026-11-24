@@ -12,7 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.web.csrf.CsrfToken;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,8 +64,13 @@ public class AuthController {
     }
 
     @GetMapping("/csrf")
-    public Map<String, String> csrf(CsrfToken csrfToken) {
-        return Map.of("token", csrfToken.getToken());
+    public Map<String, String> csrf(HttpServletRequest request) {
+        String token = (String) request.getAttribute(
+                controle_financeiro.backend.security.SpaCsrfTokenRequestHandler.RAW_TOKEN_ATTRIBUTE);
+        if (token == null || token.isBlank()) {
+            throw new IllegalStateException("Token CSRF não foi gerado para a requisição.");
+        }
+        return Map.of("token", token);
     }
 
     @PostMapping("/refresh")

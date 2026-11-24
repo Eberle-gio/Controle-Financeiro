@@ -92,6 +92,38 @@ class AuthService {
     }
   }
 
+  async atualizarPerfil(nome) {
+    try {
+      const response = await api.put('/api/v1/users/me', { name: nome });
+      sessionStorage.setItem('current_session', JSON.stringify({ user: response.data }));
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Não foi possível atualizar seu perfil.');
+    }
+  }
+
+  async obterResumoExclusaoConta() {
+    try {
+      const response = await api.get('/api/v1/users/me/account-deletion-summary');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Não foi possível verificar suas carteiras.');
+    }
+  }
+
+  async excluirConta(senhaAtual, confirmacao) {
+    try {
+      await api.delete('/api/v1/users/me', { data: { currentPassword: senhaAtual, confirmation: confirmacao } });
+      sessionStorage.removeItem('current_session');
+      sessionStorage.removeItem('accessToken');
+      localStorage.removeItem('current_session');
+      localStorage.removeItem('accessToken');
+      sessionStorage.setItem('account_deleted', 'true');
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Não foi possível excluir sua conta.');
+    }
+  }
+
   async validarSessao() {
     try {
       return await this.obterPerfil();

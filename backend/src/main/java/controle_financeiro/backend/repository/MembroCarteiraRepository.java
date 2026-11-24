@@ -16,4 +16,5 @@ public interface MembroCarteiraRepository extends JpaRepository<MembroCarteira, 
     boolean existsByCarteiraAndUsuario(Carteira carteira, Usuario usuario);
     Optional<MembroCarteira> findByCarteiraAndUsuario(Carteira carteira, Usuario usuario);
     void deleteByCarteira(Carteira carteira);
+    void deleteByUsuario(Usuario usuario);
 }

@@ -28,7 +28,8 @@ export function restoreWallet(wallets, current) {
     savedId = null;
   }
   return wallets.find(wallet => String(wallet.id) === String(current?.id))
-    || wallets.find(wallet => String(wallet.id) === savedId)
+    || wallets.find(wallet => String(wallet.id) === savedId && wallet.ativa !== false)
+    || wallets.find(wallet => wallet.ativa !== false)
     || wallets[0]
     || null;
 }

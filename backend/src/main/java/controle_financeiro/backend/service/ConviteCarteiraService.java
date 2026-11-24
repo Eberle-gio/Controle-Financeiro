@@ -40,6 +40,7 @@ public class ConviteCarteiraService {
                 .orElseThrow(() -> new ResourceNotFoundException("Carteira não encontrada."));
         if (!carteira.getDono().getId().equals(usuario.getId()))
             throw new AccessDeniedException("Apenas o dono pode gerenciar convites.");
+        if (!carteira.isAtiva()) throw new BusinessException("Esta carteira está inativa e não aceita novos convites.");
         return carteira;
     }
 
@@ -91,6 +92,7 @@ public class ConviteCarteiraService {
         ConviteCarteira convite = convites.findByTokenHash(hashValido(token))
                 .orElseThrow(() -> new ResourceNotFoundException("Convite inválido ou substituído por um novo link."));
         validarPendente(convite);
+        if (!convite.getCarteira().isAtiva()) throw new BusinessException("Esta carteira está inativa e não aceita novos membros.");
         return resposta(convite);
     }
 
@@ -106,6 +108,7 @@ public class ConviteCarteiraService {
         ConviteCarteira convite = convites.buscarComBloqueio(hash)
                 .orElseThrow(() -> new ResourceNotFoundException("Convite inválido ou substituído."));
         validarPendente(convite);
+        if (!convite.getCarteira().isAtiva()) throw new BusinessException("Esta carteira está inativa e não aceita novos membros.");
         if (!Boolean.TRUE.equals(usuario.getEmailConfirmado()) || !convite.getEmail().equals(EmailUtils.normalizar(usuario.getEmail())))
             throw new AccessDeniedException("Entre com a conta do e-mail convidado e confirme seu cadastro para aceitar.");
         if (!membros.existsByCarteiraAndUsuario(convite.getCarteira(), usuario)) {

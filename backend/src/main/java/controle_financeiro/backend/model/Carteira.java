@@ -31,6 +31,9 @@ public class Carteira {
     @Size(max = 255, message = "A descrição deve ter no máximo 255 caracteres")
     private String descricao;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean ativa = true;
+
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 

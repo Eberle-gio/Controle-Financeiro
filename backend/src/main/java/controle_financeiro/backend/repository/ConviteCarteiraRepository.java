@@ -15,6 +15,7 @@ public interface ConviteCarteiraRepository extends JpaRepository<ConviteCarteira
     Optional<Long> buscarCarteiraIdPorHash(@Param("hash") String hash);
     List<ConviteCarteira> findByCarteiraOrderByEnviadoEmDesc(Carteira carteira);
     void deleteByCarteira(Carteira carteira);
+    void deleteByEmail(String email);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from ConviteCarteira c where c.tokenHash = :hash")

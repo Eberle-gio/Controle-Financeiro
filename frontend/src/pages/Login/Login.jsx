@@ -13,6 +13,11 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [exibirSenha, setExibirSenha] = useState(false);
+  const [avisoContaExcluida] = useState(() => {
+    const foiExcluida = sessionStorage.getItem('account_deleted') === 'true';
+    sessionStorage.removeItem('account_deleted');
+    return foiExcluida;
+  });
 
   // Estados de Validação e Envio
   const [erros, setErros] = useState({});
@@ -84,6 +89,12 @@ const Login = () => {
           <div className="form-container">
             <h2>Bem-vindo de volta</h2>
             <p className="form-subtitle">Faça login para acessar sua conta.</p>
+
+            {avisoContaExcluida && (
+              <div className="alert alert-success" role="status">
+                Sua conta foi excluída e as sessões foram encerradas.
+              </div>
+            )}
 
             {erros.apiError && (
               <div className="alert alert-danger">

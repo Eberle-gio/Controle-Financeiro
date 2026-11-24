@@ -65,7 +65,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfRepository.setCookiePath("/");
+        csrfRepository.setCookieCustomizer(cookie -> cookie.secure(cookieSecure).sameSite(cookieSameSite));
+        return csrfRepository;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            CookieCsrfTokenRepository csrfTokenRepository) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .headers(headers -> headers
@@ -76,10 +85,7 @@ public class SecurityConfig {
                 ))
             )
             .csrf(csrf -> {
-                CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-                csrfRepository.setCookiePath("/");
-                csrfRepository.setCookieCustomizer(cookie -> cookie.secure(cookieSecure).sameSite(cookieSameSite));
-                csrf.csrfTokenRepository(csrfRepository)
+                csrf.csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler());
             })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

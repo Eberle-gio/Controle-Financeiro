@@ -13,6 +13,7 @@ import Reports from '../pages/Reports/Reports';
 import ChangePassword from '../pages/ChangePassword/ChangePassword';
 import PrivateRoute from './PrivateRoute';
 import Invitation from '../pages/Invitation/Invitation';
+import Profile from '../pages/Profile/Profile';
 
 const AppRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
       <Route path="/categorias" element={<PrivateRoute><Categories /></PrivateRoute>} />
       <Route path="/relatorios" element={<PrivateRoute><Reports /></PrivateRoute>} />
       <Route path="/app/perfil/senha" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
+      <Route path="/app/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
     </Routes>
   );
 };

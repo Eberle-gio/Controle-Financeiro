@@ -214,6 +214,7 @@ const Wallets = () => {
                     <span className="wallet-role-pill">
                       <Shield size={12} /> {c.meuPapel}
                     </span>
+                    {!c.ativa && <span className="wallet-archived-pill">Inativa · somente consulta</span>}
                   </div>
                 </div>
 
@@ -221,13 +222,13 @@ const Wallets = () => {
                   <button
                     type="button"
                     onClick={() => abrirEditarCarteira(c)}
-                    disabled={c.meuPapel !== 'DONO'}
+                    disabled={c.meuPapel !== 'DONO' || !c.ativa}
                     className="icon-action-btn"
                     title="Editar Carteira"
                   >
                     <Edit2 size={16} />
                   </button>
-                  {carteiras.length > 1 && c.meuPapel === 'DONO' && (
+                  {c.ativa && carteiras.length > 1 && c.meuPapel === 'DONO' && (
                     <button
                       type="button"
                       onClick={() => excluirCarteira(c.id)}
@@ -249,6 +250,7 @@ const Wallets = () => {
                   type="button"
                   onClick={() => abrirGerenciarMembros(c)}
                   className="btn-members-manage"
+                  disabled={!c.ativa}
                 >
                   <Users size={16} /> Membros Compartilhados
                 </button>

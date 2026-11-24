@@ -16,6 +16,15 @@
   overflow-y: auto;
 }
 
+.archived-wallet-notice {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  font-size: 0.9rem;
+}
+
 /* Header Superior */
 .content-header {
   display: flex;

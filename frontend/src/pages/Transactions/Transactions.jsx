@@ -93,7 +93,7 @@ const Transactions = () => {
   }, [carregarTransacoes, carteiraAtiva]);
 
   const abrirNovaTransacao = () => {
-    if (carteiraAtiva?.meuPapel === 'VISUALIZADOR') return;
+    if (carteiraAtiva?.meuPapel === 'VISUALIZADOR' || carteiraAtiva?.ativa === false) return;
     setTransacaoSelecionada(null);
     setModalAberto(true);
   };
@@ -118,12 +118,17 @@ const Transactions = () => {
       <Sidebar usuarioAtual={usuarioAtual} itemAtivo="transacoes" />
 
       <main className="transactions-content">
+        {carteiraAtiva && !carteiraAtiva.ativa && (
+          <div className="archived-wallet-notice" role="status">
+            Esta carteira foi inativada e está disponível somente para consulta. O histórico foi preservado.
+          </div>
+        )}
         <header className="page-header">
           <div className="header-titles">
             <h1>Extrato de Transações</h1>
             <p>Gerencie e visualize todas as movimentações financeiras das suas carteiras.</p>
           </div>
-          <button onClick={abrirNovaTransacao} className="btn-primary-action" disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR'}>
+          <button onClick={abrirNovaTransacao} className="btn-primary-action" disabled={!carteiraAtiva || carteiraAtiva.meuPapel === 'VISUALIZADOR' || !carteiraAtiva.ativa}>
             <Plus size={18} /> Nova Transação
           </button>
         </header>
@@ -145,7 +150,7 @@ const Transactions = () => {
             >
               {carteiras.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''}
+                  {w.nome} {w.meuPapel ? `(${w.meuPapel})` : ''} {!w.ativa ? '(Inativa)' : ''}
                 </option>
               ))}
             </select>

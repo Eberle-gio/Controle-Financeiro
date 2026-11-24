@@ -18,5 +18,6 @@ public class WalletResponse {
     private Long donoId;
     private String donoNome;
     private TipoPermissao meuPapel;
+    private boolean ativa;
     private LocalDateTime criadoEm;
 }

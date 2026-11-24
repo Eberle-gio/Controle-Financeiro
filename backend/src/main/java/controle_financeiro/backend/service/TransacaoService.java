@@ -316,6 +316,7 @@ public class TransacaoService {
 
     private MembroCarteira buscarVinculoComPermissaoEscrita(Long walletId, Usuario usuario) {
         MembroCarteira vinculo = buscarVinculoOuFalhar(walletId, usuario);
+        carteiraService.validarCarteiraAtiva(vinculo.getCarteira());
         if (vinculo.getPapel() == TipoPermissao.VISUALIZADOR) {
             throw new AccessDeniedException("Você não tem permissão para modificar transações nesta carteira.");
         }

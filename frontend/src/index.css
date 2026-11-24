@@ -1,5 +1,6 @@
 /* Variáveis de Cores e Estilo do Design System */
 :root {
+  color-scheme: dark;
   --font-primary: 'Inter', sans-serif;
   --font-display: 'Outfit', sans-serif;
   --font-logo: 'Syncopate', sans-serif;
@@ -47,6 +48,32 @@
   --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.2);
   --glass-bg: rgba(17, 24, 39, 0.6);
   --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-primary: #f3f6fb;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8edf5;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-input: #ffffff;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-glow: rgba(79, 70, 229, 0.14);
+  --success: #059669;
+  --success-hover: #047857;
+  --success-glow: rgba(5, 150, 105, 0.12);
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-glow: rgba(220, 38, 38, 0.12);
+  --warning: #b45309;
+  --text-primary: #172033;
+  --text-secondary: #526078;
+  --text-muted: #6b7280;
+  --border-color: #d7deea;
+  --border-focus: #4f46e5;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(23, 32, 51, 0.1);
 }
 
 /* Reset Global */
