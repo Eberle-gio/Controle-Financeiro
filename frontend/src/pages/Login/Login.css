@@ -70,6 +70,42 @@
   margin-bottom: 0;
 }
 
+:root[data-theme='light'] .login-brand {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(196, 181, 253, 0.3) 0%, transparent 48%),
+    linear-gradient(145deg, #3b0764 0%, #6d28d9 58%, #5b21b6 100%);
+}
+
+:root[data-theme='light'] .login-page {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124, 58, 237, 0.1), transparent 32%),
+    radial-gradient(circle at 90% 82%, rgba(167, 139, 250, 0.13), transparent 34%),
+    #f6f3fc;
+}
+
+:root[data-theme='light'] .login-wrapper {
+  background: #fff;
+  border-color: #ded5f2;
+}
+
+:root[data-theme='light'] .login-form-side {
+  background: linear-gradient(145deg, #fdfcff 0%, #f0ebfb 100%);
+}
+
+:root[data-theme='light'] .brand-title {
+  background: linear-gradient(135deg, #ffffff 40%, #ddd6fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme='light'] .brand-subtitle {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+:root[data-theme='light'] .login-wrapper .brand-logo {
+  filter: brightness(0) invert(1) drop-shadow(0 6px 16px rgba(31, 16, 55, 0.34));
+}
+
 /* LADO DIREITO - FORMULÁRIO */
 .login-form-side {
   background: rgba(17, 24, 39, 0.3);
@@ -128,6 +164,11 @@
   border-color: var(--border-focus);
 }
 
+:root[data-theme='light'] .login-wrapper .input-group input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16);
+}
+
 .input-error {
   border-color: var(--danger) !important;
   box-shadow: 0 0 0 2px var(--danger-glow) !important;
@@ -166,6 +207,10 @@
 
 .eye-button:hover {
   color: #ffffff;
+}
+
+:root[data-theme='light'] .eye-button:hover {
+  color: #6d28d9;
 }
 
 .eye-icon {
@@ -207,6 +252,15 @@
   box-shadow: var(--shadow-glow);
 }
 
+:root[data-theme='light'] .login-button {
+  background-color: #6d28d9;
+}
+
+:root[data-theme='light'] .login-button:hover:not(:disabled) {
+  background-color: #5b21b6;
+  box-shadow: 0 8px 20px rgba(109, 40, 217, 0.2);
+}
+
 .login-button:active:not(:disabled) {
   transform: scale(0.98);
 }
@@ -227,6 +281,11 @@
   margin-left: 6px;
   color: var(--primary-hover);
   font-weight: 600;
+}
+
+:root[data-theme='light'] .forgot-password,
+:root[data-theme='light'] .register-link a {
+  color: #6d28d9;
 }
 
 /* Alertas de Feedback */
