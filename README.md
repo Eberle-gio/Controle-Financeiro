@@ -128,9 +128,9 @@ O backend importa backend/.env como Java Properties quando iniciado **dentro de 
 | SPRING_DATASOURCE_URL | URL JDBC MySQL; banco controle_financeiro no exemplo |
 | SPRING_DATASOURCE_USERNAME | Usuário MySQL; padrão local root |
 | SPRING_DATASOURCE_PASSWORD | Senha conforme sua instalação MySQL |
-| SPRING_MAIL_HOST / SPRING_MAIL_PORT | SMTP Brevo; padrões smtp-relay.brevo.com / 587 |
-| SPRING_MAIL_USERNAME / SPRING_MAIL_PASSWORD | Login SMTP Brevo e chave SMTP (não use a chave da API) |
-| SPRING_MAIL_FROM | Remetente verificado no Brevo; se vazio, usa SPRING_MAIL_USERNAME |
+| BREVO_API_KEY | Chave de API do Brevo; usada pelo backend via HTTPS. Não use a chave SMTP |
+| SPRING_MAIL_FROM | Endereço de remetente verificado no Brevo |
+| BREVO_SENDER_NAME | Nome mostrado como remetente; padrão NodeBank |
 | JWT_SECRET | Obrigatório: chave aleatória com pelo menos 32 bytes UTF-8 |
 | JWT_ACCESS_EXPIRATION / JWT_REFRESH_EXPIRATION | Validades em milissegundos; padrões de 1 hora e 2 horas |
 | APP_COOKIE_SECURE / APP_COOKIE_SAME_SITE | Segurança e política SameSite dos cookies; no Render HTTPS, true e None |
@@ -148,13 +148,13 @@ A URL local usa createDatabaseIfNotExist=true, o que requer permissão de criaç
 CREATE DATABASE controle_financeiro;
 ~~~
 
-O Hibernate cria/atualiza as tabelas com ddl-auto=update. Confirmação de cadastro, recuperação de senha e convites requerem SMTP válido. Todos esses links usam APP_FRONTEND_URL. Para outro domínio, configure também APP_CORS_ALLOWED_ORIGINS.
+O Hibernate cria/atualiza as tabelas com ddl-auto=update. Confirmação de cadastro, recuperação de senha e convites usam a API HTTPS do Brevo quando BREVO_API_KEY está configurada; sem ela, o backend tenta o SMTP local. Todos esses links usam APP_FRONTEND_URL. Para outro domínio, configure também APP_CORS_ALLOWED_ORIGINS.
 
 Os arquivos .env e o secrets real são ignorados pelo Git; versione apenas os exemplos. Como alternativa ao .env, consulte [application-secrets-example.properties](backend/src/main/resources/application-secrets-example.properties), com instruções para carregar o secrets explicitamente. Nunca coloque senhas ou JWT em variáveis VITE_, pois são expostas no navegador.
 
-Novos cadastros recebem um e-mail NodeBank com link de confirmação válido por 24 horas. O login fica bloqueado até a confirmação. A página `/confirmar-cadastro` permite reenviar o link, com intervalo mínimo de um minuto; o reenvio invalida o link anterior. O envio ocorre depois da confirmação da transação do cadastro e requer SMTP válido. Contas anteriores a esse fluxo também precisam confirmar o e-mail e podem solicitar o link pela tela de reenvio. Somente contas com emailConfirmado=true podem fazer login ou usar tokens JWT. O Hibernate adiciona os campos de confirmação à tabela `usuarios` com a configuração atual `ddl-auto=update`.
+Novos cadastros recebem um e-mail NodeBank com link de confirmação válido por 24 horas. O login fica bloqueado até a confirmação. A página `/confirmar-cadastro` permite reenviar o link, com intervalo mínimo de um minuto; o reenvio invalida o link anterior. O envio ocorre depois da confirmação da transação do cadastro. Contas anteriores a esse fluxo também precisam confirmar o e-mail e podem solicitar o link pela tela de reenvio. Somente contas com emailConfirmado=true podem fazer login ou usar tokens JWT. O Hibernate adiciona os campos de confirmação à tabela `usuarios` com a configuração atual `ddl-auto=update`.
 
-Endpoints públicos: `POST /api/auth/confirm-email` com `{ "token": "..." }` e `POST /api/auth/resend-confirmation` com `{ "email": "..." }`. O token de confirmação não é retornado pela API nem armazenado em texto no banco. O e-mail contém a logo existente como imagem inline, sem depender de uma URL externa.
+Endpoints públicos: `POST /api/auth/confirm-email` com `{ "token": "..." }` e `POST /api/auth/resend-confirmation` com `{ "email": "..." }`. O token de confirmação não é retornado pela API nem armazenado em texto no banco. O e-mail usa a logo pública do frontend.
 
 ---
 
