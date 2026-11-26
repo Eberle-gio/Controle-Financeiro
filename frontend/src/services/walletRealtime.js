@@ -1,4 +1,5 @@
 import api from '../config/axiosConfig';
+import { getAccessToken, getRefreshToken, saveAuthTokens } from './authTokenStorage';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
 
@@ -42,15 +43,23 @@ export function subscribeToWallet(walletId, onTransactionChanged) {
       try {
         controller = new AbortController();
         const url = new URL(`/api/v1/wallets/${encodeURIComponent(walletId)}/events`, apiBaseUrl);
+        const accessToken = getAccessToken();
         const response = await fetch(url, {
           credentials: 'include',
-          headers: { Accept: 'text/event-stream' },
+          headers: {
+            Accept: 'text/event-stream',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+          },
           signal: controller.signal
         });
 
         if (response.status === 401) {
           try {
-            await api.post('/api/auth/refresh');
+            const refreshed = await api.post('/api/auth/refresh', { refreshToken: getRefreshToken() });
+            saveAuthTokens(refreshed.data);
+            if (refreshed.data?.user) {
+              sessionStorage.setItem('current_session', JSON.stringify({ user: refreshed.data.user }));
+            }
             retryDelay = 1000;
             continue;
           } catch {

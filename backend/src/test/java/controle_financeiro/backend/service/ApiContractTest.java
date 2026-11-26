@@ -16,6 +16,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class ApiContractTest {
     @Test
+    void loginRetornaTokensBearerNoCorpoSemCriarCookies() throws Exception {
+        var service = mock(UsuarioService.class);
+        when(service.login(any())).thenReturn(LoginResponse.builder()
+                .accessToken("access-jwt")
+                .refreshToken("refresh-jwt")
+                .build());
+        var controller = new AuthController();
+        ReflectionTestUtils.setField(controller, "usuarioService", service);
+        var mvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build();
+
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"cliente@example.com\",\"password\":\"senha-segura\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("access-jwt"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-jwt"))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(header().doesNotExist("Set-Cookie"));
+    }
+
+    @Test
     void recuperacaoNaoExpoeTokenNoJson() throws Exception {
         var service = mock(UsuarioService.class);
         when(service.solicitarRecuperacaoSenha(anyString())).thenReturn("segredo-que-nao-pode-sair-na-api");

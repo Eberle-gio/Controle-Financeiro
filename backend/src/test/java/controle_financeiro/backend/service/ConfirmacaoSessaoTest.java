@@ -24,6 +24,7 @@ class ConfirmacaoSessaoTest {
         var usuarios = mock(UsuarioRepository.class);
         var usuario = new Usuario();
         usuario.setEmailConfirmado(confirmado);
+        usuario.setAtivo(true);
         when(jwt.validarAccessToken("token")).thenReturn(true);
         when(jwt.obterEmailDoToken("token")).thenReturn("cliente@example.com");
         when(usuarios.findByEmail("cliente@example.com")).thenReturn(usuario);
@@ -31,8 +32,24 @@ class ConfirmacaoSessaoTest {
         ReflectionTestUtils.setField(filter, "jwtUtils", jwt);
         ReflectionTestUtils.setField(filter, "usuarioRepository", usuarios);
         var request = new MockHttpServletRequest();
-        request.setCookies(new jakarta.servlet.http.Cookie("access_token", "token"));
+        request.addHeader("Authorization", "Bearer token");
         filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
+    }
+
+    @Test
+    void cookieLegadoNaoAutenticaRequisicaoSemBearer() throws Exception {
+        var jwt = mock(JwtUtils.class);
+        var usuarios = mock(UsuarioRepository.class);
+        var filter = new JwtAuthenticationFilter();
+        ReflectionTestUtils.setField(filter, "jwtUtils", jwt);
+        ReflectionTestUtils.setField(filter, "usuarioRepository", usuarios);
+        var request = new MockHttpServletRequest();
+        request.setCookies(new jakarta.servlet.http.Cookie("access_token", "token-antigo"));
+
+        filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verifyNoInteractions(jwt, usuarios);
     }
 
     @Test

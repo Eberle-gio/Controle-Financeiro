@@ -35,10 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String token = request.getCookies() == null ? null : java.util.Arrays.stream(request.getCookies())
-                    .filter(cookie -> "access_token".equals(cookie.getName()))
-                    .map(jakarta.servlet.http.Cookie::getValue)
-                    .findFirst().orElse(null);
+            String authorization = request.getHeader("Authorization");
+            String token = authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7)
+                ? authorization.substring(7).trim() : null;
 
             if (token != null && jwtUtils.validarAccessToken(token)) {
                 String email = jwtUtils.obterEmailDoToken(token);

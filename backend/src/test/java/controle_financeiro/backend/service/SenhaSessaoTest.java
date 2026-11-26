@@ -47,11 +47,11 @@ class SenhaSessaoTest {
         var filter = new JwtAuthenticationFilter();
         ReflectionTestUtils.setField(filter, "jwtUtils", jwt); ReflectionTestUtils.setField(filter, "usuarioRepository", usuarios);
         SecurityContextHolder.clearContext(); var request = new MockHttpServletRequest();
-        request.setCookies(new jakarta.servlet.http.Cookie("access_token", antigo));
+        request.addHeader("Authorization", "Bearer " + antigo);
         filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
         assertNull(SecurityContextHolder.getContext().getAuthentication());
         String novo = jwt.gerarToken(1L, usuario.getEmail(), usuario.getNome(), usuario.getVersaoSessao());
-        request = new MockHttpServletRequest(); request.setCookies(new jakarta.servlet.http.Cookie("access_token", novo));
+        request = new MockHttpServletRequest(); request.addHeader("Authorization", "Bearer " + novo);
         filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
     }

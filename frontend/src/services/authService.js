@@ -1,4 +1,5 @@
 import api from '../config/axiosConfig';
+import { clearAuthTokens, saveAuthTokens } from './authTokenStorage';
 
 // Limpa credenciais gravadas por versoes anteriores; tokens atuais sao HttpOnly.
 localStorage.removeItem('accessToken');
@@ -46,6 +47,7 @@ class AuthService {
   async login(email, senha) {
     try {
       const response = await api.post('/api/auth/login', { email, password: senha });
+      saveAuthTokens(response.data);
       const sessao = { user: response.data.user };
       sessionStorage.setItem('current_session', JSON.stringify(sessao));
       return sessao;
@@ -118,6 +120,7 @@ class AuthService {
       sessionStorage.removeItem('accessToken');
       localStorage.removeItem('current_session');
       localStorage.removeItem('accessToken');
+      clearAuthTokens();
       sessionStorage.setItem('account_deleted', 'true');
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Não foi possível excluir sua conta.');
@@ -152,12 +155,13 @@ class AuthService {
 
   async logout() {
     try {
-      await api.post('/api/auth/logout');
+      await api.post('/api/auth/logout', { refreshToken: sessionStorage.getItem('auth_refresh_token') });
     } catch {
       // Remove o estado local mesmo quando não for possível contatar o backend.
     } finally {
       sessionStorage.removeItem('accessToken');
       sessionStorage.removeItem('current_session');
+      clearAuthTokens();
     }
   }
 }

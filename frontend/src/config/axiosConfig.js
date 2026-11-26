@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { attachAccessToken, clearAuthTokens, getRefreshToken, saveAuthTokens } from '../services/authTokenStorage';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
@@ -8,7 +9,10 @@ const api = axios.create({
 
 let refreshPromise = null;
 
-const limparSessaoLocal = () => sessionStorage.removeItem('current_session');
+const limparSessaoLocal = () => {
+  sessionStorage.removeItem('current_session');
+  clearAuthTokens();
+};
 
 const obterCsrfDoCookie = () => {
   const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
@@ -33,6 +37,7 @@ const rotaDeAutenticacao = url =>
 
 api.interceptors.request.use(async config => {
   config.withCredentials = true;
+  attachAccessToken(config);
   const method = (config.method || 'get').toLowerCase();
   if (!['get', 'head', 'options'].includes(method)) {
     const token = await obterCsrfToken();
@@ -53,9 +58,11 @@ api.interceptors.response.use(response => response, async error => {
   request._retry = true;
   try {
     if (!refreshPromise) {
-      refreshPromise = api.post('/api/auth/refresh').finally(() => { refreshPromise = null; });
+      refreshPromise = api.post('/api/auth/refresh', { refreshToken: getRefreshToken() })
+        .finally(() => { refreshPromise = null; });
     }
     const refreshed = await refreshPromise;
+    saveAuthTokens(refreshed.data);
     if (refreshed.data?.user) {
       sessionStorage.setItem('current_session', JSON.stringify({ user: refreshed.data.user }));
     }

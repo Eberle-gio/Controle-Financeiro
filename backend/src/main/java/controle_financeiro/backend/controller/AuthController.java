@@ -8,12 +8,8 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.beans.factory.annotation.Value;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.Duration;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -28,13 +24,9 @@ public class AuthController {
     @Autowired
     private ConfirmacaoCadastroService confirmacaoCadastroService;
 
-    @Value("${app.cookie.secure:false}")
-    private boolean cookieSecure;
-
-    @Value("${app.cookie.same-site:Lax}")
-    private String cookieSameSite;
-
     public record ConfirmarCadastroRequest(@NotBlank @Size(max = 64) String token) {}
+    public record RefreshRequest(@NotBlank String refreshToken) {}
+    public record LogoutRequest(String refreshToken) {}
 
     @PostMapping("/confirm-email")
     public ResponseEntity<Map<String, String>> confirmarCadastro(@Valid @RequestBody ConfirmarCadastroRequest request) {
@@ -57,10 +49,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = usuarioService.login(request);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, criarCookie("access_token", response.getAccessToken(), "/", false).toString())
-                .header(HttpHeaders.SET_COOKIE, criarCookie("refresh_token", response.getRefreshToken(), "/api/auth", false).toString())
-                .body(response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/csrf")
@@ -74,33 +63,22 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refresh(
-            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
-        LoginResponse response = usuarioService.renovarSessao(refreshToken);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, criarCookie("access_token", response.getAccessToken(), "/", false).toString())
-                .body(response);
+    public ResponseEntity<LoginResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(usuarioService.renovarSessao(request.refreshToken()));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-            @CookieValue(name = "access_token", required = false) String accessToken,
-            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
-        usuarioService.encerrarSessao(accessToken, refreshToken);
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, criarCookie("access_token", "", "/", true).toString())
-                .header(HttpHeaders.SET_COOKIE, criarCookie("refresh_token", "", "/api/auth", true).toString())
-                .build();
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody(required = false) LogoutRequest request) {
+        String refreshToken = request == null ? null : request.refreshToken();
+        usuarioService.encerrarSessao(extrairBearer(authorization), refreshToken);
+        return ResponseEntity.noContent().build();
     }
 
-    private ResponseCookie criarCookie(String name, String value, String path, boolean limpar) {
-        ResponseCookie.ResponseCookieBuilder cookie = ResponseCookie.from(name, value)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite(cookieSameSite)
-                .path(path);
-        if (limpar) cookie.maxAge(Duration.ZERO);
-        return cookie.build();
+    private String extrairBearer(String authorization) {
+        if (authorization == null || !authorization.regionMatches(true, 0, "Bearer ", 0, 7)) return null;
+        return authorization.substring(7).trim();
     }
 
     @PostMapping("/forgot-password")
