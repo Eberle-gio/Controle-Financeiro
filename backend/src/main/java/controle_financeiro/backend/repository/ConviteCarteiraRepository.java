@@ -3,7 +3,6 @@ package controle_financeiro.backend.repository;
 import controle_financeiro.backend.model.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +16,6 @@ public interface ConviteCarteiraRepository extends JpaRepository<ConviteCarteira
     void deleteByCarteira(Carteira carteira);
     void deleteByEmail(String email);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select c from ConviteCarteira c where c.tokenHash = :hash")
+    @Query(value = "select * from convites_carteira where token_hash = :hash for update", nativeQuery = true)
     Optional<ConviteCarteira> buscarComBloqueio(@Param("hash") String hash);
 }
