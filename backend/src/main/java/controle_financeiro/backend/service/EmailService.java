@@ -14,14 +14,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import jakarta.mail.internet.MimeMessage;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class EmailService {
@@ -34,28 +26,11 @@ public class EmailService {
     @Autowired
     private TemplateEngine templateEngine;
 
-    @Value("${spring.mail.username:}")
+    @Value("${spring.mail.from:${spring.mail.username:}}")
     private String remetente;
-
-    @Value("${resend.api.key:${RESEND_API_KEY:}}")
-    private String resendApiKey;
-
-    @Value("${resend.from:NodeBank <onboarding@resend.dev>}")
-    private String resendFrom;
-
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Async
     public void enviarEmailSimples(String para, String assunto, String mensagem) {
-        if (resendApiKey != null && !resendApiKey.isBlank()) {
-            enviarViaResend(para, assunto, null, mensagem);
-            return;
-        }
-
         try {
             if (javaMail == null) {
                 log.warn("Nenhum serviço de envio de e-mail configurado (nem Resend nem SMTP).");
@@ -86,11 +61,6 @@ public class EmailService {
             }
             String process = templateEngine.process(arquivoTemplate, variaveisEmail);
 
-            if (resendApiKey != null && !resendApiKey.isBlank()) {
-                enviarViaResend(para, assunto, process, null);
-                return;
-            }
-
             if (javaMail == null) {
                 log.warn("Nenhum serviço de envio de e-mail configurado (nem Resend nem SMTP).");
                 return;
@@ -116,31 +86,4 @@ public class EmailService {
         }
     }
 
-    private void enviarViaResend(String para, String assunto, String html, String text) {
-        try {
-            Map<String, Object> payload = html != null 
-                    ? Map.of("from", resendFrom, "to", List.of(para), "subject", assunto, "html", html)
-                    : Map.of("from", resendFrom, "to", List.of(para), "subject", assunto, "text", text);
-
-            String jsonPayload = objectMapper.writeValueAsString(payload);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.resend.com/emails"))
-                    .header("Authorization", "Bearer " + resendApiKey.trim())
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                    .timeout(Duration.ofSeconds(15))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                log.info("E-mail enviado com sucesso via Resend HTTP para {}: {}", para, response.body());
-            } else {
-                log.error("Erro na resposta do Resend HTTP para {}. Status: {}, Resposta: {}", para, response.statusCode(), response.body());
-            }
-        } catch (Exception e) {
-            log.error("Falha ao comunicar com a API do Resend para {}: {}", para, e.getMessage(), e);
-        }
-    }
 }
