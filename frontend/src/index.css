@@ -20,6 +20,7 @@
   --success: #10b981;
   --success-hover: #34d399;
   --success-glow: rgba(16, 185, 129, 0.15);
+  --success-border: rgba(16, 185, 129, 0.3);
 
   --danger: #ef4444;
   --danger-hover: #f87171;
@@ -60,9 +61,10 @@
   --primary: #4f46e5;
   --primary-hover: #4338ca;
   --primary-glow: rgba(79, 70, 229, 0.14);
-  --success: #059669;
+  --success: #047857;
   --success-hover: #047857;
-  --success-glow: rgba(5, 150, 105, 0.12);
+  --success-glow: rgba(5, 150, 105, 0.14);
+  --success-border: rgba(4, 120, 87, 0.3);
   --danger: #dc2626;
   --danger-hover: #b91c1c;
   --danger-glow: rgba(220, 38, 38, 0.12);

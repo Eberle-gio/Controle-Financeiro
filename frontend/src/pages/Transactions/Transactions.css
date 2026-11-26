@@ -186,6 +186,10 @@
   background-color: rgba(31, 41, 55, 0.5);
 }
 
+:root[data-theme='light'] .transactions-table tr.clickable-row:hover {
+  background-color: rgba(79, 70, 229, 0.08);
+}
+
 .desc-cell {
   display: flex;
   flex-direction: column;
