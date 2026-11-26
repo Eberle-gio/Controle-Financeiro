@@ -1,0 +1,193 @@
+.invitation-page {
+  background:
+    radial-gradient(circle at 12% 12%, var(--primary-glow), transparent 30%),
+    radial-gradient(circle at 90% 88%, var(--success-glow), transparent 28%),
+    var(--bg-primary);
+}
+
+.invitation-wrapper {
+  width: min(100%, 540px);
+  max-width: 540px;
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.invitation-header {
+  margin-bottom: 1.75rem;
+}
+
+.invitation-logo-frame {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  box-shadow: var(--shadow-glow);
+}
+
+.invitation-header .brand-logo {
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  filter: brightness(0) invert(1);
+}
+
+.invitation-header .invitation-eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--primary-hover);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.invitation-header h1 {
+  margin: 0 0 0.55rem;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 5vw, 1.9rem);
+  line-height: 1.2;
+}
+
+.invitation-header > p:last-child {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.invitation-loading {
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.invitation-details {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.15rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+}
+
+.invitation-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.invitation-detail-row span {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.invitation-detail-row strong {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.invitation-validity {
+  margin: 0.85rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.invitation-actions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.invitation-note {
+  margin: 0 0 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.invitation-link-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform 0.1s ease;
+  overflow-wrap: anywhere;
+}
+
+.invitation-link-action:hover {
+  border-color: var(--primary-hover);
+  background: var(--primary-hover);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.invitation-secondary-action {
+  border: 1px solid var(--border-color) !important;
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+  text-decoration: none;
+}
+
+.invitation-secondary-action:hover:not(:disabled) {
+  border-color: var(--primary) !important;
+  background: var(--primary-glow) !important;
+  color: var(--primary-hover) !important;
+}
+
+.invitation-wrapper .back-link-wrapper {
+  margin-top: 1.25rem;
+}
+
+.invitation-wrapper .back-link-wrapper a {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.invitation-wrapper .back-link-wrapper a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .invitation-wrapper {
+    padding: 1.5rem 1.15rem;
+  }
+
+  .invitation-detail-row {
+    gap: 0.6rem;
+  }
+
+  .invitation-detail-row span {
+    font-size: 0.7rem;
+  }
+
+  .invitation-detail-row strong {
+    font-size: 0.84rem;
+  }
+}

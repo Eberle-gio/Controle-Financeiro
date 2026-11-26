@@ -53,13 +53,18 @@ export default function ConfirmRegistration() {
         {message && <p className="alert alert-success" role="status">{message}</p>}
         {error && <p className="alert alert-danger" role="alert">{error}</p>}
         {token && !confirmed && (
-          <button type="button" className="reset-button" disabled={busy} onClick={confirmar}>
-            {busy ? 'Aguarde...' : 'Confirmar meu cadastro'}
-          </button>
+          <>
+            <button type="button" className="reset-button" disabled={busy} onClick={confirmar}>
+              {busy ? 'Aguarde...' : 'Confirmar meu cadastro'}
+            </button>
+            <p style={{ marginTop: '1.5rem' }}>
+              Seu link expirou? <Link to="/confirmar-cadastro">Solicite outro e-mail de confirmação.</Link>
+            </p>
+          </>
         )}
-        {!confirmed && (
+        {!token && (
           <form onSubmit={reenviar} style={{ marginTop: '2rem' }}>
-            <p>Não recebeu o e-mail ou seu link expirou? Solicite um novo.</p>
+            <p>Informe o e-mail do cadastro para receber um novo link de confirmação.</p>
             <div className="input-group">
               <label htmlFor="confirmation-email">E-mail do cadastro</label>
               <input id="confirmation-email" type="email" autoComplete="email" required maxLength={254}

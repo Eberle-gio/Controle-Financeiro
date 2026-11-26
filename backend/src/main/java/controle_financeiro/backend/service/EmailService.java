@@ -110,7 +110,7 @@ public class EmailService {
             helper.setTo(para);
             helper.setSubject(assunto);
             helper.setText(process, true);
-            if ("novoCadastro".equals(arquivoTemplate)) {
+            if ("novoCadastro".equals(arquivoTemplate) || "conviteCarteira".equals(arquivoTemplate)) {
                 helper.addInline("nodebank-logo", new ClassPathResource("email/NodeBank.png"), "image/png");
             }
 
