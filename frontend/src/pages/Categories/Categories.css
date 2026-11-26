@@ -57,9 +57,18 @@
   transition: all var(--transition-fast);
 }
 
+:root[data-theme='light'] .category-item {
+  background-color: #f7f4ff;
+  border-color: #e4dcf4;
+}
+
 .category-item:hover {
   background-color: rgba(31, 41, 55, 0.6);
   border-color: rgba(99, 102, 241, 0.25);
+}
+
+:root[data-theme='light'] .category-item:hover {
+  background-color: rgba(79, 70, 229, 0.08);
 }
 
 .category-item-info {

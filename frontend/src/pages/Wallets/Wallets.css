@@ -251,6 +251,15 @@
 .members-modal .invite-member-form > p { font-size: 0.875rem; color: var(--text-secondary); }
 .member-item .btn-secondary { padding: 0.4rem 0.6rem; }
 
+.wallets-page .modal-container .btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.wallets-page .modal-container .btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
 .member-name {
   font-size: 0.875rem;
   font-weight: 600;

@@ -182,7 +182,7 @@ const Register = () => {
                 </div>
                 {tentativaEnvio && erros.password && <span className="error-message">{erros.password}</span>}
 
-                <PasswordStrengthMeter password={senha} />
+                <PasswordStrengthMeter password={senha} showUtf8ByteLimit={false} />
               </div>
               
               <div className="input-group">

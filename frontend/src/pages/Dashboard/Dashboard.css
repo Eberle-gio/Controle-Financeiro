@@ -393,6 +393,11 @@
   transition: all var(--transition-fast);
 }
 
+:root[data-theme='light'] .transaction-item {
+  background-color: #f7f4ff;
+  border-color: #e4dcf4;
+}
+
 .transaction-item:hover {
   background-color: rgba(31, 41, 55, 0.6);
 }
@@ -405,6 +410,10 @@
   background-color: rgba(45, 55, 72, 0.7);
   transform: translateX(2px);
   border-color: rgba(99, 102, 241, 0.3);
+}
+
+:root[data-theme='light'] .transaction-item.clickable:hover {
+  background-color: rgba(79, 70, 229, 0.08);
 }
 
 .transaction-value-action {
