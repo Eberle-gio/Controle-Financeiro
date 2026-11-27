@@ -42,8 +42,8 @@ class ConfirmacaoCadastroServiceTest {
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
         verify(events).publishEvent(captor.capture());
         var evento = (ConfirmacaoCadastroService.CadastroPendente) captor.getValue();
-        assertTrue(evento.confirmUrl().startsWith("http://localhost:5173/confirmar-cadastro/"));
-        String token = evento.confirmUrl().substring(evento.confirmUrl().lastIndexOf('/') + 1);
+        assertTrue(evento.confirmUrl().startsWith("http://localhost:5173/confirmar-cadastro#token="));
+        String token = evento.confirmUrl().substring(evento.confirmUrl().lastIndexOf('=') + 1);
         assertTrue(token.matches("[a-f0-9]{64}"));
         assertNotEquals(token, usuario.getConfirmacaoTokenHash());
         assertEquals(ConfirmacaoCadastroService.hash(token), usuario.getConfirmacaoTokenHash());

@@ -40,7 +40,7 @@ public class ConfirmacaoCadastroService {
         usuario.setConfirmacaoExpiraEm(LocalDateTime.now().plusHours(24));
         usuarios.save(usuario);
         events.publishEvent(new CadastroPendente(usuario.getEmail(), usuario.getNome(),
-                frontendUrl + "/confirmar-cadastro/" + token));
+                frontendUrl + "/confirmar-cadastro#token=" + token));
     }
 
     @Transactional

@@ -1,16 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import logo from '../../assets/images/Logo.svg';
 import '../ResetPassword/ResetPassword.css';
 
 export default function ConfirmRegistration() {
-  const { token } = useParams();
+  const { token: routeToken } = useParams();
+  const [fragmentToken] = useState(() => new URLSearchParams(window.location.hash.slice(1)).get('token'));
+  const token = routeToken || fragmentToken;
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}`);
+    }
+  }, []);
 
   async function confirmar() {
     setBusy(true);

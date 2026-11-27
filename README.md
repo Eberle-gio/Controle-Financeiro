@@ -154,7 +154,7 @@ Os arquivos .env e o secrets real são ignorados pelo Git; versione apenas os ex
 
 Novos cadastros recebem um e-mail NodeBank com link de confirmação válido por 24 horas. O login fica bloqueado até a confirmação. A página `/confirmar-cadastro` permite reenviar o link, com intervalo mínimo de um minuto; o reenvio invalida o link anterior. O envio ocorre depois da confirmação da transação do cadastro. Contas anteriores a esse fluxo também precisam confirmar o e-mail e podem solicitar o link pela tela de reenvio. Somente contas com emailConfirmado=true podem fazer login ou usar tokens JWT. O Hibernate adiciona os campos de confirmação à tabela `usuarios` com a configuração atual `ddl-auto=update`.
 
-Endpoints públicos: `POST /api/auth/confirm-email` com `{ "token": "..." }` e `POST /api/auth/resend-confirmation` com `{ "email": "..." }`. O token de confirmação não é retornado pela API nem armazenado em texto no banco. O e-mail usa a logo pública do frontend.
+Endpoints públicos: `POST /api/auth/confirm-email` com `{ "token": "..." }` e `POST /api/auth/resend-confirmation` com `{ "email": "..." }`. O e-mail usa a logo pública do frontend.
 
 ---
 
